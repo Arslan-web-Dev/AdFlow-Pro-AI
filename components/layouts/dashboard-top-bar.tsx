@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Bell, Search } from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { getDisplayName, getRoleLabel, getUsername } from '@/lib/auth-display'
@@ -18,7 +19,6 @@ export function DashboardTopBar() {
   const username = getUsername(user)
   const roleLabel = getRoleLabel(profile?.role)
 
-  const initial = displayName.charAt(0).toUpperCase()
   const PROFILE_IMAGE_URL = 'https://raw.githubusercontent.com/Arslan-web-Dev/My-projects-picks/refs/heads/main/personalpicks%20(1).png'
 
   return (
@@ -69,9 +69,11 @@ export function DashboardTopBar() {
             className="group relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-primary/20 ring-2 ring-primary/10 transition-transform hover:scale-105 active:scale-95"
             title="Open profile"
           >
-            <img
+            <Image
               src={PROFILE_IMAGE_URL}
               alt={displayName}
+              width={40}
+              height={40}
               className="h-full w-full object-cover"
             />
           </Link>

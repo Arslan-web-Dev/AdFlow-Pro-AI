@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { createBrowserClient } from '@supabase/ssr'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -109,7 +110,6 @@ export default function ProfilePage() {
     )
   }
 
-  const initial = displayName.charAt(0).toUpperCase()
   const role = profile?.role ?? 'client'
   const verified = Boolean(user?.email_confirmed_at)
   const PROFILE_IMAGE_URL = 'https://raw.githubusercontent.com/Arslan-web-Dev/My-projects-picks/refs/heads/main/personalpicks%20(1).png'
@@ -129,9 +129,11 @@ export default function ProfilePage() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-50" />
           <div className="relative flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent p-1 shadow-2xl shadow-primary/20 transition-transform hover:scale-105">
             <div className="h-full w-full overflow-hidden rounded-xl bg-surface-container">
-              <img
+              <Image
                 src={PROFILE_IMAGE_URL}
                 alt={displayName}
+                width={112}
+                height={112}
                 className="h-full w-full object-cover"
               />
             </div>

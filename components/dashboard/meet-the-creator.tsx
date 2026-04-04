@@ -50,9 +50,11 @@ export function MeetTheCreator() {
               <div className="relative rounded-full p-[3px] shadow-[0_0_40px_rgba(217,70,239,0.45)] ring-2 ring-fuchsia-500/30">
                 <div className="rounded-full bg-gradient-to-br from-fuchsia-500 via-violet-600 to-indigo-600 p-[3px]">
                   <div className="relative h-36 w-36 overflow-hidden rounded-full bg-[#0f1629] sm:h-40 sm:w-40">
-                    <img
+                    <Image
                       src="https://raw.githubusercontent.com/Arslan-web-Dev/My-projects-picks/refs/heads/main/personalpicks%20(1).png"
                       alt="Muhammad Arslan — creator of AdFlow Pro"
+                      width={160}
+                      height={160}
                       className="h-full w-full object-cover"
                     />
                   </div>

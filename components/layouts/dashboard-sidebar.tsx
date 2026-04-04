@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import Image from 'next/image'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/components/providers/auth-provider'
@@ -132,9 +133,11 @@ export function DashboardSidebar() {
         <div className="mb-4 flex items-center gap-3 px-2">
           <div className="relative h-10 w-10 shrink-0">
             <div className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-primary to-accent opacity-30" />
-            <img 
+            <Image 
               src={PROFILE_IMAGE_URL} 
               alt="User" 
+              width={40}
+              height={40}
               className="relative h-full w-full rounded-full border border-white/10 object-cover shadow-sm"
             />
             <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-surface-container-low bg-green-500" />
