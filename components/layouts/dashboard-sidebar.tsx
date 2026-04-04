@@ -220,12 +220,14 @@ export function DashboardSidebar() {
     </div>
   )
 
+  const sidebarWidth = isCollapsed ? 80 : 288
+
   return (
     <>
       {/* Mobile Toggle */}
       <button
         type="button"
-        className="fixed left-6 top-6 z-50 grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-[#1a1f2e]/80 text-on-surface backdrop-blur-xl shadow-lg md:hidden"
+        className="fixed left-6 top-6 z-[60] grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-[#1a1f2e]/80 text-on-surface backdrop-blur-xl shadow-lg md:hidden"
         onClick={() => setMobileOpen((open) => !open)}
         aria-label="Toggle sidebar"
       >
@@ -239,13 +241,21 @@ export function DashboardSidebar() {
         />
       )}
 
-      {/* Sidebar Aside */}
+      {/* Desktop spacer — takes up layout space so content shifts over */}
+      <motion.div
+        initial={false}
+        animate={{ width: sidebarWidth }}
+        className="hidden md:block shrink-0"
+        aria-hidden
+      />
+
+      {/* Sidebar — always fixed, never scrolls with page */}
       <motion.aside
         initial={false}
-        animate={{ width: mobileOpen ? 288 : (isCollapsed ? 80 : 288) }}
+        animate={{ width: mobileOpen ? 288 : sidebarWidth }}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex h-screen shrink-0 flex-col overflow-hidden bg-[#0f172a] transition-all duration-300 md:sticky md:top-0 md:translate-x-0',
-          !mobileOpen && "-translate-x-full",
+          'fixed inset-y-0 left-0 z-50 flex h-screen flex-col overflow-hidden bg-[#0f172a] transition-all duration-300',
+          !mobileOpen && "-translate-x-full md:translate-x-0",
           mobileOpen && "translate-x-0 shadow-2xl shadow-black/40",
           !isCollapsed && "shadow-[20px_0_60px_-15px_rgba(0,0,0,0.5)]"
         )}
