@@ -1,5 +1,6 @@
-﻿import { MoreVertical, ArrowUpRight, CheckCircle2, Clock3, CalendarX2, Layers3 } from 'lucide-react'
+import { MoreVertical, ArrowUpRight, CheckCircle2, Clock3, CalendarX2, Layers3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MeetTheCreator } from '@/components/dashboard/meet-the-creator'
 
 const stats = [
   { label: 'Total Ads', value: '1,284', chip: '+12%', icon: Layers3, tone: 'from-[#252d5b] to-[#1b2148]', chipClass: 'bg-[#2d355f] text-[#d3d8ff]' },
@@ -80,6 +81,8 @@ const activity = [
 export default function DashboardOverview() {
   return (
     <div className="space-y-6 lg:space-y-8">
+      <MeetTheCreator />
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
