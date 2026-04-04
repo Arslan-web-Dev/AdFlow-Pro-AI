@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 const links = [
+  { label: 'Meet the Creator', href: '/#creator' },
   { label: 'Privacy Policy', href: '#' },
   { label: 'Terms of Service', href: '#' },
   { label: 'Cookie Policy', href: '#' },

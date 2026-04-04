@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 
 const navItems = [
   { label: 'Marketplace', href: '/explore' },
+  { label: 'Creator', href: '/#creator' },
   { label: 'Help', href: '/dashboard/settings' },
   { label: 'Support', href: '/auth/login' },
 ]
@@ -25,9 +26,12 @@ export function MainNav() {
           <nav className="hidden items-center gap-6 md:flex">
             {navItems.map((item) => {
               const active =
-                item.href === '/explore'
-                  ? pathname === '/explore' || pathname.startsWith('/ad/')
-                  : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+                item.href === '/#creator'
+                  ? pathname === '/'
+                  : item.href === '/explore'
+                    ? pathname === '/explore' || pathname.startsWith('/ad/')
+                    : pathname === item.href ||
+                      (item.href !== '/' && !item.href.startsWith('/#') && pathname.startsWith(item.href))
               return (
                 <Link
                   key={item.href}
