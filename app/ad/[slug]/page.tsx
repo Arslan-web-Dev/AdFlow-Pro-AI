@@ -15,9 +15,10 @@ export default function AdDetailPage({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-on-surface">
+    <div className="flex min-h-screen bg-background text-on-surface">
       <MainNav />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-12 pt-24 md:px-8">
+      <div className="flex min-w-0 flex-1 flex-col">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-12 pt-16 md:px-8 md:pt-8">
         {/* Breadcrumb */}
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm font-medium text-on-surface-variant">
           <Link href="/explore" className="transition-colors hover:text-on-surface">
@@ -171,6 +172,7 @@ export default function AdDetailPage({ params }: { params: { slug: string } }) {
         </div>
       </main>
       <SiteFooter />
+      </div>
     </div>
   )
 }

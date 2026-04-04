@@ -35,11 +35,12 @@ const categoryIcon = (slug: string) => {
 
 export default function ExplorePage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background text-on-surface">
+    <div className="flex min-h-screen bg-background text-on-surface">
       <MainNav />
-      <div className="flex min-h-screen pt-16">
-        {/* Filter sidebar — matches marketplace discovery UI */}
-        <aside className="scrollbar-hide fixed left-0 top-16 z-30 hidden h-[calc(100vh-4rem)] w-72 overflow-y-auto border-r border-border/30 bg-surface-container-low py-8 pl-6 pr-5 md:block">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1">
+        {/* Filter sidebar — discovery UI beside main nav */}
+        <aside className="scrollbar-hide sticky top-0 z-20 hidden h-screen w-72 shrink-0 overflow-y-auto border-r border-border/30 bg-surface-container-low py-8 pl-6 pr-5 md:block">
           <div className="space-y-8">
             <div>
               <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Discovery</h3>
@@ -127,7 +128,7 @@ export default function ExplorePage() {
           </div>
         </aside>
 
-        <main className="flex-1 md:ml-72">
+        <main className="min-w-0 flex-1 pt-14 md:pt-0">
           <div className="p-6 lg:p-10">
             <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
               <div>
@@ -249,8 +250,9 @@ export default function ExplorePage() {
             </div>
           </div>
         </main>
+        </div>
+        <SiteFooter />
       </div>
-      <SiteFooter />
     </div>
   )
 }

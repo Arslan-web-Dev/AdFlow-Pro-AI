@@ -5,6 +5,12 @@
 @tailwind utilities;
 
 @layer utilities {
+  .animate-af-nav-float {
+    animation: af-nav-float 4s ease-in-out infinite;
+  }
+  .animate-af-nav-ring {
+    animation: af-nav-ring 2.8s ease-in-out infinite;
+  }
   .text-balance {
     text-wrap: balance;
   }
@@ -14,6 +20,26 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+}
+
+@keyframes af-nav-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes af-nav-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
   }
 }
 
