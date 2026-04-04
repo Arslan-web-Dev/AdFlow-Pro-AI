@@ -244,7 +244,7 @@ export function DashboardSidebar() {
         initial={false}
         animate={{ width: mobileOpen ? 288 : (isCollapsed ? 80 : 288) }}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex h-full flex-col bg-[#0f172a] transition-all duration-300 md:relative md:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 flex h-screen shrink-0 flex-col overflow-hidden bg-[#0f172a] transition-all duration-300 md:sticky md:top-0 md:translate-x-0',
           !mobileOpen && "-translate-x-full",
           mobileOpen && "translate-x-0 shadow-2xl shadow-black/40",
           !isCollapsed && "shadow-[20px_0_60px_-15px_rgba(0,0,0,0.5)]"
