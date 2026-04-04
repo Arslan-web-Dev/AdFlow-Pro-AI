@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/components/providers/auth-provider'
 import { getDisplayName, getUsername } from '@/lib/auth-display'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   BarChart3,
   CreditCard,
@@ -20,6 +21,7 @@ import {
   Plus,
   LayoutGrid,
   UserCircle2,
+  ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
 
@@ -32,31 +34,31 @@ function getRole(pathname: string) {
 }
 
 function getLinks(role: string) {
+  const base = [
+    { name: 'Home', href: role === 'admin' ? '/admin' : '/dashboard', icon: Home },
+    { name: 'Ads', href: '/dashboard/ads', icon: ShoppingBag },
+    { name: 'Payments', href: role === 'admin' ? '/admin/payments' : '/dashboard/payments', icon: CreditCard },
+    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  ]
+  
   if (role === 'admin') {
-    return [
-      { name: 'Home', href: '/admin', icon: Home },
-      { name: 'Ads', href: '/dashboard/ads', icon: ShoppingBag },
-      { name: 'Payments', href: '/admin/payments', icon: CreditCard },
-      { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-      { name: 'Users', href: '/admin/users', icon: Users },
-      { name: 'Profile', href: '/dashboard/profile', icon: UserCircle2 },
-      { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-    ]
+    base.push({ name: 'Users', href: '/admin/users', icon: Users })
   }
 
-  return [
-    { name: 'Home', href: '/dashboard', icon: Home },
-    { name: 'Ads', href: '/dashboard/ads', icon: ShoppingBag },
-    { name: 'Payments', href: '/dashboard/payments', icon: CreditCard },
-    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  base.push(
     { name: 'Profile', href: '/dashboard/profile', icon: UserCircle2 },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-  ]
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings }
+  )
+  
+  return base
 }
 
 export function DashboardSidebar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  
   const { user, profile, signOut } = useAuth()
   const role = getRole(pathname)
   const links = getLinks(role)
@@ -64,10 +66,25 @@ export function DashboardSidebar() {
   const displayName = getDisplayName(user, profile)
   const username = getUsername(user)
 
+  // Persist collapsed state
+  useEffect(() => {
+    const saved = localStorage.getItem('sidebar-collapsed')
+    if (saved !== null) setIsCollapsed(saved === 'true')
+    setMounted(true)
+  }, [])
+
+  const toggleSidebar = () => {
+    const newState = !isCollapsed
+    setIsCollapsed(newState)
+    localStorage.setItem('sidebar-collapsed', String(newState))
+  }
+
+  if (!mounted) return <div className="hidden md:flex md:w-72 md:flex-shrink-0" />
+
   const sidebarContent = (
     <div className="flex h-full flex-col text-on-surface">
       {/* Brand Header */}
-      <div className="px-6 py-8">
+      <div className={cn("px-6 py-8 transition-all duration-300", isCollapsed ? "px-4" : "px-6")}>
         <Link href="/" className="flex items-center gap-3.5 group" onClick={() => setMobileOpen(false)}>
           <div className="relative">
             <div className="absolute -inset-1 rounded-xl bg-gradient-to-tr from-primary to-accent opacity-20 blur-sm transition group-hover:opacity-40" />
@@ -75,42 +92,61 @@ export function DashboardSidebar() {
               <LayoutGrid className="h-6.5 w-6.5 text-primary-foreground" />
             </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-black tracking-tight text-on-surface">AdFlow <span className="text-primary">Pro</span></span>
-            <div className="mt-0.5 flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/80">
-                Enterprise AI
-              </span>
-            </div>
-          </div>
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="flex flex-col"
+              >
+                <span className="text-xl font-black tracking-tight text-on-surface">
+                  AdFlow <span className="text-primary">Pro</span>
+                </span>
+                <div className="mt-0.5 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/80">
+                    Enterprise AI
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </Link>
       </div>
 
       {/* Navigation Links */}
       <nav className="flex-1 space-y-1.5 px-4 py-2 custom-scrollbar overflow-y-auto">
-        <div className="mb-4 px-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">
-          Main Menu
-        </div>
+        {!isCollapsed && (
+          <div className="mb-4 px-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/40">
+            Main Menu
+          </div>
+        )}
         {links.map((link) => {
           const Icon = link.icon
           const active = pathname === link.href || pathname.startsWith(`${link.href}/`)
           return (
-            <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)}>
+            <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} title={isCollapsed ? link.name : ""}>
               <span
                 className={cn(
                   'group flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 relative overflow-hidden',
                   active
                     ? 'bg-primary/10 text-primary shadow-sm'
-                    : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface hover:translate-x-1'
+                    : 'text-on-surface-variant hover:bg-white/5 hover:text-on-surface hover:translate-x-1',
+                  isCollapsed && "justify-center px-0"
                 )}
               >
                 {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary" />
+                  <motion.span 
+                    layoutId="active-pill"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary" 
+                  />
                 )}
                 <Icon className={cn("h-5 w-5 shrink-0 transition-transform duration-300", active ? "scale-110" : "group-hover:scale-110")} />
-                <span className="flex-1">{link.name}</span>
-                <ChevronRight className={cn("h-4 w-4 opacity-0 transition-all duration-300 -translate-x-2", active ? "opacity-40 translate-x-0" : "group-hover:opacity-40 group-hover:translate-x-0")} />
+                {!isCollapsed && <span className="flex-1">{link.name}</span>}
+                {!isCollapsed && (
+                  <ChevronRight className={cn("h-4 w-4 opacity-0 transition-all duration-300 -translate-x-2", active ? "opacity-40 translate-x-0" : "group-hover:opacity-40 group-hover:translate-x-0")} />
+                )}
               </span>
             </Link>
           )
@@ -120,17 +156,20 @@ export function DashboardSidebar() {
       {/* Action Button */}
       <div className="px-4 py-6">
         <Link href="/dashboard/create" onClick={() => setMobileOpen(false)}>
-          <span className="relative flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-primary px-4 py-3.5 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-[1.02] active:scale-[0.98] group">
+          <span className={cn(
+            "relative flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-[1.02] active:scale-[0.98] group",
+            isCollapsed ? "h-11 w-11 p-0" : "px-4 py-3.5"
+          )}>
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             <Plus className="h-5 w-5" />
-            Create Campaign
+            {!isCollapsed && <span>Create Campaign</span>}
           </span>
         </Link>
       </div>
 
       {/* User Quick Profile & Logout */}
-      <div className="mt-auto border-t border-border/10 bg-surface-container-low/50 backdrop-blur-md px-4 py-5">
-        <div className="mb-4 flex items-center gap-3 px-2">
+      <div className="mt-auto border-t border-white/5 bg-white/[0.02] backdrop-blur-md px-4 py-5">
+        <div className={cn("mb-4 flex items-center gap-3", isCollapsed ? "justify-center px-0" : "px-2")}>
           <div className="relative h-10 w-10 shrink-0">
             <div className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-primary to-accent opacity-30" />
             <Image 
@@ -140,31 +179,53 @@ export function DashboardSidebar() {
               height={40}
               className="relative h-full w-full rounded-full border border-white/10 object-cover shadow-sm"
             />
-            <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-surface-container-low bg-green-500" />
+            <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#1a1f2e] bg-green-500" />
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold text-on-surface">{displayName}</p>
-            <p className="truncate text-[11px] text-muted-foreground/80">@{username}</p>
-          </div>
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div 
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+                className="min-w-0 flex-1 overflow-hidden"
+              >
+                <p className="truncate text-sm font-bold text-on-surface">{displayName}</p>
+                <p className="truncate text-[11px] text-muted-foreground/60">@{username}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <button
           type="button"
           onClick={() => signOut()}
-          className="group flex w-full items-center gap-3.5 rounded-xl px-4 py-3 text-left text-sm font-semibold text-on-surface-variant transition-all hover:bg-destructive/10 hover:text-destructive"
+          className={cn(
+            "group flex items-center gap-3.5 rounded-xl text-left text-sm font-semibold text-on-surface-variant transition-all hover:bg-destructive/10 hover:text-destructive",
+            isCollapsed ? "justify-center p-3" : "w-full px-4 py-3"
+          )}
+          title={isCollapsed ? "Sign Out" : ""}
         >
           <LogOut className="h-5 w-5 shrink-0 transition-transform group-hover:-translate-x-1" />
-          <span>Sign Out</span>
+          {!isCollapsed && <span>Sign Out</span>}
         </button>
       </div>
+
+      {/* Collapse Toggle Button (Desktop Only) */}
+      <button
+        onClick={toggleSidebar}
+        className="absolute -right-3 top-24 hidden h-6 w-6 place-items-center rounded-full border border-white/10 bg-[#1a1f2e] text-muted-foreground shadow-lg transition-colors hover:bg-primary hover:text-primary-foreground md:grid"
+      >
+        {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+      </button>
     </div>
   )
 
   return (
-    <div className="md:flex md:h-screen md:w-72 md:flex-shrink-0 md:flex-col">
+    <>
+      {/* Mobile Toggle */}
       <button
         type="button"
-        className="fixed left-6 top-6 z-50 grid h-12 w-12 place-items-center rounded-2xl border border-border/40 bg-surface-container-low/80 text-on-surface backdrop-blur-xl shadow-lg md:hidden"
+        className="fixed left-6 top-6 z-50 grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-[#1a1f2e]/80 text-on-surface backdrop-blur-xl shadow-lg md:hidden"
         onClick={() => setMobileOpen((open) => !open)}
         aria-label="Toggle sidebar"
       >
@@ -172,23 +233,25 @@ export function DashboardSidebar() {
       </button>
 
       {mobileOpen && (
-        <button
-          type="button"
-          className="fixed inset-0 z-40 bg-background/40 backdrop-blur-md transition-opacity duration-300 md:hidden"
+        <div
+          className="fixed inset-0 z-40 bg-background/40 backdrop-blur-md md:hidden"
           onClick={() => setMobileOpen(false)}
-          aria-label="Close sidebar overlay"
         />
       )}
 
-      <aside
+      {/* Sidebar Aside */}
+      <motion.aside
+        initial={false}
+        animate={{ width: mobileOpen ? 288 : (isCollapsed ? 80 : 288) }}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col border-r border-border/10 bg-surface-container-low transition-all duration-500 ease-in-out md:static md:z-0 md:translate-x-0',
-          mobileOpen ? 'translate-x-0 shadow-2xl shadow-black/40' : '-translate-x-full md:translate-x-0'
+          'fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-white/5 bg-[#0f172a] md:static md:z-0',
+          !mobileOpen && "-translate-x-full md:translate-x-0",
+          mobileOpen && "translate-x-0 shadow-2xl shadow-black/40"
         )}
       >
         {sidebarContent}
-      </aside>
-    </div>
+      </motion.aside>
+    </>
   )
 }
 

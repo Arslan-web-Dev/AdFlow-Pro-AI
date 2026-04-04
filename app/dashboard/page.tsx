@@ -1,3 +1,6 @@
+'use client'
+
+import { motion } from 'framer-motion'
 import { MoreVertical, ArrowUpRight, CheckCircle2, Clock3, CalendarX2, Layers3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -77,14 +80,47 @@ const activity = [
   },
 ]
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 100,
+      damping: 15,
+    }
+  },
+}
+
 export default function DashboardOverview() {
   return (
-    <div className="space-y-6 lg:space-y-8">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="space-y-6 lg:space-y-8"
+    >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <motion.div variants={containerVariants} className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {stats.map((stat) => (
-              <div key={stat.label} className="af-panel p-7">
+              <motion.div 
+                key={stat.label} 
+                variants={itemVariants}
+                whileHover={{ scale: 1.02, translateY: -5 }}
+                className="af-panel p-7 hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300"
+              >
                 <div className="flex items-start justify-between">
                   <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${stat.tone}`}>
                     <stat.icon className="h-7 w-7 text-[#b8beff]" />
@@ -93,18 +129,18 @@ export default function DashboardOverview() {
                 </div>
                 <p className="mt-6 text-[1.1rem] text-slate-300">{stat.label}</p>
                 <p className="mt-2 text-5xl font-extrabold tracking-tight text-white">{stat.value}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
-          <section className="af-panel overflow-hidden">
-            <div className="flex flex-col gap-4 border-b border-white/5 px-7 py-6 sm:flex-row sm:items-center sm:justify-between">
+          <motion.section variants={itemVariants} className="af-panel overflow-hidden border-white/5">
+            <div className="flex flex-col gap-4 border-b border-white/5 px-7 py-6 sm:flex-row sm:items-center sm:justify-between bg-white/[0.01]">
               <div>
                 <h1 className="text-4xl font-extrabold tracking-tight text-white">My Active Campaigns</h1>
               </div>
               <div className="flex gap-3">
-                <Button variant="secondary" className="rounded-2xl border border-white/5 bg-white/10 px-6 text-base font-semibold text-white hover:bg-white/15">Filter</Button>
-                <Button className="rounded-2xl bg-[#12a4ef] px-6 text-base font-semibold text-white hover:bg-[#0f97dd]">Export CSV</Button>
+                <Button variant="secondary" className="rounded-2xl border border-white/10 bg-white/5 px-6 text-base font-semibold text-white hover:bg-white/10">Filter</Button>
+                <Button className="rounded-2xl bg-primary px-6 text-base font-semibold text-white shadow-lg shadow-primary/25 hover:opacity-90">Export CSV</Button>
               </div>
             </div>
 
@@ -118,10 +154,16 @@ export default function DashboardOverview() {
             </div>
 
             <div className="divide-y divide-white/5">
-              {campaigns.map((campaign) => (
-                <div key={campaign.title} className="grid gap-5 px-7 py-6 lg:grid-cols-[2.2fr_1.1fr_1.5fr_1.1fr_1fr_40px] lg:items-center">
+              {campaigns.map((campaign, idx) => (
+                <motion.div 
+                  key={campaign.title} 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + idx * 0.1 }}
+                  className="grid gap-5 px-7 py-6 lg:grid-cols-[2.2fr_1.1fr_1.5fr_1.1fr_1fr_40px] lg:items-center hover:bg-white/[0.02] transition-colors"
+                >
                   <div className="flex items-center gap-4">
-                    <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#101724] text-sm font-black text-slate-300 shadow-inner shadow-black/20">
+                    <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#101724] text-sm font-black text-slate-300 shadow-inner shadow-black/20 group hover:bg-[#1a2333] transition-colors">
                       {campaign.image}
                     </div>
                     <div>
@@ -134,7 +176,12 @@ export default function DashboardOverview() {
                   </div>
                   <div>
                     <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-[#0c1328]">
-                      <div className={`h-full rounded-full ${campaign.barClass}`} style={{ width: campaign.progress }} />
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: campaign.progress }}
+                        transition={{ duration: 1, delay: 0.5 + idx * 0.1 }}
+                        className={`h-full rounded-full ${campaign.barClass}`} 
+                      />
                     </div>
                     <p className="text-lg font-semibold text-slate-300">{campaign.performance}</p>
                     {campaign.note ? <p className="text-sm text-slate-500">{campaign.note}</p> : null}
@@ -144,54 +191,68 @@ export default function DashboardOverview() {
                   <button type="button" className="text-slate-400 transition hover:text-white" aria-label={`More actions for ${campaign.title}`}>
                     <MoreVertical className="h-5 w-5" />
                   </button>
-                </div>
+                </motion.div>
               ))}
             </div>
 
             <div className="border-t border-white/5 px-7 py-5 text-center">
               <button type="button" className="text-xl font-semibold text-[#d7dbff] transition hover:text-white">View All Campaigns</button>
             </div>
-          </section>
+          </motion.section>
         </div>
 
         <aside className="space-y-6">
-          <section className="af-panel p-7">
+          <motion.section variants={itemVariants} className="af-panel p-7 border-white/5">
             <h2 className="text-4xl font-extrabold tracking-tight text-white">Recent Activity</h2>
             <div className="mt-8 space-y-8">
-              {activity.map((item) => (
-                <div key={item.title} className="flex gap-4">
-                  <span className={`mt-2 h-3 w-3 flex-none rounded-full ${item.dot}`} />
+              {activity.map((item, idx) => (
+                <motion.div 
+                  key={item.title} 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 + idx * 0.1 }}
+                  className="flex gap-4 group"
+                >
+                  <span className={`mt-2 h-3 w-3 flex-none rounded-full ${item.dot} ring-4 ring-transparent group-hover:ring-primary/20 transition-all`} />
                   <div>
-                    <p className="text-[1.7rem] font-bold leading-tight text-white">{item.title}</p>
+                    <p className="text-[1.7rem] font-bold leading-tight text-white group-hover:text-primary transition-colors">{item.title}</p>
                     <p className="mt-2 text-lg leading-8 text-slate-300">{item.text}</p>
                     <p className="mt-3 text-base text-slate-500">{item.time}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-            <Button variant="secondary" className="mt-10 h-14 w-full rounded-2xl border border-white/5 bg-white/10 text-lg font-bold uppercase tracking-[0.1em] text-white hover:bg-white/15">View Full History</Button>
-          </section>
+            <Button variant="secondary" className="mt-10 h-14 w-full rounded-2xl border border-white/10 bg-white/5 text-lg font-bold uppercase tracking-[0.1em] text-white hover:bg-white/10 transition-all">View Full History</Button>
+          </motion.section>
 
-          <section className="overflow-hidden rounded-[28px] border border-cyan-400/10 bg-gradient-to-br from-[#5a4cf6] to-[#179aea] p-7 shadow-[0_25px_70px_rgba(20,157,233,0.2)]">
+          <motion.section 
+            variants={itemVariants}
+            whileHover={{ scale: 1.02 }}
+            className="overflow-hidden rounded-[28px] border border-cyan-400/10 bg-gradient-to-br from-[#5a4cf6] to-[#179aea] p-7 shadow-[0_25px_70px_rgba(20,157,233,0.15)] relative group"
+          >
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             <h3 className="text-4xl font-extrabold tracking-tight text-white">Upgrade to Enterprise</h3>
             <p className="mt-4 text-lg leading-8 text-blue-50/90">Unlock advanced analytics and direct support.</p>
-            <Button className="mt-10 h-14 rounded-2xl bg-white/90 px-8 text-xl font-bold text-[#544ef5] hover:bg-white">Upgrade Now <ArrowUpRight className="ml-2 h-5 w-5" /></Button>
-          </section>
+            <Button className="mt-10 h-14 rounded-2xl bg-white/90 px-8 text-xl font-bold text-[#544ef5] hover:bg-white shadow-xl shadow-black/10">Upgrade Now <ArrowUpRight className="ml-2 h-5 w-5" /></Button>
+          </motion.section>
         </aside>
       </div>
 
-      <footer className="flex flex-col gap-4 border-t border-white/5 px-1 pt-8 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+      <motion.footer 
+        variants={itemVariants}
+        className="flex flex-col gap-4 border-t border-white/5 px-1 pt-8 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between"
+      >
         <div>
-          <p className="text-2xl font-extrabold uppercase text-white">AdFlowPro</p>
+          <p className="text-2xl font-extrabold uppercase text-white tracking-wider">AdFlow <span className="text-primary">Pro</span></p>
           <p className="mt-2">© 2024 AdFlow Pro. The Digital Curator.</p>
         </div>
         <div className="flex flex-wrap gap-6 text-xs font-semibold uppercase tracking-[0.18em]">
-          <span>Privacy Policy</span>
-          <span>Terms of Service</span>
-          <span>Cookie Policy</span>
+          <span className="cursor-pointer hover:text-white transition-colors">Privacy Policy</span>
+          <span className="cursor-pointer hover:text-white transition-colors">Terms of Service</span>
+          <span className="cursor-pointer hover:text-white transition-colors">Cookie Policy</span>
         </div>
-      </footer>
-    </div>
+      </motion.footer>
+    </motion.div>
   )
 }
 
