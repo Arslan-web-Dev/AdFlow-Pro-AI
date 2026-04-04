@@ -48,37 +48,52 @@
 
 ## Screenshots
 
-The repo includes **placeholder images** in [`docs/screenshots/`](docs/screenshots/) so the sections below **render on GitHub** immediately. Replace those PNGs with your own captures (same filenames) for a real portfolio look.
+The repo includes **placeholder images** in [`screenshots/`](screenshots/) so the sections below **render on GitHub** immediately. Replace those PNGs with your own captures (same filenames) for a real portfolio look.
 
 | File | Replace with a capture of |
 |------|---------------------------|
-| `landing.png` | Home — hero, CTAs, featured strip |
-| `explore.png` | Explore — filters + listing cards |
-| `ad-detail.png` | Single ad — media + seller panel |
-| `dashboard.png` | Seller dashboard |
-| `admin.png` | Admin or moderator (optional) |
+| `add details.png` | Home — hero, CTAs, featured strip |
+
+| `add page.png` | Explore — filters + listing cards |
+| `email.png` | Explore — filters + listing cards 
+| `add page.png` | Explore — filters + listing cards ||
+
+| `lendingpage1.png` | Single ad — media + seller panel |
+| `lendingpage1.png` | Single ad — media + seller panel |
+| `lendingpage1.png` | Single ad — media + seller panel |
+
+
+| `plans.png` | Seller dashboard |
+| `loginpage.png` | Admin or moderator (optional) |
 
 **GitHub tip:** The main repo page only shows **`README.md` at the repository root**. If AdFlow Pro is inside a subfolder, open [`03-AdFlow-Pro-AI/README.md`](./README.md) from the file tree, or add a short intro in the root `README` that links here.
 
 ### Landing
 
-![Landing page](docs/screenshots/landing.png)
+![Landing page](screenshots/add%20details.png)
 
 ### Explore
 
-![Explore marketplace](docs/screenshots/explore.png)
+![Explore marketplace](screenshots/add%20page.png)
 
 ### Ad detail
 
-![Listing detail](docs/screenshots/ad-detail.png)
+![Listing detail](screenshots/lendingpage1.png)
 
 ### Dashboard
 
-![Seller dashboard](docs/screenshots/dashboard.png)
+![Seller dashboard](screenshots/lendingpage2.png)
+### Dashboard
+
+![Seller dashboard](screenshots/lendingpage3.png)
+### Email
+
+![Seller email](screenshots/lendingpage2.png)
+
 
 ### Admin / moderation (optional)
 
-![Admin or moderator](docs/screenshots/admin.png)
+![Admin or moderator](screenshots/login.png)
 
 ---
 
