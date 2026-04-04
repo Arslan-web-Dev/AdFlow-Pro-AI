@@ -28,7 +28,12 @@ export function MeetTheCreator() {
 
       <div className="relative px-6 py-10 sm:px-10 sm:py-12 lg:px-14">
         <header className="mb-8 text-center sm:mb-10">
-          <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Meet the Creator</h2>
+          <h2
+            id="meet-creator-heading"
+            className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl"
+          >
+            Meet the Creator
+          </h2>
           <p className="mt-2 text-base text-slate-400 sm:text-lg">
             The mind behind <span className="font-semibold text-cyan-300">AdFlow Pro</span>
           </p>

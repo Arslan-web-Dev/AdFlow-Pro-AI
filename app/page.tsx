@@ -4,6 +4,7 @@ import { ArrowRight, BadgeCheck, Rocket, Sparkles } from 'lucide-react'
 import { MainNav } from '@/components/layouts/main-nav'
 import { SiteFooter } from '@/components/layouts/site-footer'
 import { LandingAccentBar } from '@/components/theme/landing-accent-bar'
+import { MeetTheCreator } from '@/components/dashboard/meet-the-creator'
 import { Button } from '@/components/ui/button'
 import { DUMMY_ADS } from '@/lib/dummy-data'
 
@@ -211,6 +212,16 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section
+          id="creator"
+          aria-labelledby="meet-creator-heading"
+          className="border-t border-border/30 bg-background/40 px-4 py-16 sm:px-6 sm:py-20 lg:px-10"
+        >
+          <div className="mx-auto max-w-7xl">
+            <MeetTheCreator />
           </div>
         </section>
 
