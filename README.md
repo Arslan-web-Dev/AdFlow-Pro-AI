@@ -83,7 +83,7 @@ Images below live in [`Screenshots/`](Screenshots/) (same folder name as on [Git
 | `loginpage.png` | Sign-in screen (`/auth/login`) |
 | `Email_.png` | Email-related UI (signup / capture strip) |
 
-**Monorepo deploy:** If this app is not at the Git repo root on Vercel, set **Root Directory** to the folder that contains `package.json` — illustrated in [`docs/screenshots/vercel-root-directory.png`](docs/screenshots/vercel-root-directory.png).
+**Monorepo deploy:** If this app is not at the Git repo root on Vercel, set **Root Directory** to the folder that contains `package.json` — illustrated in [`screenshots/vercel-root-directory.png`](screenshots/vercel-root-directory.png).
 
 ### Landing
 

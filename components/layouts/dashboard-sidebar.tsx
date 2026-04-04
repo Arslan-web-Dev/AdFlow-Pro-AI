@@ -17,6 +17,7 @@ import {
   X,
   Plus,
   LayoutGrid,
+  UserCircle2,
 } from 'lucide-react'
 
 function getRole(pathname: string) {
@@ -33,6 +34,7 @@ function getLinks(role: string) {
       { name: 'Payments', href: '/admin/payments', icon: CreditCard },
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
       { name: 'Users', href: '/admin/users', icon: Users },
+      { name: 'Profile', href: '/dashboard/profile', icon: UserCircle2 },
       { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ]
   }
@@ -42,6 +44,7 @@ function getLinks(role: string) {
     { name: 'Ads', href: '/dashboard/ads', icon: ShoppingBag },
     { name: 'Payments', href: '/dashboard/payments', icon: CreditCard },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    { name: 'Profile', href: '/dashboard/profile', icon: UserCircle2 },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ]
 }

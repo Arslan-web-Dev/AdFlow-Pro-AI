@@ -114,9 +114,141 @@
     @apply bg-background text-foreground antialiased;
     background-color: hsl(var(--background));
     background-image:
-      radial-gradient(ellipse 120% 80% at 50% -20%, rgba(79, 70, 229, 0.14), transparent 50%),
-      radial-gradient(ellipse 80% 50% at 100% 50%, rgba(0, 162, 230, 0.06), transparent 45%),
+      radial-gradient(ellipse 120% 80% at 50% -20%, hsl(var(--primary) / 0.14), transparent 50%),
+      radial-gradient(ellipse 80% 50% at 100% 50%, hsl(var(--accent) / 0.08), transparent 45%),
       linear-gradient(180deg, hsl(222 56% 10%) 0%, hsl(222 56% 9%) 100%);
+  }
+
+  /* Brand accent packs — toggled via data-accent on <html> (see AccentThemeProvider) */
+  html.dark[data-accent='violet'],
+  html[data-accent='violet'] {
+    --primary: 262 83% 58%;
+    --primary-foreground: 260 100% 97%;
+    --ring: 262 83% 58%;
+    --accent: 291 95% 75%;
+    --accent-foreground: 222 60% 12%;
+    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary-foreground: 260 100% 97%;
+    --sidebar-ring: 262 83% 58%;
+    --chart-1: 262 83% 58%;
+    --chart-2: 291 88% 62%;
+  }
+  html.dark[data-accent='fuchsia'],
+  html[data-accent='fuchsia'] {
+    --primary: 292 84% 61%;
+    --primary-foreground: 300 100% 98%;
+    --ring: 292 84% 61%;
+    --accent: 330 81% 72%;
+    --accent-foreground: 222 60% 12%;
+    --sidebar-primary: 292 84% 61%;
+    --sidebar-primary-foreground: 300 100% 98%;
+    --sidebar-ring: 292 84% 61%;
+    --chart-1: 292 84% 61%;
+    --chart-2: 330 75% 60%;
+  }
+  html.dark[data-accent='rose'],
+  html[data-accent='rose'] {
+    --primary: 346 77% 50%;
+    --primary-foreground: 355 100% 97%;
+    --ring: 346 77% 50%;
+    --accent: 12 90% 72%;
+    --accent-foreground: 222 60% 12%;
+    --sidebar-primary: 346 77% 50%;
+    --sidebar-primary-foreground: 355 100% 97%;
+    --sidebar-ring: 346 77% 50%;
+    --chart-1: 346 77% 50%;
+    --chart-2: 12 84% 62%;
+  }
+  html.dark[data-accent='orange'],
+  html[data-accent='orange'] {
+    --primary: 24 95% 53%;
+    --primary-foreground: 40 100% 97%;
+    --ring: 24 95% 53%;
+    --accent: 38 92% 55%;
+    --accent-foreground: 222 60% 12%;
+    --sidebar-primary: 24 95% 53%;
+    --sidebar-primary-foreground: 40 100% 97%;
+    --sidebar-ring: 24 95% 53%;
+    --chart-1: 24 95% 53%;
+    --chart-2: 38 92% 52%;
+  }
+  html.dark[data-accent='amber'],
+  html[data-accent='amber'] {
+    --primary: 38 92% 50%;
+    --primary-foreground: 26 100% 10%;
+    --ring: 38 92% 50%;
+    --accent: 45 100% 51%;
+    --accent-foreground: 222 60% 12%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 26 100% 10%;
+    --sidebar-ring: 38 92% 50%;
+    --chart-1: 38 92% 50%;
+    --chart-2: 45 93% 48%;
+  }
+  html.dark[data-accent='emerald'],
+  html[data-accent='emerald'] {
+    --primary: 160 84% 39%;
+    --primary-foreground: 156 100% 96%;
+    --ring: 160 84% 39%;
+    --accent: 172 66% 50%;
+    --accent-foreground: 222 60% 12%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 156 100% 96%;
+    --sidebar-ring: 160 84% 39%;
+    --chart-1: 160 84% 39%;
+    --chart-2: 172 60% 45%;
+  }
+  html.dark[data-accent='cyan'],
+  html[data-accent='cyan'] {
+    --primary: 188 94% 43%;
+    --primary-foreground: 190 100% 97%;
+    --ring: 188 94% 43%;
+    --accent: 199 89% 55%;
+    --accent-foreground: 222 60% 12%;
+    --sidebar-primary: 188 94% 43%;
+    --sidebar-primary-foreground: 190 100% 97%;
+    --sidebar-ring: 188 94% 43%;
+    --chart-1: 188 94% 43%;
+    --chart-2: 199 85% 50%;
+  }
+  html.dark[data-accent='sky'],
+  html[data-accent='sky'] {
+    --primary: 199 89% 48%;
+    --primary-foreground: 210 100% 98%;
+    --ring: 199 89% 48%;
+    --accent: 204 94% 56%;
+    --accent-foreground: 222 60% 12%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 210 100% 98%;
+    --sidebar-ring: 199 89% 48%;
+    --chart-1: 199 89% 48%;
+    --chart-2: 204 90% 52%;
+  }
+  html.dark[data-accent='lime'],
+  html[data-accent='lime'] {
+    --primary: 84 81% 44%;
+    --primary-foreground: 90 100% 10%;
+    --ring: 84 81% 44%;
+    --accent: 142 76% 42%;
+    --accent-foreground: 222 60% 12%;
+    --sidebar-primary: 84 81% 44%;
+    --sidebar-primary-foreground: 90 100% 10%;
+    --sidebar-ring: 84 81% 44%;
+    --chart-1: 84 81% 44%;
+    --chart-2: 142 70% 40%;
+  }
+  html.dark[data-accent='indigo'],
+  html[data-accent='indigo'] {
+    --primary: 243 75% 59%;
+    --primary-foreground: 245 100% 96%;
+    --ring: 243 75% 59%;
+    --accent: 199 100% 77%;
+    --accent-foreground: 222 60% 12%;
+    --sidebar-primary: 243 75% 59%;
+    --sidebar-primary-foreground: 245 100% 96%;
+    --sidebar-ring: 243 75% 59%;
+    --chart-1: 243 75% 59%;
+    --chart-2: 199 88% 53%;
   }
 }
 
@@ -144,18 +276,30 @@
   }
 
   .af-gradient {
-    background: linear-gradient(135deg, hsl(243 75% 59%) 0%, hsl(199 88% 48%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--accent)) 100%
+    );
   }
 
   .af-gradient-text {
-    background: linear-gradient(135deg, hsl(243 75% 75%) 0%, hsl(199 100% 70%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.95) 0%,
+      hsl(var(--accent) / 0.95) 100%
+    );
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
   .af-hero-gradient {
-    background: radial-gradient(circle at 50% 40%, rgba(79, 70, 229, 0.18) 0%, rgba(11, 19, 38, 0) 65%);
+    background: radial-gradient(
+      circle at 50% 40%,
+      hsl(var(--primary) / 0.2) 0%,
+      rgba(11, 19, 38, 0) 65%
+    );
   }
 
   .glass-effect {

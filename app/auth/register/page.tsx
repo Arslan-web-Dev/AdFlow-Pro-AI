@@ -10,10 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { toast } from 'sonner'
 import Link from 'next/link'
 
+const USERNAME_RE = /^[a-z0-9_]{3,24}$/
+
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -28,12 +31,19 @@ export default function RegisterPage() {
 
     const hasKeys = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_url_here'
 
+    const handle = username.trim().toLowerCase()
+    if (!USERNAME_RE.test(handle)) {
+      toast.error('Username must be 3–24 characters: lowercase letters, numbers, or underscore.')
+      setLoading(false)
+      return
+    }
+
     if (hasKeys) {
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: name },
+          data: { full_name: name, username: handle },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       })
@@ -65,6 +75,20 @@ export default function RegisterPage() {
             <div className="space-y-2">
               <Label htmlFor="name" className="font-semibold">Full Name</Label>
               <Input id="name" type="text" placeholder="Jane Doe" required value={name} onChange={(e) => setName(e.target.value)} className="h-12 bg-muted/20 font-medium" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="username" className="font-semibold">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="jane_doe"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                className="h-12 bg-muted/20 font-mono text-sm font-medium"
+                autoComplete="username"
+              />
+              <p className="text-xs text-muted-foreground">Shown on your profile as @handle (a–z, 0–9, _).</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email" className="font-semibold">Email</Label>
