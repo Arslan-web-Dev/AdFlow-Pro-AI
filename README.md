@@ -6,6 +6,11 @@
 
 > Full-stack **sponsored listing marketplace**: public browse and detail pages, seller dashboards, moderation and admin tools, with **Supabase** auth and **Next.js 14** (App Router), **TanStack Query**, and **Tailwind CSS**.
 
+| | |
+|--|--|
+| **Live demo** | [https://ad-flow-pro-ai.vercel.app](https://ad-flow-pro-ai.vercel.app) |
+| **Repository** | [github.com/Arslan-web-Dev/AdFlow-Pro-AI](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI) |
+
 ---
 
 ## Table of contents
@@ -13,87 +18,104 @@
 | | |
 |--|--|
 | 1 | [Key features](#key-features) |
-| 2 | [Screenshots](#screenshots) |
-| 3 | [Project summary](#project-summary) |
-| 4 | [UI and design system](#ui-and-design-system) |
-| 5 | [Technology stack](#technology-stack) |
-| 6 | [Architecture](#architecture) |
-| 7 | [Repository layout](#repository-layout) |
-| 8 | [Routes](#routes) |
-| 9 | [Authentication and RBAC](#authentication-and-rbac) |
-| 10 | [Core systems](#core-systems) |
-| 11 | [Database schema](#database-schema) |
-| 12 | [Environment variables](#environment-variables) |
-| 13 | [Getting started](#getting-started) |
-| 14 | [Deploy (go live)](#deploy-go-live) |
-| 15 | [Scripts](#scripts) |
-| 16 | [Important files](#important-files) |
-| 17 | [Roadmap](#roadmap) |
-| 18 | [Contributing](#contributing) |
-| 19 | [License](#license) |
-| 20 | [Author](#author) |
+| 2 | [Core product overview](#core-product-overview) |
+| 3 | [Screenshots](#screenshots) |
+| 4 | [Project summary](#project-summary) |
+| 5 | [UI and design system](#ui-and-design-system) |
+| 6 | [Technology stack](#technology-stack) |
+| 7 | [Architecture](#architecture) |
+| 8 | [Repository layout](#repository-layout) |
+| 9 | [Routes](#routes) |
+| 10 | [Authentication and RBAC](#authentication-and-rbac) |
+| 11 | [Core systems](#core-systems) |
+| 12 | [Database schema](#database-schema) |
+| 13 | [Environment variables](#environment-variables) |
+| 14 | [Getting started](#getting-started) |
+| 15 | [Deploy (go live)](#deploy-go-live) |
+| 16 | [Scripts](#scripts) |
+| 17 | [Important files](#important-files) |
+| 18 | [Roadmap](#roadmap) |
+| 19 | [Contributing](#contributing) |
+| 20 | [License](#license) |
+| 21 | [Author](#author) |
 
 ---
 
 ## Key features
 
-- **Dark marketplace UI** — Material-style tokens, glass header, gradients, **Inter** typography.
-- **Public experience** — Landing (hero, featured listings, pricing), **Explore** with filter sidebar, **ad detail** (gallery, seller card, location strip).
-- **Seller dashboard** — KPIs, campaigns table, activity feed, create-ad and payments flows (UI ready; hook to Supabase for live data).
-- **Moderation and admin** — Queues, payment verification, analytics (Recharts) for elevated roles.
-- **Route security** — `middleware.ts` applies authentication and **RBAC** per route prefix.
-- **Ranking** — `lib/ranking-system.ts` combines featured flag, package weight, verification, freshness, and optional admin boost.
+- **Dark marketplace UI** — Material-style tokens, glass header, gradients, **Inter** typography, responsive layouts.
+- **Marketing site** — Landing with hero, featured listings, pricing, and clear CTAs to explore or sign up.
+- **Browse & discovery** — **Explore** with filters (category, city, price), ranked listing cards, and smooth navigation to detail pages.
+- **Listing pages** — **Ad detail** with media gallery, seller card, location, and package context.
+- **Seller workspace** — **Dashboard** KPIs, ads table, activity, **create listing** wizard (category, city, package, payment steps), and profile/settings shells.
+- **Trust & operations** — **Moderator** queue and **Admin** analytics, payments review, and user role management (UI flows; connect to Supabase for production data).
+- **Auth & security** — **Supabase Auth** with `@supabase/ssr`; **`middleware.ts`** enforces sessions and **RBAC** (`client` → `moderator` → `admin` / `super_admin`).
+- **Ranking** — `lib/ranking-system.ts` scores listings using featured flag, package weight, seller verification, freshness, and optional admin boost.
+- **Optional AI** — `/api/ai/*` routes for helpers when `OPENAI_API_KEY` is set.
+
+---
+
+## Core product overview
+
+| Area | What users get |
+|------|----------------|
+| **Visitors** | Browse featured and ranked ads, open any listing, view pricing plans, and sign in or register. |
+| **Clients (sellers)** | Post and manage sponsored listings, pick packages, and complete payment flows in the dashboard. |
+| **Moderators** | Review pending content from a dedicated queue. |
+| **Admins** | View analytics, verify payments, and adjust user roles. |
+
+**Production note:** Sign-in on the [live demo](https://ad-flow-pro-ai.vercel.app) requires valid **Supabase** environment variables on Vercel (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) and matching Auth/DB setup. Without them, the UI still loads but auth requests can fail (e.g. “Failed to fetch”).
 
 ---
 
 ## Screenshots
 
-The repo includes **placeholder images** in [`screenshots/`](screenshots/) so the sections below **render on GitHub** immediately. Replace those PNGs with your own captures (same filenames) for a real portfolio look.
+Images below live in [`screenshots/`](screenshots/). Filenames with spaces use URL-encoded paths so they render correctly on GitHub.
 
-| File | Replace with a capture of |
-|------|---------------------------|
-| `add details.png` | Home — hero, CTAs, featured strip |
+| File | What it shows |
+|------|----------------|
+| `lendingpage1.png` | Landing — hero & primary CTA |
+| `lendingpage2.png` | Landing — featured / content section |
+| `lendingpage3.png` | Landing — lower section (e.g. pricing teaser or footer) |
+| `add page.png` | Seller flow — create or edit listing |
+| `add details.png` | Listing detail — media, seller, metadata |
+| `plans.png` | Pricing & packages |
+| `loginpage.png` | Sign-in screen (`/auth/login`) |
+| `Email_.png` | Email-related UI (signup / capture strip) |
 
-| `add page.png` | Explore — filters + listing cards |
-| `email.png` | Explore — filters + listing cards 
-| `add page.png` | Explore — filters + listing cards ||
-
-| `lendingpage1.png` | Single ad — media + seller panel |
-| `lendingpage1.png` | Single ad — media + seller panel |
-| `lendingpage1.png` | Single ad — media + seller panel |
-
-
-| `plans.png` | Seller dashboard |
-| `loginpage.png` | Admin or moderator (optional) |
-
-**GitHub tip:** The main repo page only shows **`README.md` at the repository root**. If AdFlow Pro is inside a subfolder, open [`03-AdFlow-Pro-AI/README.md`](./README.md) from the file tree, or add a short intro in the root `README` that links here.
+**Monorepo deploy:** If this app is not at the Git repo root on Vercel, set **Root Directory** to the folder that contains `package.json` — illustrated in [`docs/screenshots/vercel-root-directory.png`](docs/screenshots/vercel-root-directory.png).
 
 ### Landing
 
-![Landing page](screenshots/add%20details.png)
+![Landing — section 1](screenshots/lendingpage1.png)
 
-### Explore
+![Landing — section 2](screenshots/lendingpage2.png)
 
-![Explore marketplace](screenshots/add%20page.png)
+![Landing — section 3](screenshots/lendingpage3.png)
 
-### Ad detail
+### Create listing
 
-![Listing detail](screenshots/lendingpage1.png)
+![Create listing](screenshots/add%20page.png)
 
-### Dashboard
+### Listing detail
 
-![Seller dashboard](screenshots/lendingpage2.png)
-### Dashboard
+![Listing detail](screenshots/add%20details.png)
 
-![Seller dashboard](screenshots/lendingpage3.png)
+### Pricing
+
+![Pricing plans](screenshots/plans.png)
+
+### Sign in
+
+![Sign in](screenshots/loginpage.png)
+
 ### Email
 
-![Seller email](screenshots/lendingpage2.png)
+![Email UI](screenshots/Email_.png)
 
+### Vercel: Root Directory (folder pick)
 
-### Admin / moderation (optional)
-
-![Admin or moderator](screenshots/login.png)
+![Vercel import — Root Directory](docs/screenshots/vercel-root-directory.png)
 
 ---
 
@@ -169,11 +191,14 @@ Supabase (PostgreSQL: users, ads, categories, cities, packages, payments)
 ## Repository layout
 
 ```
-03-AdFlow-Pro-AI/
-├── docs/screenshots/       # README images (landing.png, …)
-├── app/                    # Routes, layouts, API routes
-├── components/             # layouts/, providers/, ui/
-├── lib/                    # supabase/, dummy-data, ranking-system, utils
+AdFlow-Pro-AI/
+├── screenshots/            # README portfolio images (landing, login, …)
+├── docs/
+│   ├── screenshots/        # e.g. vercel-root-directory.png (deploy)
+│   └── DEPLOY.md
+├── app/                      # Routes, layouts, API routes
+├── components/               # layouts/, providers/, ui/
+├── lib/                      # supabase/, dummy-data, ranking-system, utils
 ├── middleware.ts
 ├── next.config.mjs
 ├── tailwind.config.ts
@@ -337,8 +362,8 @@ Only `NEXT_PUBLIC_*` keys are available in the browser.
 **Prerequisites:** Node.js ≥ 18.17, npm ≥ 9 (or pnpm/yarn), a Supabase project.
 
 ```bash
-git clone <your-repository-url>
-cd 03-AdFlow-Pro-AI
+git clone https://github.com/Arslan-web-Dev/AdFlow-Pro-AI.git
+cd AdFlow-Pro-AI
 npm install
 ```
 
@@ -354,15 +379,13 @@ Application: [http://localhost:3000](http://localhost:3000).
 
 ## Deploy (go live)
 
-Use your Vercel team dashboard, then import the GitHub repo and set **Root Directory** to `03-AdFlow-Pro-AI` if the repo is the parent monorepo.
-
-**Dashboard:** [vercel.com/muhammad-arslans-projects-6abbf6f8](https://vercel.com/muhammad-arslans-projects-6abbf6f8) (log in with GitHub if needed).
+Use the [Vercel dashboard](https://vercel.com/muhammad-arslans-projects-6abbf6f8) (GitHub login) and import **[Arslan-web-Dev/AdFlow-Pro-AI](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI)**.
 
 1. Push the repo to GitHub.
-2. **Add New → Project** from that dashboard → import the repository.
-3. **Root Directory:** `03-AdFlow-Pro-AI` when the app is not at the repo root.
-4. **Environment variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-5. **Deploy** → use the `*.vercel.app` URL Vercel assigns.
+2. **Add New → Project** → import the repository.
+3. **Root Directory:** leave default **`.`** when this repo is only the Next.js app. If the app lives inside a **parent monorepo folder**, set Root Directory to that subfolder (see screenshot in [Screenshots](#screenshots)).
+4. **Environment variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (required for real sign-in on production).
+5. **Deploy** → example URL: [ad-flow-pro-ai.vercel.app](https://ad-flow-pro-ai.vercel.app).
 
 Full steps: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
@@ -400,7 +423,7 @@ Full steps: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 - [ ] Persist moderator actions
 - [ ] Admin payment review flow
 - [ ] Row Level Security on all tables
-- [ ] Deploy (e.g. Vercel) with env vars
+- [x] Deploy to Vercel (set Supabase env vars for working auth)
 
 ---
 
