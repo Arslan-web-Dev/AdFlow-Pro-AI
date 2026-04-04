@@ -16,8 +16,9 @@ export default function UserManagementPage() {
     { id: '4', email: 'acme@realestate.com', name: 'Acme Real Estate', role: 'client', verified: true },
   ]
 
-  const handleRoleChange = (_userId: string, _newRole: string) => {
-    toast.success('User role updated successfully.')
+  const handleRoleChange = (userId: string, newRole: string) => {
+    const label = dummyUsers.find((u) => u.id === userId)?.email ?? userId
+    toast.success(`Updated ${label} → ${newRole}`)
   }
 
   return (
