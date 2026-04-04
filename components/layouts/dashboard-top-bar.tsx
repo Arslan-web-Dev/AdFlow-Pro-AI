@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { Bell, Search, Menu, Home, ShoppingBag, CreditCard, BarChart3, Users, UserCircle2, Settings, Plus, Bot, Sparkles } from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
-import { getDisplayName, getRoleLabel, getUsername } from '@/lib/auth-display'
+import { getDisplayName, getRoleLabel } from '@/lib/auth-display'
 import { Logo } from '@/components/ui/logo'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { cn } from '@/lib/utils'
@@ -53,11 +53,10 @@ export function DashboardTopBar({
   onAIToggle?: () => void 
 }) {
   const pathname = usePathname()
-  const { user, profile, loading, signOut } = useAuth()
+  const { user, profile, loading } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const displayName = getDisplayName(user, profile)
-  const username = getUsername(user)
   const roleLabel = getRoleLabel(profile?.role)
   const role = getRole(pathname)
   const links = getLinks(role)
@@ -72,10 +71,12 @@ export function DashboardTopBar({
         {/* Mobile Logo & Menu Trigger */}
         <div className="flex items-center gap-2 md:hidden">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-10 w-10 text-on-surface">
-                <Menu className="h-6 w-6" />
-              </Button>
+            <SheetTrigger
+              render={
+                <Button variant="ghost" size="icon" className="h-10 w-10 text-on-surface" />
+              }
+            >
+              <Menu className="h-6 w-6" />
             </SheetTrigger>
             <SheetContent side="left" className="w-72 border-r-white/5 bg-[#0f172a] p-0">
               <SheetHeader className="p-6 text-left border-b border-white/5">

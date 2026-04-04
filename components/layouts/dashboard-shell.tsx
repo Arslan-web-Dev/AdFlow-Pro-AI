@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { DashboardTopBar } from './dashboard-top-bar'
 import { AIAssistant, AIToggle } from '@/components/ai/ai-assistant'
