@@ -83,7 +83,7 @@ export function MainNav() {
       <aside
         data-expanded={desktopExpanded ? 'true' : 'false'}
         className={cn(
-          'group/sidebar fixed inset-y-0 left-0 z-50 flex h-screen flex-col border-r border-border/40 bg-surface-container-low/95 shadow-2xl backdrop-blur-xl transition-all duration-300 ease-out',
+          'group/sidebar fixed inset-y-0 left-0 z-50 flex h-screen flex-col bg-surface-container-low/95 shadow-2xl backdrop-blur-xl transition-all duration-300 ease-out',
           'w-[min(280px,88vw)] max-w-[320px]',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
           'md:relative md:translate-x-0 md:shadow-none',
@@ -91,7 +91,7 @@ export function MainNav() {
         )}
       >
         {/* Header */}
-        <div className="flex h-14 shrink-0 items-center gap-1 border-b border-border/30 px-2">
+        <div className="flex h-14 shrink-0 items-center gap-1 px-2">
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
@@ -125,20 +125,20 @@ export function MainNav() {
         </div>
 
         {/* Profile — circular photo + motion */}
-        <div className="flex justify-center border-b border-border/20 py-5">
+        <div className="flex justify-center py-5">
           <div
             className={cn(
-              'relative rounded-full p-0.5 animate-af-nav-ring',
+              'relative rounded-2xl p-0.5',
               desktopExpanded ? 'h-[88px] w-[88px]' : 'h-12 w-12 md:h-12 md:w-12'
             )}
           >
-            <div className="h-full w-full overflow-hidden rounded-full bg-gradient-to-br from-fuchsia-500/80 via-violet-600/80 to-primary p-[3px] shadow-lg">
-              <div className="relative h-full w-full overflow-hidden rounded-full bg-[#0f1629]">
+            <div className="h-full w-full overflow-hidden rounded-2xl bg-gradient-to-br from-fuchsia-500/30 via-violet-600/30 to-primary/30 p-[2px] shadow-lg">
+              <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#0f1629]">
                 <Image
-                  src="/images/creator.png"
+                  src="https://raw.githubusercontent.com/Arslan-web-Dev/My-projects-picks/refs/heads/main/personalpicks%20(1).png"
                   alt="Creator"
                   fill
-                  className="object-cover animate-af-nav-float"
+                  className="object-cover"
                   sizes="88px"
                   priority
                 />
@@ -174,7 +174,7 @@ export function MainNav() {
         </nav>
 
         {/* Search — expanded desktop / always on mobile drawer */}
-        <div className="border-t border-border/30 p-3 md:group-data-[expanded=false]/sidebar:hidden">
+        <div className="p-3 md:group-data-[expanded=false]/sidebar:hidden">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -185,7 +185,7 @@ export function MainNav() {
         </div>
 
         {/* Bottom actions */}
-        <div className="mt-auto flex flex-col gap-1 border-t border-border/30 p-2">
+        <div className="mt-auto flex flex-col gap-1 p-2">
           <button
             type="button"
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-on-surface-variant transition-colors hover:bg-muted/50 hover:text-on-surface md:group-data-[expanded=false]/sidebar:justify-center md:group-data-[expanded=false]/sidebar:px-0"

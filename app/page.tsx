@@ -111,7 +111,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-y border-border/30 bg-surface-container-low/40 px-4 py-12 sm:px-6 lg:px-10">
+        <section className="bg-surface-container-low/40 px-4 py-12 sm:px-6 lg:px-10 shadow-inner shadow-black/5 flex items-center justify-center">
           <div className="mx-auto max-w-[1280px] text-center">
             <p className="text-center text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
               Trusted by Industry Leaders
@@ -161,7 +161,7 @@ export default function Home() {
                   <div className="space-y-3 p-5">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{listing.category}</p>
                     <h3 className="text-lg font-bold text-on-surface">{listing.title}</h3>
-                    <div className="flex items-center justify-between border-t border-border/30 pt-4">
+                    <div className="flex items-center justify-between pt-4">
                       <span className="text-xl font-black text-on-surface">{listing.price}</span>
                       <span className="text-xs text-on-surface-variant">{listing.meta}</span>
                     </div>
@@ -184,7 +184,7 @@ export default function Home() {
               {packages.map((pkg) => (
                 <div
                   key={pkg.name}
-                  className={`relative flex flex-col rounded-2xl border p-8 ${pkg.featured ? 'scale-100 border-2 border-primary bg-muted/30 shadow-2xl md:scale-[1.02]' : 'border-border/40 bg-surface-container hover:border-primary/25'}`}
+                  className={`relative flex flex-col rounded-2xl ${pkg.featured ? 'scale-100 border-2 border-primary bg-muted/40 shadow-2xl md:scale-[1.02]' : 'bg-surface-container/60 hover:bg-surface-container transition-all hover:scale-[1.01]'}`}
                 >
                   {pkg.featured && (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-[10px] font-black uppercase tracking-widest text-primary-foreground">
@@ -219,7 +219,7 @@ export default function Home() {
         <section
           id="creator"
           aria-labelledby="meet-creator-heading"
-          className="border-t border-border/30 bg-background/40 px-4 py-16 sm:px-6 sm:py-20 lg:px-10"
+          className="bg-background/40 px-4 py-16 sm:px-6 sm:py-20 lg:px-10 shadow-inner shadow-black/10"
         >
           <div className="mx-auto max-w-7xl">
             <MeetTheCreator />

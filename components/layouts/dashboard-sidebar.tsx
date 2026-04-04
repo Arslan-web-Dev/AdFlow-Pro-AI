@@ -168,10 +168,10 @@ export function DashboardSidebar() {
       </div>
 
       {/* User Quick Profile & Logout */}
-      <div className="mt-auto border-t border-white/5 bg-white/[0.02] backdrop-blur-md px-4 py-5">
+      <div className="mt-auto bg-white/[0.02] backdrop-blur-md px-4 py-5">
         <div className={cn("mb-4 flex items-center gap-3", isCollapsed ? "justify-center px-0" : "px-2")}>
           <div className="relative h-10 w-10 shrink-0">
-            <div className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-primary to-accent opacity-30" />
+            <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-tr from-primary to-accent opacity-30" />
             <Image 
               src={PROFILE_IMAGE_URL} 
               alt="User" 
@@ -244,8 +244,8 @@ export function DashboardSidebar() {
         initial={false}
         animate={{ width: mobileOpen ? 288 : (isCollapsed ? 80 : 288) }}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-white/5 bg-[#0f172a] md:static md:z-0',
-          !mobileOpen && "-translate-x-full md:translate-x-0",
+          'fixed inset-y-0 left-0 z-50 flex h-full flex-col bg-[#0f172a] md:static md:z-0 transition-shadow',
+          !mobileOpen && "-translate-x-full md:translate-x-0" + (isCollapsed ? "" : " shadow-[20px_0_40px_-20px_rgba(0,0,0,0.5)]"),
           mobileOpen && "translate-x-0 shadow-2xl shadow-black/40"
         )}
       >

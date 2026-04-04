@@ -22,7 +22,7 @@ export function DashboardTopBar() {
   const PROFILE_IMAGE_URL = 'https://raw.githubusercontent.com/Arslan-web-Dev/My-projects-picks/refs/heads/main/personalpicks%20(1).png'
 
   return (
-    <header className="af-glass-header sticky top-0 z-30 border-b border-white/5">
+    <header className="af-glass-header sticky top-0 z-30">
       <div className="flex h-16 items-center gap-4 px-4 sm:px-6 lg:px-8">
         <div className="hidden max-w-xl flex-1 items-center md:flex">
           <div className="relative w-full max-w-md group">
@@ -52,7 +52,7 @@ export function DashboardTopBar() {
             <Bell className="h-5 w-5" />
             <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-accent ring-2 ring-[#0f172a]" />
           </button>
-          <div className="hidden border-l border-white/10 pl-4 text-right sm:block">
+          <div className="hidden pl-4 text-right sm:block">
             {loading ? (
               <p className="text-xs text-muted-foreground">Loading…</p>
             ) : (

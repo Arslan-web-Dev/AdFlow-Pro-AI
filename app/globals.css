@@ -67,7 +67,7 @@
     --accent-foreground: 222 60% 12%;
     --destructive: 4 90% 78%;
     --destructive-foreground: 349 100% 12%;
-    --border: 240 6% 24%;
+    --border: 222 50% 12%;
     --input: 222 70% 8%;
     --ring: 243 75% 59%;
     --chart-1: 243 75% 59%;
@@ -82,7 +82,7 @@
     --sidebar-primary-foreground: 245 100% 96%;
     --sidebar-accent: 228 22% 23%;
     --sidebar-accent-foreground: 228 90% 92%;
-    --sidebar-border: 240 10% 30%;
+    --sidebar-border: 222 50% 12%;
     --sidebar-ring: 243 75% 59%;
     /* Extended semantic aliases */
     --surface: 222 56% 10%;
@@ -107,7 +107,7 @@
     --accent-foreground: 222 60% 12%;
     --destructive: 4 90% 78%;
     --destructive-foreground: 349 100% 12%;
-    --border: 240 6% 24%;
+    --border: 222 50% 12%;
     --input: 222 70% 8%;
     --ring: 243 75% 59%;
     --chart-1: 243 75% 59%;
@@ -121,16 +121,14 @@
     --sidebar-primary-foreground: 245 100% 96%;
     --sidebar-accent: 228 22% 23%;
     --sidebar-accent-foreground: 228 90% 92%;
-    --sidebar-border: 240 6% 24%;
+    --sidebar-border: 222 50% 12%;
     --sidebar-ring: 243 75% 59%;
     --surface: 222 56% 10%;
     --surface-container-high: 222 28% 18%;
     --on-surface-variant: 248 23% 81%;
   }
 
-  * {
-    @apply border-border;
-  }
+
 
   html {
     @apply font-sans;
@@ -287,8 +285,8 @@
     background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    box-shadow: 0 4px 50px rgba(0, 0, 0, 0.3);
   }
 
   .af-panel {
