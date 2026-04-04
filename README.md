@@ -9,7 +9,7 @@
 | | |
 |--|--|
 | **Live demo** | [https://ad-flow-pro-ai.vercel.app](https://ad-flow-pro-ai.vercel.app) |
-| **Repository** | [github.com/Arslan-web-Dev/AdFlow-Pro-AI](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI) |
+| **Repository** | [Arslan-web-Dev/AdFlow-Pro-AI](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI) |
 
 ---
 
@@ -70,7 +70,7 @@
 
 ## Screenshots
 
-Images below live in [`screenshots/`](screenshots/). Filenames with spaces use URL-encoded paths so they render correctly on GitHub.
+Images below live in [`Screenshots/`](Screenshots/) (same folder name as on [GitHub](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/tree/main/Screenshots)). Filenames with spaces use URL-encoded paths so they render correctly on GitHub.
 
 | File | What it shows |
 |------|----------------|
@@ -87,31 +87,31 @@ Images below live in [`screenshots/`](screenshots/). Filenames with spaces use U
 
 ### Landing
 
-![Landing — section 1](screenshots/lendingpage1.png)
+![Landing — section 1](Screenshots/lendingpage1.png)
 
-![Landing — section 2](screenshots/lendingpage2.png)
+![Landing — section 2](Screenshots/lendingpage2.png)
 
-![Landing — section 3](screenshots/lendingpage3.png)
+![Landing — section 3](Screenshots/lendingpage3.png)
 
 ### Create listing
 
-![Create listing](screenshots/add%20page.png)
+![Create listing](Screenshots/add%20page.png)
 
 ### Listing detail
 
-![Listing detail](screenshots/add%20details.png)
+![Listing detail](Screenshots/add%20details.png)
 
 ### Pricing
 
-![Pricing plans](screenshots/plans.png)
+![Pricing plans](Screenshots/plans.png)
 
 ### Sign in
 
-![Sign in](screenshots/loginpage.png)
+![Sign in](Screenshots/loginpage.png)
 
 ### Email
 
-![Email UI](screenshots/Email_.png)
+![Email UI](Screenshots/Email_.png)
 
 ### Vercel: Root Directory (folder pick)
 
@@ -192,7 +192,7 @@ Supabase (PostgreSQL: users, ads, categories, cities, packages, payments)
 
 ```
 AdFlow-Pro-AI/
-├── screenshots/            # README portfolio images (landing, login, …)
+├── Screenshots/            # README portfolio images (landing, login, …)
 ├── docs/
 │   ├── screenshots/        # e.g. vercel-root-directory.png (deploy)
 │   └── DEPLOY.md
