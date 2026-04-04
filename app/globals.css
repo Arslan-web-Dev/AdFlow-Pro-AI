@@ -4,6 +4,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes af-nav-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes af-nav-ring {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5); }
+  50% { box-shadow: 0 0 0 10px hsl(var(--primary) / 0); }
+}
+
+@keyframes af-glow-float {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+  33% { transform: translate(5%, 10%) scale(1.1); opacity: 0.4; }
+  66% { transform: translate(-5%, 15%) scale(0.9); opacity: 0.2; }
+}
+
 @layer utilities {
   .animate-af-nav-float {
     animation: af-nav-float 4s ease-in-out infinite;
@@ -20,26 +36,6 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
-  }
-}
-
-@keyframes af-nav-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes af-nav-ring {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5);
-  }
-  50% {
-    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
   }
 }
 
@@ -127,8 +123,6 @@
     --surface-container-high: 222 28% 18%;
     --on-surface-variant: 248 23% 81%;
   }
-
-
 
   html {
     @apply font-sans;
@@ -325,6 +319,16 @@
       hsl(var(--primary) / 0.2) 0%,
       rgba(11, 19, 38, 0) 65%
     );
+  }
+
+  .af-bg-glow {
+    position: fixed;
+    border-radius: 100%;
+    filter: blur(120px);
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%);
+    animation: af-glow-float 15s ease-in-out infinite;
   }
 
   .glass-effect {

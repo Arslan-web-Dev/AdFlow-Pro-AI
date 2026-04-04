@@ -244,9 +244,10 @@ export function DashboardSidebar() {
         initial={false}
         animate={{ width: mobileOpen ? 288 : (isCollapsed ? 80 : 288) }}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex h-full flex-col bg-[#0f172a] md:static md:z-0 transition-shadow',
-          !mobileOpen && "-translate-x-full md:translate-x-0" + (isCollapsed ? "" : " shadow-[20px_0_40px_-20px_rgba(0,0,0,0.5)]"),
-          mobileOpen && "translate-x-0 shadow-2xl shadow-black/40"
+          'fixed inset-y-0 left-0 z-50 flex h-full flex-col bg-[#0f172a] transition-all duration-300 md:relative md:translate-x-0',
+          !mobileOpen && "-translate-x-full",
+          mobileOpen && "translate-x-0 shadow-2xl shadow-black/40",
+          !isCollapsed && "shadow-[20px_0_60px_-15px_rgba(0,0,0,0.5)]"
         )}
       >
         {sidebarContent}
