@@ -112,6 +112,7 @@ export default function ProfilePage() {
   const initial = displayName.charAt(0).toUpperCase()
   const role = profile?.role ?? 'client'
   const verified = Boolean(user?.email_confirmed_at)
+  const PROFILE_IMAGE_URL = 'https://raw.githubusercontent.com/Arslan-web-Dev/My-projects-picks/refs/heads/main/personalpicks%20(1).png'
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -123,22 +124,20 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <Card className="border-border/80 shadow-sm">
-        <CardContent className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center">
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-3xl font-black text-primary-foreground shadow-lg shadow-primary/25">
-            {profile?.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
+      <Card className="border-border/80 shadow-sm overflow-hidden">
+        <CardContent className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-50" />
+          <div className="relative flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent p-1 shadow-2xl shadow-primary/20 transition-transform hover:scale-105">
+            <div className="h-full w-full overflow-hidden rounded-xl bg-surface-container">
               <img
-                src={profile.avatar_url}
-                alt=""
-                className="h-full w-full rounded-full object-cover"
+                src={PROFILE_IMAGE_URL}
+                alt={displayName}
+                className="h-full w-full object-cover"
               />
-            ) : (
-              initial
-            )}
+            </div>
           </div>
-          <div className="min-w-0 flex-1 space-y-1">
-            <h2 className="truncate text-2xl font-bold">{displayName}</h2>
+          <div className="relative min-w-0 flex-1 space-y-1">
+            <h2 className="truncate text-3xl font-black tracking-tight">{displayName}</h2>
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1 font-medium text-on-surface">
                 <AtSign className="h-3.5 w-3.5" />

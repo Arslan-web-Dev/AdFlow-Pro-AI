@@ -19,6 +19,7 @@ export function DashboardTopBar() {
   const roleLabel = getRoleLabel(profile?.role)
 
   const initial = displayName.charAt(0).toUpperCase()
+  const PROFILE_IMAGE_URL = 'https://raw.githubusercontent.com/Arslan-web-Dev/My-projects-picks/refs/heads/main/personalpicks%20(1).png'
 
   return (
     <header className="af-glass-header sticky top-0 z-30 border-b border-border/30">
@@ -65,19 +66,14 @@ export function DashboardTopBar() {
           </div>
           <Link
             href="/dashboard/profile"
-            className="grid h-10 w-10 place-items-center rounded-full border border-primary/25 bg-surface-container text-sm font-black text-primary ring-2 ring-primary/15"
+            className="group relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-primary/20 ring-2 ring-primary/10 transition-transform hover:scale-105 active:scale-95"
             title="Open profile"
           >
-            {user?.user_metadata?.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.user_metadata.avatar_url as string}
-                alt=""
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-sm font-black">{initial}</span>
-            )}
+            <img
+              src={PROFILE_IMAGE_URL}
+              alt={displayName}
+              className="h-full w-full object-cover"
+            />
           </Link>
         </div>
       </div>
