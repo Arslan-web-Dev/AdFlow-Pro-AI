@@ -12,7 +12,7 @@ import {
   Search,
   Clock,
 } from 'lucide-react'
-import { MainNav } from '@/components/layouts/main-nav'
+import { SiteHeader } from '@/components/layouts/site-header'
 import { SiteFooter } from '@/components/layouts/site-footer'
 import { Button } from '@/components/ui/button'
 import { DUMMY_ADS, DUMMY_CATEGORIES, DUMMY_CITIES } from '@/lib/dummy-data'
@@ -35,12 +35,11 @@ const categoryIcon = (slug: string) => {
 
 export default function ExplorePage() {
   return (
-    <div className="flex min-h-screen bg-background text-on-surface">
-      <MainNav />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex min-h-0 flex-1">
+    <div className="flex min-h-screen flex-col bg-background text-on-surface">
+      <SiteHeader />
+      <div className="flex min-h-0 flex-1">
         {/* Filter sidebar — discovery UI beside main nav */}
-        <aside className="scrollbar-hide sticky top-0 z-20 hidden h-screen w-72 shrink-0 overflow-y-auto border-r border-border/30 bg-surface-container-low py-8 pl-6 pr-5 md:block">
+        <aside className="scrollbar-hide sticky top-16 z-20 hidden h-[calc(100vh-64px)] w-72 shrink-0 overflow-y-auto border-r border-border/30 bg-surface-container-low py-8 pl-6 pr-5 md:block">
           <div className="space-y-8">
             <div>
               <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Discovery</h3>
@@ -250,7 +249,6 @@ export default function ExplorePage() {
             </div>
           </div>
         </main>
-        </div>
         <SiteFooter />
       </div>
     </div>

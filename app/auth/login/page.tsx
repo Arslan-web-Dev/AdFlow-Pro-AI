@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { SiteHeader } from '@/components/layouts/site-header'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -75,7 +76,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/10 p-4">
+    <div className="flex min-h-screen flex-col bg-background">
+      <SiteHeader />
+      <div className="flex flex-1 items-center justify-center bg-muted/10 p-4">
       <Card className="w-full max-w-md shadow-xl border-border/80">
         <CardHeader className="space-y-3 px-8 pt-8 text-center pb-6">
           <CardTitle className="text-3xl font-black tracking-tight text-indigo-950 dark:text-indigo-100">Welcome Back</CardTitle>
@@ -133,6 +136,7 @@ export default function LoginPage() {
           </CardFooter>
         </form>
       </Card>
+      </div>
     </div>
   )
 }

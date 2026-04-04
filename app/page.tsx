@@ -1,9 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, BadgeCheck, Rocket, Sparkles } from 'lucide-react'
-import { MainNav } from '@/components/layouts/main-nav'
+import { SiteHeader } from '@/components/layouts/site-header'
 import { SiteFooter } from '@/components/layouts/site-footer'
-import { LandingAccentBar } from '@/components/theme/landing-accent-bar'
 import { MeetTheCreator } from '@/components/dashboard/meet-the-creator'
 import { Button } from '@/components/ui/button'
 import { DUMMY_ADS } from '@/lib/dummy-data'
@@ -67,13 +66,9 @@ const packages = [
 
 export default function Home() {
   return (
-    <div className="af-shell flex min-h-screen">
-      <MainNav />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="pt-14 md:pt-0">
-          <LandingAccentBar />
-        </div>
-        <main className="flex-1">
+    <div className="af-shell relative flex min-h-screen flex-col overflow-x-hidden bg-background">
+      <SiteHeader />
+      <main className="flex-1">
         <section className="af-hero-gradient relative flex min-h-[560px] items-center justify-center overflow-hidden px-4 pb-20 pt-12 sm:px-6 lg:min-h-[640px] lg:px-10 lg:pb-28 lg:pt-16">
           <div className="pointer-events-none absolute inset-0 -z-0 opacity-30">
             <div className="absolute left-1/4 top-0 h-96 w-96 rounded-full bg-primary/40 blur-[128px]" />
@@ -248,9 +243,7 @@ export default function Home() {
           </div>
         </section>
         </main>
-
         <SiteFooter />
-      </div>
     </div>
   )
 }

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { SiteHeader } from '@/components/layouts/site-header'
 import { Eye, EyeOff, Check, X, LayoutGrid, User, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
 
 const USERNAME_RE = /^[a-z0-9_]{3,24}$/
@@ -109,7 +110,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-10">
+    <div className="flex min-h-screen flex-col bg-background">
+      <SiteHeader />
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden px-4 py-10">
       {/* Animated Background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[140px] animate-pulse" />
@@ -324,6 +327,7 @@ export default function RegisterPage() {
           </Link>
         </motion.p>
       </motion.div>
+      </div>
     </div>
   )
 }

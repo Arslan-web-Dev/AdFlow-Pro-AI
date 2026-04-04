@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Bath, Bed, CheckCircle2, ChevronRight, Flag, Heart, Mail, MapPin, Star } from 'lucide-react'
-import { MainNav } from '@/components/layouts/main-nav'
+import { SiteHeader } from '@/components/layouts/site-header'
 import { SiteFooter } from '@/components/layouts/site-footer'
 import { Button } from '@/components/ui/button'
 import { DUMMY_ADS } from '@/lib/dummy-data'
@@ -15,9 +15,8 @@ export default function AdDetailPage({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-on-surface">
-      <MainNav />
-      <div className="flex min-w-0 flex-1 flex-col">
+    <div className="flex min-h-screen flex-col bg-background text-on-surface">
+      <SiteHeader />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-12 pt-16 md:px-8 md:pt-8">
         {/* Breadcrumb */}
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm font-medium text-on-surface-variant">
@@ -172,7 +171,6 @@ export default function AdDetailPage({ params }: { params: { slug: string } }) {
         </div>
       </main>
       <SiteFooter />
-      </div>
     </div>
   )
 }
