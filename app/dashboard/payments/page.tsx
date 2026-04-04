@@ -1,5 +1,6 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,82 +15,119 @@ const DUMMY_PAYMENTS = [
 ]
 
 const statusConfig: Record<string, { label: string; className: string; icon: typeof CheckCircle2 }> = {
-  verified: { label: 'Verified', className: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800', icon: CheckCircle2 },
-  pending: { label: 'Pending', className: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/40 dark:text-amber-400 dark:border-amber-800', icon: Clock },
-  rejected: { label: 'Rejected', className: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800', icon: XCircle },
+  verified: { label: 'Verified', className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20', icon: CheckCircle2 },
+  pending: { label: 'Pending', className: 'bg-amber-500/15 text-amber-400 border-amber-500/20', icon: Clock },
+  rejected: { label: 'Rejected', className: 'bg-red-500/15 text-red-400 border-red-500/20', icon: XCircle },
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 100,
+      damping: 15,
+    }
+  },
 }
 
 export default function PaymentsPage() {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="space-y-8"
+    >
+      <motion.div variants={itemVariants} className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-2">My Payments</h1>
           <p className="text-muted-foreground text-lg">Track all your ad spend and payment history.</p>
         </div>
-        <Button variant="outline" className="font-bold gap-2 h-11 border-border/80">
+        <Button variant="outline" className="font-bold gap-2 h-11 border-white/10 bg-white/5 hover:bg-white/10 transition-all">
           <Download className="w-4 h-4" /> Export CSV
         </Button>
-      </div>
+      </motion.div>
 
-      <div className="grid gap-5 md:grid-cols-3">
-        <Card className="border-border/80 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground">Total Spent</CardTitle>
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg"><CreditCard className="h-4 w-4 text-indigo-600" /></div>
-          </CardHeader>
-          <CardContent><div className="text-3xl font-extrabold">$129.96</div></CardContent>
-        </Card>
-        <Card className="border-border/80 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground">Verified</CardTitle>
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg"><CheckCircle2 className="h-4 w-4 text-emerald-600" /></div>
-          </CardHeader>
-          <CardContent><div className="text-3xl font-extrabold">3</div></CardContent>
-        </Card>
-        <Card className="border-border/80 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground">Pending</CardTitle>
-            <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg"><Clock className="h-4 w-4 text-amber-600" /></div>
-          </CardHeader>
-          <CardContent><div className="text-3xl font-extrabold">1</div></CardContent>
-        </Card>
-      </div>
+      <motion.div variants={containerVariants} className="grid gap-5 md:grid-cols-3">
+        <motion.div variants={itemVariants}>
+          <Card className="border-white/5 shadow-sm bg-white/[0.02] backdrop-blur-sm hover:border-primary/20 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">Total Spent</CardTitle>
+              <div className="p-2 bg-primary/10 rounded-lg"><CreditCard className="h-4 w-4 text-primary" /></div>
+            </CardHeader>
+            <CardContent><div className="text-3xl font-extrabold text-white">$129.96</div></CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <Card className="border-white/5 shadow-sm bg-white/[0.02] backdrop-blur-sm hover:border-emerald-500/20 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">Verified</CardTitle>
+              <div className="p-2 bg-emerald-500/10 rounded-lg"><CheckCircle2 className="h-4 w-4 text-emerald-400" /></div>
+            </CardHeader>
+            <CardContent><div className="text-3xl font-extrabold text-white">3</div></CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <Card className="border-white/5 shadow-sm bg-white/[0.02] backdrop-blur-sm hover:border-amber-500/20 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">Pending</CardTitle>
+              <div className="p-2 bg-amber-500/10 rounded-lg"><Clock className="h-4 w-4 text-amber-400" /></div>
+            </CardHeader>
+            <CardContent><div className="text-3xl font-extrabold text-white">1</div></CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
 
-      <Card className="border-border/80 shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted/40">
-            <TableRow>
-              <TableHead className="font-semibold px-6 py-5">Transaction ID</TableHead>
-              <TableHead className="font-semibold">Ad Listing</TableHead>
-              <TableHead className="font-semibold">Package</TableHead>
-              <TableHead className="font-semibold">Date</TableHead>
-              <TableHead className="font-semibold">Amount</TableHead>
-              <TableHead className="font-semibold">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {DUMMY_PAYMENTS.map((p) => {
-              const s = statusConfig[p.status]
-              const Icon = s.icon
-              return (
-                <TableRow key={p.id} className="hover:bg-muted/30 transition-colors">
-                  <TableCell className="font-mono text-xs text-muted-foreground px-6 py-4 font-semibold">{p.id}</TableCell>
-                  <TableCell className="font-bold text-foreground/90 max-w-[200px]"><div className="line-clamp-1">{p.ad}</div></TableCell>
-                  <TableCell className="font-bold text-indigo-600 dark:text-indigo-400">{p.package}</TableCell>
-                  <TableCell className="text-muted-foreground font-medium">{p.date}</TableCell>
-                  <TableCell className="font-black text-lg">${p.amount}</TableCell>
-                  <TableCell>
-                    <Badge className={`${s.className} font-bold flex items-center gap-1 w-fit border text-xs`}>
-                      <Icon className="w-3 h-3" /> {s.label}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </Card>
-    </div>
+      <motion.div variants={itemVariants}>
+        <Card className="border-white/5 shadow-sm overflow-hidden bg-white/[0.02] backdrop-blur-sm">
+          <Table>
+            <TableHeader className="bg-white/[0.03]">
+              <TableRow className="hover:bg-transparent border-white/5">
+                <TableHead className="font-semibold px-6 py-5 text-white">Transaction ID</TableHead>
+                <TableHead className="font-semibold text-white">Ad Listing</TableHead>
+                <TableHead className="font-semibold text-white">Package</TableHead>
+                <TableHead className="font-semibold text-white">Date</TableHead>
+                <TableHead className="font-semibold text-white">Amount</TableHead>
+                <TableHead className="font-semibold text-white">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {DUMMY_PAYMENTS.map((p) => {
+                const s = statusConfig[p.status]
+                const Icon = s.icon
+                return (
+                  <TableRow key={p.id} className="hover:bg-white/[0.03] transition-colors border-white/5">
+                    <TableCell className="font-mono text-xs text-white/40 px-6 py-4 font-semibold">{p.id}</TableCell>
+                    <TableCell className="font-bold text-white max-w-[200px]"><div className="line-clamp-1">{p.ad}</div></TableCell>
+                    <TableCell className="font-bold text-primary">{p.package}</TableCell>
+                    <TableCell className="text-muted-foreground font-medium">{p.date}</TableCell>
+                    <TableCell className="font-black text-lg text-white">${p.amount}</TableCell>
+                    <TableCell>
+                      <Badge className={`${s.className} font-bold flex items-center gap-1.5 w-fit border shadow-none text-xs`}>
+                        <Icon className="w-3.5 h-3.5" /> {s.label}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </Card>
+      </motion.div>
+    </motion.div>
   )
 }
+
