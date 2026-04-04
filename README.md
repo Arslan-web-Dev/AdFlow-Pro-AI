@@ -1,15 +1,30 @@
 # AdFlow Pro
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+**Sponsored listing marketplace** — Next.js 14, Supabase, role-based dashboards, and a production-ready UI.
 
-> Full-stack **sponsored listing marketplace**: public browse and detail pages, seller dashboards, moderation and admin tools, with **Supabase** auth and **Next.js 14** (App Router), **TanStack Query**, and **Tailwind CSS**.
+<p align="center">
+  <a href="https://ad-flow-pro-ai.vercel.app"><img src="https://img.shields.io/badge/🚀_Live-ad--flow--pro--ai.vercel.app-111827?style=for-the-badge&logo=vercel&logoColor=white" alt="Live on Vercel" /></a>
+  &nbsp;
+  <a href="https://github.com/Arslan-web-Dev/AdFlow-Pro-AI"><img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub repository" /></a>
+</p>
 
-| | |
-|--|--|
-| **Live demo** | [https://ad-flow-pro-ai.vercel.app](https://ad-flow-pro-ai.vercel.app) |
-| **Repository** | [Arslan-web-Dev/AdFlow-Pro-AI](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI) |
+<p align="center">
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js" alt="Next.js 14" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://supabase.com/"><img src="https://img.shields.io/badge/Supabase-Auth_%2B_DB-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" /></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License MIT" /></a>
+</p>
+
+---
+
+### Quick links
+
+| Resource | URL |
+|----------|-----|
+| **Live application** | [https://ad-flow-pro-ai.vercel.app](https://ad-flow-pro-ai.vercel.app) |
+| **Source code** | [https://github.com/Arslan-web-Dev/AdFlow-Pro-AI](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI) |
+| **Deploy guide** | [docs/DEPLOY.md](docs/DEPLOY.md) |
+| **Screenshots** | [Screenshots/](Screenshots/) (portfolio images in-repo) |
 
 ---
 
@@ -19,25 +34,26 @@
 |--|--|
 | 1 | [Key features](#key-features) |
 | 2 | [Core product overview](#core-product-overview) |
-| 3 | [Screenshots](#screenshots) |
-| 4 | [Project summary](#project-summary) |
-| 5 | [UI and design system](#ui-and-design-system) |
-| 6 | [Technology stack](#technology-stack) |
-| 7 | [Architecture](#architecture) |
-| 8 | [Repository layout](#repository-layout) |
-| 9 | [Routes](#routes) |
-| 10 | [Authentication and RBAC](#authentication-and-rbac) |
-| 11 | [Core systems](#core-systems) |
-| 12 | [Database schema](#database-schema) |
-| 13 | [Environment variables](#environment-variables) |
-| 14 | [Getting started](#getting-started) |
-| 15 | [Deploy (go live)](#deploy-go-live) |
-| 16 | [Scripts](#scripts) |
-| 17 | [Important files](#important-files) |
-| 18 | [Roadmap](#roadmap) |
-| 19 | [Contributing](#contributing) |
-| 20 | [License](#license) |
-| 21 | [Author](#author) |
+| 3 | [Profile, auth & accent themes](#profile-auth--accent-themes) |
+| 4 | [Screenshots](#screenshots) |
+| 5 | [Project summary](#project-summary) |
+| 6 | [UI and design system](#ui-and-design-system) |
+| 7 | [Technology stack](#technology-stack) |
+| 8 | [Architecture](#architecture) |
+| 9 | [Repository layout](#repository-layout) |
+| 10 | [Routes](#routes) |
+| 11 | [Authentication and RBAC](#authentication-and-rbac) |
+| 12 | [Core systems](#core-systems) |
+| 13 | [Database schema](#database-schema) |
+| 14 | [Environment variables](#environment-variables) |
+| 15 | [Getting started](#getting-started) |
+| 16 | [Deploy (go live)](#deploy-go-live) |
+| 17 | [Scripts](#scripts) |
+| 18 | [Important files](#important-files) |
+| 19 | [Roadmap](#roadmap) |
+| 20 | [Contributing](#contributing) |
+| 21 | [License](#license) |
+| 22 | [Author](#author) |
 
 ---
 
@@ -52,6 +68,8 @@
 - **Auth & security** — **Supabase Auth** with `@supabase/ssr`; **`middleware.ts`** enforces sessions and **RBAC** (`client` → `moderator` → `admin` / `super_admin`).
 - **Ranking** — `lib/ranking-system.ts` scores listings using featured flag, package weight, seller verification, freshness, and optional admin boost.
 - **Optional AI** — `/api/ai/*` routes for helpers when `OPENAI_API_KEY` is set.
+- **Integrated profile** — `/dashboard/profile` shows the signed-in user’s **email**, **@username**, and display name from Supabase Auth (real-time via `onAuthStateChange`); optional sync to `public.users` when your RLS policies allow updates.
+- **Global accent themes** — **10 brand color presets** on the landing page (and again under Profile → Appearance). Choice is stored in `localStorage` and drives CSS variables across the whole app (`data-accent` on `<html>`).
 
 ---
 
@@ -65,6 +83,18 @@
 | **Admins** | View analytics, verify payments, and adjust user roles. |
 
 **Production note:** Sign-in on the [live demo](https://ad-flow-pro-ai.vercel.app) requires valid **Supabase** environment variables on Vercel (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) and matching Auth/DB setup. Without them, the UI still loads but auth requests can fail (e.g. “Failed to fetch”).
+
+---
+
+## Profile, auth & accent themes
+
+| Topic | Implementation |
+|-------|------------------|
+| **Session & profile row** | `components/providers/auth-provider.tsx` loads the Supabase session and, when possible, `public.users` (`role`, `name`, `avatar_url`) for the current user. |
+| **Header / sidebar** | `components/layouts/dashboard-top-bar.tsx` shows **display name**, **@username**, and **role** for whoever is logged in (no more placeholder “Alex Sterling”). |
+| **Profile & control panel** | `app/dashboard/profile/page.tsx` — account summary, read-only control info (user id, last sign-in), **Appearance** (accent buttons), and editable **username** / name / phone / city persisted with `auth.updateUser` + optional `users` update. |
+| **Registration** | `app/auth/register/page.tsx` collects **username** (validated `a-z`, `0-9`, `_`, length 3–24) stored in `user_metadata`. |
+| **Accent packs** | `lib/color-themes.ts` defines presets; `AccentThemeProvider` + `app/globals.css` `[data-accent="…"]` rules retint `--primary`, `--accent`, charts, and gradients site-wide. |
 
 ---
 
@@ -83,7 +113,7 @@ Images below live in [`Screenshots/`](Screenshots/) (same folder name as on [Git
 | `loginpage.png` | Sign-in screen (`/auth/login`) |
 | `Email_.png` | Email-related UI (signup / capture strip) |
 
-**Monorepo deploy:** If this app is not at the Git repo root on Vercel, set **Root Directory** to the folder that contains `package.json` — illustrated in [`screenshots/vercel-root-directory.png`](screenshots/vercel-root-directory.png).
+**Monorepo deploy:** If this app is not at the Git repo root on Vercel, set **Root Directory** to the folder that contains `package.json` — illustrated in [`docs/screenshots/vercel-root-directory.png`](docs/screenshots/vercel-root-directory.png).
 
 ### Landing
 
@@ -197,8 +227,8 @@ AdFlow-Pro-AI/
 │   ├── screenshots/        # e.g. vercel-root-directory.png (deploy)
 │   └── DEPLOY.md
 ├── app/                      # Routes, layouts, API routes
-├── components/               # layouts/, providers/, ui/
-├── lib/                      # supabase/, dummy-data, ranking-system, utils
+├── components/               # layouts/, providers/, theme/, ui/
+├── lib/                      # supabase/, color-themes, auth-display, dummy-data, …
 ├── middleware.ts
 ├── next.config.mjs
 ├── tailwind.config.ts
@@ -407,10 +437,15 @@ Full steps: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 | Path | Purpose |
 |------|---------|
 | `middleware.ts` | Auth + RBAC |
-| `app/layout.tsx` | Root layout and providers |
-| `app/globals.css` | Design tokens |
+| `app/layout.tsx` | Root layout, `AccentThemeProvider`, `AuthProvider` |
+| `app/globals.css` | Design tokens + `[data-accent]` theme packs |
+| `lib/color-themes.ts` | Accent preset definitions |
+| `lib/auth-display.ts` | Display name / username helpers |
 | `lib/ranking-system.ts` | Listing score |
 | `lib/supabase/client.ts`, `server.ts` | Supabase entry points |
+| `components/providers/auth-provider.tsx` | Session + `public.users` profile |
+| `app/dashboard/profile/page.tsx` | Profile & control panel |
+| `components/layouts/dashboard-top-bar.tsx` | Live user header |
 | `components/layouts/dashboard-sidebar.tsx` | Nav + mobile drawer |
 
 ---
