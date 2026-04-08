@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Bath, Bed, CheckCircle2, ChevronRight, Flag, Heart, Mail, MapPin, Star } from 'lucide-react'
-import { SiteHeader } from '@/components/layouts/site-header'
+import { SiteHeader, ThemeBar } from '@/components/layouts/site-header'
 import { SiteFooter } from '@/components/layouts/site-footer'
 import { Button } from '@/components/ui/button'
 import { DUMMY_ADS } from '@/lib/dummy-data'
@@ -17,7 +17,8 @@ export default function AdDetailPage({ params }: { params: { slug: string } }) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-on-surface">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-12 pt-16 md:px-8 md:pt-8">
+      <ThemeBar />
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-12 pt-8 md:px-8">
         {/* Breadcrumb */}
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm font-medium text-on-surface-variant">
           <Link href="/explore" className="transition-colors hover:text-on-surface">

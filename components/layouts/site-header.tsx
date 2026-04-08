@@ -16,6 +16,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { AccentThemeButtons } from '@/components/theme/accent-theme-buttons'
+import { ThemeBar } from '@/components/theme/theme-bar'
 import { motion } from 'framer-motion'
 
 const navItems = [
@@ -24,6 +25,8 @@ const navItems = [
   { label: 'Pricing', href: '#pricing' },
   { label: 'Creator', href: '#creator' },
 ]
+
+export { ThemeBar }
 
 export function SiteHeader() {
   const pathname = usePathname()
@@ -83,9 +86,6 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           {/* Desktop Controls */}
           <div className="hidden items-center gap-3 md:flex">
-            <div className="flex items-center gap-1 px-2 border-r border-white/10 mr-2">
-              <AccentThemeButtons />
-            </div>
             <ThemeToggle />
             <Link href="/dashboard">
               <Button variant="ghost" className="text-sm font-bold gap-2 hover:bg-white/5">

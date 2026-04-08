@@ -12,7 +12,7 @@ import {
   Search,
   Clock,
 } from 'lucide-react'
-import { SiteHeader } from '@/components/layouts/site-header'
+import { SiteHeader, ThemeBar } from '@/components/layouts/site-header'
 import { SiteFooter } from '@/components/layouts/site-footer'
 import { Button } from '@/components/ui/button'
 import { DUMMY_ADS, DUMMY_CATEGORIES, DUMMY_CITIES } from '@/lib/dummy-data'
@@ -37,9 +37,10 @@ export default function ExplorePage() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-on-surface">
       <SiteHeader />
+      <ThemeBar />
       <div className="flex min-h-0 flex-1">
         {/* Filter sidebar — discovery UI beside main nav */}
-        <aside className="scrollbar-hide sticky top-16 z-20 hidden h-[calc(100vh-64px)] w-72 shrink-0 overflow-y-auto border-r border-border/30 bg-surface-container-low py-8 pl-6 pr-5 md:block">
+        <aside className="scrollbar-hide sticky top-28 z-20 hidden h-[calc(100vh-112px)] w-72 shrink-0 overflow-y-auto border-r border-border/30 bg-surface-container-low py-8 pl-6 pr-5 md:block">
           <div className="space-y-8">
             <div>
               <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Discovery</h3>
@@ -127,19 +128,19 @@ export default function ExplorePage() {
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 pt-14 md:pt-0">
+        <main className="min-w-0 flex-1">
           <div className="p-6 lg:p-10">
-            <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-              <div>
-                <h1 className="text-4xl font-extrabold tracking-tight text-on-surface">Explore Ads</h1>
-                <p className="mt-2 text-lg text-on-surface-variant">
+            <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-xl">
+                <h1 className="text-3xl font-extrabold tracking-tight text-on-surface md:text-4xl">Explore Ads</h1>
+                <p className="mt-2 text-base text-on-surface-variant md:text-lg">
                   Discover premium opportunities in the global marketplace.
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-3">
                 <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Sort By</span>
                 <div className="relative">
-                  <select className="appearance-none rounded-lg border-0 bg-card py-2 pl-4 pr-10 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary">
+                  <select className="appearance-none rounded-lg border border-border/50 bg-surface-container py-2 pl-4 pr-10 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary">
                     <option>Latest Arrivals</option>
                     <option>Featured First</option>
                     <option>Price: Low to High</option>
@@ -249,8 +250,8 @@ export default function ExplorePage() {
             </div>
           </div>
         </main>
-        <SiteFooter />
       </div>
+      <SiteFooter />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, BadgeCheck, Rocket, Sparkles } from 'lucide-react'
-import { SiteHeader } from '@/components/layouts/site-header'
+import { SiteHeader, ThemeBar } from '@/components/layouts/site-header'
 import { SiteFooter } from '@/components/layouts/site-footer'
 import { MeetTheCreator } from '@/components/dashboard/meet-the-creator'
 import { Button } from '@/components/ui/button'
@@ -68,6 +68,7 @@ export default function Home() {
   return (
     <div className="af-shell relative flex min-h-screen flex-col overflow-x-hidden bg-background">
       <SiteHeader />
+      <ThemeBar />
       <main className="flex-1">
         <section className="af-hero-gradient relative flex min-h-[560px] items-center justify-center overflow-hidden px-4 pb-20 pt-12 sm:px-6 lg:min-h-[640px] lg:px-10 lg:pb-28 lg:pt-16">
           <div className="pointer-events-none absolute inset-0 -z-0 opacity-30">
@@ -179,7 +180,7 @@ export default function Home() {
               {packages.map((pkg) => (
                 <div
                   key={pkg.name}
-                  className={`relative flex flex-col rounded-2xl ${pkg.featured ? 'scale-100 border-2 border-primary bg-muted/40 shadow-2xl md:scale-[1.02]' : 'bg-surface-container/60 hover:bg-surface-container transition-all hover:scale-[1.01]'}`}
+                  className={`relative flex flex-col rounded-2xl p-6 md:p-8 ${pkg.featured ? 'scale-100 border-2 border-primary bg-muted/40 shadow-2xl md:scale-[1.02]' : 'bg-surface-container/60 hover:bg-surface-container transition-all hover:scale-[1.01]'}`}
                 >
                   {pkg.featured && (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-[10px] font-black uppercase tracking-widest text-primary-foreground">

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { DashboardTopBar } from './dashboard-top-bar'
+import { ThemeBar } from './site-header'
 import { AIAssistant, AIToggle } from '@/components/ai/ai-assistant'
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -15,6 +16,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <div className="af-bg-glow bottom-[10%] left-[20%] h-[600px] w-[600px] [animation-delay:-10s] opacity-15" />
 
       <DashboardTopBar isAIActive={isAIActive} onAIToggle={() => setIsAIActive(!isAIActive)} />
+      <ThemeBar />
 
       <main className="relative z-10 flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8 custom-scrollbar">
         <div className="mx-auto max-w-7xl">{children}</div>
