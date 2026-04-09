@@ -19,12 +19,12 @@ export default function UserManagementPage() {
     { id: '3', email: 'john@doe.com', name: 'John Doe', role: 'client', verified: false },
     { id: '4', email: 'acme@realestate.com', name: 'Acme Real Estate', role: 'client', verified: true },
   ])
-  
+
   const [searchQuery, setSearchQuery] = useState('')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<string | null>(null)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'client' })
+  const [newUser, setNewUser] = useState<{ name: string; email: string; role: string }>({ name: '', email: '', role: 'client' })
 
   const handleRoleChange = (userId: string, newRole: string) => {
     setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u))
@@ -58,7 +58,14 @@ export default function UserManagementPage() {
     setNewUser({ name: '', email: '', role: 'client' })
   }
 
-  const filteredUsers = users.filter(u => 
+  const handleDialogOpenChange = (open: boolean) => {
+    setCreateDialogOpen(open)
+    if (!open) {
+      setNewUser({ name: '', email: '', role: 'client' })
+    }
+  }
+
+  const filteredUsers = users.filter(u =>
     u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -73,9 +80,9 @@ export default function UserManagementPage() {
         <div className="flex gap-3">
           <div className="relative w-full sm:w-72">
             <Search className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search users..." 
-              className="pl-11 h-11 bg-muted/30" 
+            <Input
+              placeholder="Search users..."
+              className="pl-11 h-11 bg-muted/30"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -113,7 +120,7 @@ export default function UserManagementPage() {
                 <TableCell>
                   <Badge variant={user.role === 'super_admin' ? 'default' : 'secondary'} className={
                     user.role === 'super_admin' ? 'bg-indigo-600 text-white border-transparent' :
-                    user.role === 'moderator' ? 'bg-amber-500 hover:bg-amber-600 text-white border-transparent' : 'bg-muted/50 border-border/80'
+                      user.role === 'moderator' ? 'bg-amber-500 hover:bg-amber-600 text-white border-transparent' : 'bg-muted/50 border-border/80'
                   }>
                     {user.role}
                   </Badge>
@@ -131,8 +138,8 @@ export default function UserManagementPage() {
                         <SelectItem value="super_admin">Super Admin</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(user.id)}
                       className="h-10 w-10 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
@@ -153,7 +160,7 @@ export default function UserManagementPage() {
           </TableBody>
         </Table>
       </Card>
-      
+
       {/* Skeleton for Categories / Packages */}
       <h2 className="text-2xl font-bold mt-12 mb-4 tracking-tight">Pricing Packages Configuration</h2>
       <Card className="border-border/80 shadow-sm bg-muted/10 p-12 text-center rounded-2xl border-dashed">
@@ -163,7 +170,7 @@ export default function UserManagementPage() {
       </Card>
 
       {/* Create User Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+      <Dialog open={createDialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Create New User</DialogTitle>
@@ -174,26 +181,29 @@ export default function UserManagementPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input 
-                id="name" 
+              <Input
+                id="name"
                 value={newUser.name}
-                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                placeholder="John Doe"
+                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                placeholder="Muhammad Arslan"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
+              <Input
+                id="email"
                 type="email"
                 value={newUser.email}
-                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                placeholder="john@example.com"
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                placeholder="arslan@example.com"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Select value={newUser.role} onValueChange={(val) => setNewUser({...newUser, role: val})}>
+              <Select 
+                value={newUser.role || 'client'} 
+                onValueChange={(val) => setNewUser({ ...newUser, role: val as string })}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

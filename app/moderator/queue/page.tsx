@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import type { SVGProps } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -8,19 +9,42 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { DUMMY_ADS } from '@/lib/dummy-data'
-import { CheckCircle2, XCircle, Eye, Search } from 'lucide-react'
+import { CheckCircle2, XCircle, Eye, Search, AlertCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
 export default function ReviewQueuePage() {
-  const handleApprove = () => {
+  const [ads, setAds] = useState(DUMMY_ADS)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
+  const [adToReject, setAdToReject] = useState<string | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
+
+  const handleApprove = (adId: string) => {
+    setAds(ads.map(ad => ad.id === adId ? { ...ad, status: 'approved' } : ad))
     toast.success('Ad approved. Moving to payment pipeline.')
   }
   
-  const handleReject = () => {
-    toast.error('Ad rejected. Creator notified.')
+  const handleReject = (adId: string) => {
+    setAdToReject(adId)
+    setRejectDialogOpen(true)
   }
+
+  const confirmReject = () => {
+    if (adToReject) {
+      setAds(ads.filter(ad => ad.id !== adToReject))
+      toast.error('Ad rejected. Creator notified.')
+      setRejectDialogOpen(false)
+      setAdToReject(null)
+      setRejectReason('')
+    }
+  }
+
+  const filteredAds = ads.filter(ad =>
+    ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    ad.seller.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="space-y-8">
@@ -31,7 +55,12 @@ export default function ReviewQueuePage() {
         </div>
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search pending ads..." className="pl-11 h-11 bg-muted/30" />
+          <Input 
+            placeholder="Search pending ads..." 
+            className="pl-11 h-11 bg-muted/30"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
@@ -47,7 +76,7 @@ export default function ReviewQueuePage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {DUMMY_ADS.map((ad) => (
+            {filteredAds.map((ad) => (
               <TableRow key={ad.id} className="hover:bg-muted/30 transition-colors">
                 <TableCell className="font-bold px-6 py-4">
                   <div className="line-clamp-1">{ad.title}</div>
@@ -70,12 +99,12 @@ export default function ReviewQueuePage() {
                         <Eye className="h-4.5 w-4.5" />
                       </Button>
                     </Link>
-                    <Button variant="ghost" size="icon" onClick={handleApprove} title="Approve" className="hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors mr-1">
+                    <Button variant="ghost" size="icon" onClick={() => handleApprove(ad.id)} title="Approve" className="hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors mr-1">
                       <CheckCircle2 className="h-4.5 w-4.5" />
                     </Button>
                     
                     <Dialog>
-                      <DialogTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 w-9 h-9" title="Reject / Need Changes">
+                      <DialogTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 w-9 h-9" title="Reject / Need Changes" onClick={() => handleReject(ad.id)}>
                         <XCircle className="h-5 w-5" />
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[500px] border-border/80 shadow-2xl">
@@ -88,11 +117,16 @@ export default function ReviewQueuePage() {
                           </DialogDescription>
                         </DialogHeader>
                         <div className="py-4">
-                          <Textarea placeholder="e.g. Images are confusing, or description violates our platform policy." className="min-h-[140px] text-base resize-none bg-muted/30 focus:bg-background transition-colors p-4" />
+                          <Textarea 
+                            placeholder="e.g. Images are confusing, or description violates our platform policy." 
+                            className="min-h-[140px] text-base resize-none bg-muted/30 focus:bg-background transition-colors p-4"
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                          />
                         </div>
                         <DialogFooter className="gap-3 sm:gap-0">
                           <Button variant="outline" className="font-semibold text-muted-foreground">Cancel</Button>
-                          <Button variant="destructive" onClick={handleReject} className="font-bold shadow-md shadow-red-500/20 px-8">Confirm Rejection</Button>
+                          <Button variant="destructive" onClick={confirmReject} className="font-bold shadow-md shadow-red-500/20 px-8">Confirm Rejection</Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
@@ -100,6 +134,13 @@ export default function ReviewQueuePage() {
                 </TableCell>
               </TableRow>
             ))}
+            {filteredAds.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                  No ads found matching your search.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </Card>
