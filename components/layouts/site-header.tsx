@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Menu, Sparkles } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
@@ -15,7 +14,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { AccentThemeButtons } from '@/components/theme/accent-theme-buttons'
 import { ThemeBar } from '@/components/theme/theme-bar'
 import { motion } from 'framer-motion'
 
@@ -86,7 +84,6 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           {/* Desktop Controls */}
           <div className="hidden items-center gap-3 md:flex">
-            <ThemeToggle />
             <Link href="/dashboard">
               <Button variant="ghost" className="text-sm font-bold gap-2 hover:bg-white/5">
                 Login
@@ -101,7 +98,6 @@ export function SiteHeader() {
 
           {/* Mobile Navigation */}
           <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger 
                 render={
@@ -130,12 +126,7 @@ export function SiteHeader() {
                   ))}
                   
                   <div className="mt-4 space-y-4 border-t border-white/5 pt-6 px-4">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Theme & Accents</p>
-                    <div className="flex flex-wrap gap-2">
-                      <AccentThemeButtons />
-                    </div>
-                    
-                    <div className="flex flex-col gap-3 pt-4">
+                    <div className="flex flex-col gap-3">
                       <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
                         <Button variant="outline" className="w-full h-12 rounded-xl border-white/10 bg-white/5 font-bold">
                           Dashboard Access
