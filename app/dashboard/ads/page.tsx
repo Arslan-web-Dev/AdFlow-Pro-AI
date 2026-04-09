@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DUMMY_ADS } from '@/lib/dummy-data'
 import { PlusCircle, ExternalLink, Edit, Trash2, AlertCircle } from 'lucide-react'
@@ -71,93 +70,97 @@ export default function MyAdsPage() {
           <p className="text-muted-foreground text-lg">Manage your ad listings and monitor their status.</p>
         </div>
         <Link href="/dashboard/create">
-          <Button size="lg" className="bg-primary hover:opacity-90 shadow-lg shadow-primary/25 transition-all scroll-p-2 active:scale-95">
+          <Button size="lg" className="btn-primary shadow-lg shadow-primary/25 transition-all scroll-p-2">
             <PlusCircle className="mr-2 h-5 w-5" /> Create Ad
           </Button>
         </Link>
       </motion.div>
 
       <motion.div variants={itemVariants}>
-        <Card className="border-white/5 shadow-sm overflow-hidden bg-white/[0.02] backdrop-blur-sm">
-          <Table>
-            <TableHeader className="bg-white/[0.03]">
-              <TableRow className="hover:bg-transparent border-white/5">
-                <TableHead className="font-semibold px-6 py-4 text-white">Ad Title</TableHead>
-                <TableHead className="font-semibold text-white">Category</TableHead>
-                <TableHead className="font-semibold text-white">Price</TableHead>
-                <TableHead className="font-semibold text-white">Status</TableHead>
-                <TableHead className="font-semibold text-white">Date</TableHead>
-                <TableHead className="text-right font-semibold px-6 text-white">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {ads.map((ad) => (
-                <TableRow key={ad.id} className="hover:bg-white/[0.03] transition-colors border-white/5">
-                  <TableCell className="font-bold px-6 py-4">
-                    <div className="line-clamp-1 text-white">{ad.title}</div>
-                    {ad.is_featured && (
-                      <span className="text-[10px] uppercase font-bold text-amber-400/90 tracking-widest leading-tight block mt-1">
-                        Featured Badge Active
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground font-medium">{ad.category.name}</TableCell>
-                  <TableCell className="font-black text-white">${ad.price.toLocaleString()}</TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={ad.status === 'published' ? 'default' : 'secondary'} 
-                      className={ad.status === 'published' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20 shadow-none font-bold' : 'bg-white/5 text-white/60 border-white/10 font-bold'}
-                    >
-                      {ad.status.replace('_', ' ')}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm font-medium">Oct 24, 2023</TableCell>
-                  <TableCell className="text-right px-6">
-                    <div className="flex justify-end gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        title="Edit" 
-                        onClick={() => handleEdit(ad.id)}
-                        className="text-white/60 hover:text-primary hover:bg-white/5 transition-all active:scale-90"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Link href={`/ad/${ad.slug}`}>
-                        <Button variant="ghost" size="icon" title="View Public" className="text-white/60 hover:text-primary hover:bg-white/5 transition-all active:scale-90">
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        title="Delete"
-                        onClick={() => handleDelete(ad.id)}
-                        className="text-white/60 hover:text-red-500 hover:bg-red-500/10 transition-all active:scale-90"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {ads.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-48 text-center text-muted-foreground font-medium">
-                    You haven&apos;t posted any ads yet. <Link href="/dashboard/create" className="text-primary hover:underline">Create your first ad</Link>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Card>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {ads.map((ad) => (
+            <motion.div
+              key={ad.id}
+              whileHover={{ scale: 1.02 }}
+              className="af-panel overflow-hidden group"
+            >
+              {/* Image */}
+              <div className="aspect-video bg-muted/30 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-4xl font-black text-muted-foreground/30">AD</span>
+                </div>
+                {ad.is_featured && (
+                  <Badge className="absolute top-3 right-3 bg-[hsl(var(--warning))] text-white font-bold">
+                    Featured
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Content */}
+              <div className="p-5 space-y-3">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground line-clamp-1">{ad.title}</h3>
+                  <p className="text-sm text-muted-foreground">{ad.category.name}</p>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-black text-foreground">${ad.price.toLocaleString()}</span>
+                  <Badge 
+                    className={ad.status === 'published' 
+                      ? 'bg-[hsl(var(--success))] text-white font-bold' 
+                      : 'bg-[hsl(var(--warning))] text-white font-bold'
+                    }
+                  >
+                    {ad.status.replace('_', ' ')}
+                  </Badge>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-2 pt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleEdit(ad.id)}
+                    className="flex-1 border-border/50 hover:bg-muted"
+                  >
+                    <Edit className="h-4 w-4 mr-1" /> Edit
+                  </Button>
+                  <Link href={`/ad/${ad.slug}`} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full border-border/50 hover:bg-muted">
+                      <ExternalLink className="h-4 w-4 mr-1" /> View
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => handleDelete(ad.id)}
+                    className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+          
+          {ads.length === 0 && (
+            <div className="col-span-full">
+              <Card className="p-12 text-center border-border/10">
+                <p className="text-muted-foreground font-medium">
+                  You haven&apos;t posted any ads yet. <Link href="/dashboard/create" className="text-primary hover:underline">Create your first ad</Link>
+                </p>
+              </Card>
+            </div>
+          )}
+        </div>
       </motion.div>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] border-white/10 bg-surface-container">
+        <DialogContent className="sm:max-w-[425px] border-border/10 bg-card">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-500">
+            <DialogTitle className="flex items-center gap-2 text-[hsl(var(--danger))]">
               <AlertCircle className="h-5 w-5" />
               Delete Ad
             </DialogTitle>
@@ -166,13 +169,13 @@ export default function MyAdsPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-3">
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="border-white/10">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="border-border/50">
               Cancel
             </Button>
             <Button 
               variant="destructive" 
               onClick={confirmDelete}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-[hsl(var(--danger))] hover:bg-[hsl(var(--danger))]/90"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete Ad
