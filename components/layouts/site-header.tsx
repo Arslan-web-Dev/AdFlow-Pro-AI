@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Menu, Sparkles } from 'lucide-react'
+import { Home, Menu, Sparkles } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -22,6 +22,7 @@ const navItems = [
   { label: 'Marketplace', href: '/explore' },
   { label: 'Pricing', href: '#pricing' },
   { label: 'Creator', href: '#creator' },
+  { label: 'Dashboard', href: '/dashboard', icon: Home }
 ]
 
 export { ThemeBar }

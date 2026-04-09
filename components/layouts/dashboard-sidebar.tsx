@@ -40,7 +40,7 @@ function getLinks(role: string) {
     { name: 'Payments', href: role === 'admin' ? '/admin/payments' : '/dashboard/payments', icon: CreditCard },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   ]
-  
+
   if (role === 'admin') {
     base.push({ name: 'Users', href: '/admin/users', icon: Users })
   }
@@ -49,7 +49,7 @@ function getLinks(role: string) {
     { name: 'Profile', href: '/dashboard/profile', icon: UserCircle2 },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings }
   )
-  
+
   return base
 }
 
@@ -58,7 +58,7 @@ export function DashboardSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
-  
+
   const { user, profile, signOut } = useAuth()
   const role = getRole(pathname)
   const links = getLinks(role)
@@ -94,7 +94,7 @@ export function DashboardSidebar() {
           </div>
           <AnimatePresence>
             {!isCollapsed && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
@@ -137,9 +137,9 @@ export function DashboardSidebar() {
                 )}
               >
                 {active && (
-                  <motion.span 
+                  <motion.span
                     layoutId="active-pill"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary" 
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary"
                   />
                 )}
                 <Icon className={cn("h-5 w-5 shrink-0 transition-transform duration-300", active ? "scale-110" : "group-hover:scale-110")} />
@@ -172,9 +172,9 @@ export function DashboardSidebar() {
         <div className={cn("mb-4 flex items-center gap-3", isCollapsed ? "justify-center px-0" : "px-2")}>
           <div className="relative h-10 w-10 shrink-0">
             <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-tr from-primary to-accent opacity-30" />
-            <Image 
-              src={PROFILE_IMAGE_URL} 
-              alt="User" 
+            <Image
+              src={PROFILE_IMAGE_URL}
+              alt="User"
               width={40}
               height={40}
               className="relative h-full w-full rounded-full border border-white/10 object-cover shadow-sm"
@@ -183,7 +183,7 @@ export function DashboardSidebar() {
           </div>
           <AnimatePresence>
             {!isCollapsed && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: "auto" }}
                 exit={{ opacity: 0, width: 0 }}
