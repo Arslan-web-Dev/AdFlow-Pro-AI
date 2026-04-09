@@ -1,10 +1,27 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { Bell, Globe, Trash2 } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { 
+  Bell, 
+  Globe, 
+  Trash2, 
+  Shield, 
+  Lock, 
+  Download, 
+  Smartphone, 
+  CreditCard,
+  Palette,
+  Languages,
+  Eye,
+  CheckCircle2
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 const containerVariants = {
@@ -31,96 +48,634 @@ const itemVariants = {
 }
 
 export default function SettingsPage() {
-  const handleSave = () => toast.success('Settings saved!')
-  const handleDelete = () => toast.error('Account deletion requires email confirmation.')
+  const [saving, setSaving] = useState(false)
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  
+  // 2FA Settings
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
+  const [twoFactorMethod, setTwoFactorMethod] = useState<'email' | 'authenticator'>('email')
+  
+  // Language & Region
+  const [language, setLanguage] = useState('en')
+  const [timezone, setTimezone] = useState('UTC+5')
+  const [currency, setCurrency] = useState('PKR')
+  
+  // Privacy Controls
+  const [showPhone, setShowPhone] = useState(true)
+  const [showEmail, setShowEmail] = useState(false)
+  const [profileVisibility, setProfileVisibility] = useState(true)
+  const [privateMode, setPrivateMode] = useState(false)
+  
+  // Notification Settings
+  const [emailAdApproved, setEmailAdApproved] = useState(true)
+  const [emailAdRejected, setEmailAdRejected] = useState(true)
+  const [emailPaymentVerified, setEmailPaymentVerified] = useState(true)
+  const [inAppNotifications, setInAppNotifications] = useState(true)
+  const [soundNotifications, setSoundNotifications] = useState(false)
+  
+  // Ad Preferences
+  const [defaultCategory, setDefaultCategory] = useState('all')
+  const [defaultCity, setDefaultCity] = useState('all')
+  const [autoRenewAds, setAutoRenewAds] = useState(false)
+  const [featuredAdPreference, setFeaturedAdPreference] = useState(false)
+  
+  // UI Personalization
+  const [themeColor, setThemeColor] = useState('indigo')
+  const [compactMode, setCompactMode] = useState(false)
+  const [cardListView, setCardListView] = useState(true)
+  
+  // Auto-save effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSaving(true)
+      // Simulate save
+      setTimeout(() => {
+        setSaving(false)
+        setLastSaved(new Date())
+      }, 500)
+    }, 1000)
+    
+    return () => clearTimeout(timer)
+  }, [
+    twoFactorEnabled, twoFactorMethod, language, timezone, currency,
+    showPhone, showEmail, profileVisibility, privateMode,
+    emailAdApproved, emailAdRejected, emailPaymentVerified,
+    inAppNotifications, soundNotifications,
+    defaultCategory, defaultCity, autoRenewAds, featuredAdPreference,
+    themeColor, compactMode, cardListView
+  ])
+
+  const handleDeleteAccount = () => {
+    toast.error('Account deletion requires email confirmation.')
+    setDeleteDialogOpen(false)
+  }
+
+  const handleExportData = () => {
+    toast.success('Data exported successfully!')
+  }
+
+  const handleLogoutAllDevices = () => {
+    toast.success('Logged out from all devices')
+  }
+
+  const securityLogs = [
+    { device: 'Chrome on Windows', location: 'Lahore, Pakistan', time: '2 hours ago', ip: '192.168.1.1' },
+    { device: 'Safari on iPhone', location: 'Karachi, Pakistan', time: '1 day ago', ip: '192.168.1.2' },
+    { device: 'Firefox on Mac', location: 'Islamabad, Pakistan', time: '3 days ago', ip: '192.168.1.3' },
+  ]
+
+  const billingHistory = [
+    { id: 'INV-001', date: 'Jan 15, 2024', amount: 'PKR 5,000', status: 'Paid' },
+    { id: 'INV-002', date: 'Feb 15, 2024', amount: 'PKR 5,000', status: 'Paid' },
+    { id: 'INV-003', date: 'Mar 15, 2024', amount: 'PKR 5,000', status: 'Paid' },
+  ]
 
   return (
     <motion.div 
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-8 max-w-3xl"
+      className="space-y-8 max-w-4xl"
     >
-      <motion.div variants={itemVariants}>
-        <h1 className="text-3xl font-extrabold tracking-tight mb-2 text-white">Settings</h1>
-        <p className="text-muted-foreground text-lg">Manage your notification preferences and account settings.</p>
+      <motion.div variants={itemVariants} className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2 text-foreground">Settings</h1>
+          <p className="text-muted-foreground text-lg">Manage your account settings and preferences.</p>
+        </div>
+        {saving ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            Saving...
+          </div>
+        ) : lastSaved && (
+          <div className="flex items-center gap-2 text-sm text-[hsl(var(--success))]">
+            <CheckCircle2 className="w-4 h-4" />
+            Saved {lastSaved.toLocaleTimeString()}
+          </div>
+        )}
       </motion.div>
 
+      {/* Security Section */}
       <motion.div variants={itemVariants}>
-        <Card className="border-white/5 shadow-sm bg-white/[0.02] backdrop-blur-sm">
-          <CardHeader className="px-6 pt-6">
-            <CardTitle className="text-lg font-bold flex items-center gap-2 text-white">
+        <Card className="af-panel">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Shield className="w-5 h-5 text-primary" /> Security
+            </CardTitle>
+            <CardDescription>Manage your account security and authentication.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* 2FA */}
+            <div className="flex items-center justify-between py-3 border-b border-border/10">
+              <div>
+                <p className="font-bold text-sm text-foreground">Two-Factor Authentication</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Add an extra layer of security to your account.</p>
+              </div>
+              <Switch 
+                checked={twoFactorEnabled}
+                onCheckedChange={setTwoFactorEnabled}
+                className="data-[state=checked]:bg-[hsl(var(--primary))]"
+              />
+            </div>
+            
+            {twoFactorEnabled && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="space-y-4 pb-4"
+              >
+                <div>
+                  <Label className="text-sm font-semibold">2FA Method</Label>
+                  <Select value={twoFactorMethod} onValueChange={(value) => value && setTwoFactorMethod(value)}>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="email">Email OTP</SelectItem>
+                      <SelectItem value="authenticator">Google Authenticator</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Security Logs */}
+            <div>
+              <p className="font-bold text-sm text-foreground mb-3">Recent Security Activity</p>
+              <div className="space-y-3">
+                {securityLogs.map((log, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <Smartphone className="w-4 h-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{log.device}</p>
+                        <p className="text-xs text-muted-foreground">{log.location} • {log.time}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Button variant="outline" size="sm" className="mt-3 w-full" onClick={handleLogoutAllDevices}>
+                <Lock className="w-4 h-4 mr-2" /> Logout from all devices
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Language & Region */}
+      <motion.div variants={itemVariants}>
+        <Card className="af-panel">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Globe className="w-5 h-5 text-primary" /> Language & Region
+            </CardTitle>
+            <CardDescription>Set your language, timezone, and currency preferences.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <Label className="text-sm font-semibold">Language</Label>
+                <Select value={language} onValueChange={(value) => value && setLanguage(value)}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="ur">اردو (Urdu)</SelectItem>
+                    <SelectItem value="ar">العربية (Arabic)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-sm font-semibold">Timezone</Label>
+                <Select value={timezone} onValueChange={(value) => value && setTimezone(value)}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="UTC+5">UTC+5 (Pakistan)</SelectItem>
+                    <SelectItem value="UTC+0">UTC+0 (London)</SelectItem>
+                    <SelectItem value="UTC-5">UTC-5 (New York)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-sm font-semibold">Currency</Label>
+                <Select value={currency} onValueChange={(value) => value && setCurrency(value)}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PKR">PKR (Pakistani Rupee)</SelectItem>
+                    <SelectItem value="USD">USD (US Dollar)</SelectItem>
+                    <SelectItem value="EUR">EUR (Euro)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Privacy Controls */}
+      <motion.div variants={itemVariants}>
+        <Card className="af-panel">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Eye className="w-5 h-5 text-primary" /> Privacy Controls
+            </CardTitle>
+            <CardDescription>Manage your profile visibility and data sharing.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="flex items-center justify-between py-3 border-b border-border/10">
+              <div>
+                <p className="font-bold text-sm text-foreground">Show Phone Number</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Display your phone number in ad listings.</p>
+              </div>
+              <Switch 
+                checked={showPhone}
+                onCheckedChange={setShowPhone}
+                className="data-[state=checked]:bg-[hsl(var(--primary))]"
+              />
+            </div>
+            <div className="flex items-center justify-between py-3 border-b border-border/10">
+              <div>
+                <p className="font-bold text-sm text-foreground">Show Email Publicly</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Allow others to see your email address.</p>
+              </div>
+              <Switch 
+                checked={showEmail}
+                onCheckedChange={setShowEmail}
+                className="data-[state=checked]:bg-[hsl(var(--primary))]"
+              />
+            </div>
+            <div className="flex items-center justify-between py-3 border-b border-border/10">
+              <div>
+                <p className="font-bold text-sm text-foreground">Profile Visibility</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Make your profile visible to other users.</p>
+              </div>
+              <Switch 
+                checked={profileVisibility}
+                onCheckedChange={setProfileVisibility}
+                className="data-[state=checked]:bg-[hsl(var(--primary))]"
+              />
+            </div>
+            <div className="flex items-center justify-between py-3">
+              <div>
+                <p className="font-bold text-sm text-foreground">Private Mode</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Hide your activity from other users.</p>
+              </div>
+              <Switch 
+                checked={privateMode}
+                onCheckedChange={setPrivateMode}
+                className="data-[state=checked]:bg-[hsl(var(--primary))]"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Notifications */}
+      <motion.div variants={itemVariants}>
+        <Card className="af-panel">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Bell className="w-5 h-5 text-primary" /> Notifications
             </CardTitle>
             <CardDescription>Choose how and when you want to be notified.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-5 px-6 pb-6">
-            {[
-              { label: 'Ad Status Updates', desc: 'Get notified when your ad is approved, rejected, or published.', defaultChecked: true },
-              { label: 'Payment Confirmations', desc: 'Receive a receipt when a payment is verified.', defaultChecked: true },
-              { label: 'Weekly Summary', desc: 'Get a weekly summary of your ad views and impressions.', defaultChecked: false },
-              { label: 'Platform Announcements', desc: 'Stay up to date with new AdFlow Pro features and changes.', defaultChecked: true },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0 group">
-                <div>
-                  <p className="font-bold text-sm text-white group-hover:text-primary transition-colors">{item.label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 font-medium">{item.desc}</p>
+          <CardContent className="space-y-5">
+            <div>
+              <p className="font-bold text-sm text-foreground mb-3">Email Notifications</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between py-3 border-b border-border/10">
+                  <div>
+                    <p className="font-medium text-sm text-foreground">Ad Approved</p>
+                    <p className="text-xs text-muted-foreground">Get notified when your ad is approved.</p>
+                  </div>
+                  <Switch 
+                    checked={emailAdApproved}
+                    onCheckedChange={setEmailAdApproved}
+                    className="data-[state=checked]:bg-[hsl(var(--primary))]"
+                  />
                 </div>
-                <Switch defaultChecked={item.defaultChecked} className="data-[state=checked]:bg-primary" />
+                <div className="flex items-center justify-between py-3 border-b border-border/10">
+                  <div>
+                    <p className="font-medium text-sm text-foreground">Ad Rejected</p>
+                    <p className="text-xs text-muted-foreground">Get notified when your ad is rejected.</p>
+                  </div>
+                  <Switch 
+                    checked={emailAdRejected}
+                    onCheckedChange={setEmailAdRejected}
+                    className="data-[state=checked]:bg-[hsl(var(--primary))]"
+                  />
+                </div>
+                <div className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="font-medium text-sm text-foreground">Payment Verified</p>
+                    <p className="text-xs text-muted-foreground">Receive receipt when payment is verified.</p>
+                  </div>
+                  <Switch 
+                    checked={emailPaymentVerified}
+                    onCheckedChange={setEmailPaymentVerified}
+                    className="data-[state=checked]:bg-[hsl(var(--primary))]"
+                  />
+                </div>
               </div>
-            ))}
+            </div>
+            <div>
+              <p className="font-bold text-sm text-foreground mb-3">In-App Notifications</p>
+              <div className="flex items-center justify-between py-3 border-b border-border/10">
+                <div>
+                  <p className="font-medium text-sm text-foreground">Enable Notifications</p>
+                  <p className="text-xs text-muted-foreground">Show notifications in the app.</p>
+                </div>
+                <Switch 
+                  checked={inAppNotifications}
+                  onCheckedChange={setInAppNotifications}
+                  className="data-[state=checked]:bg-[hsl(var(--primary))]"
+                />
+              </div>
+              <div className="flex items-center justify-between py-3">
+                <div>
+                  <p className="font-medium text-sm text-foreground">Sound Notifications</p>
+                  <p className="text-xs text-muted-foreground">Play sound for new notifications.</p>
+                </div>
+                <Switch 
+                  checked={soundNotifications}
+                  onCheckedChange={setSoundNotifications}
+                  className="data-[state=checked]:bg-[hsl(var(--primary))]"
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </motion.div>
 
+      {/* Billing */}
       <motion.div variants={itemVariants}>
-        <Card className="border-white/5 shadow-sm bg-white/[0.02] backdrop-blur-sm">
-          <CardHeader className="px-6 pt-6">
-            <CardTitle className="text-lg font-bold flex items-center gap-2 text-white">
-              <Globe className="w-5 h-5 text-primary" /> Appearance & Language
+        <Card className="af-panel">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <CreditCard className="w-5 h-5 text-primary" /> Billing & Payments
             </CardTitle>
+            <CardDescription>View your payment history and manage billing.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-5 px-6 pb-6">
-            <div className="flex items-center justify-between py-3 border-b border-white/5">
-              <div>
-                <p className="font-bold text-sm text-white">Dark Mode</p>
-                <p className="text-xs text-muted-foreground mt-0.5 font-medium">Toggle between light and dark interface.</p>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="font-bold text-sm text-foreground mb-3">Payment History</p>
+              <div className="space-y-2">
+                {billingHistory.map((invoice) => (
+                  <div key={invoice.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{invoice.id}</p>
+                      <p className="text-xs text-muted-foreground">{invoice.date}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-bold text-foreground">{invoice.amount}</span>
+                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${invoice.status === 'Paid' ? 'bg-[hsl(var(--success))] text-white' : 'bg-[hsl(var(--warning))] text-white'}`}>
+                        {invoice.status}
+                      </span>
+                      <Button variant="outline" size="sm">
+                        <Download className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <Switch defaultChecked className="data-[state=checked]:bg-primary" />
             </div>
-            <div className="flex justify-end pt-2">
-              <Button 
-                className="bg-primary hover:opacity-90 font-bold h-11 px-8 shadow-lg shadow-primary/25 transition-all active:scale-95" 
-                onClick={handleSave}
-              >
-                Save Settings
+            <div className="flex items-center justify-between pt-4 border-t border-border/10">
+              <div>
+                <p className="font-bold text-sm text-foreground">Default Payment Method</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Visa ending in 4242</p>
+              </div>
+              <Button variant="outline" size="sm">Update</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Ad Preferences */}
+      <motion.div variants={itemVariants}>
+        <Card className="af-panel">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Languages className="w-5 h-5 text-primary" /> Ad Preferences
+            </CardTitle>
+            <CardDescription>Set your default preferences for creating ads.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label className="text-sm font-semibold">Default Category</Label>
+                <Select value={defaultCategory} onValueChange={(value) => value && setDefaultCategory(value)}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="vehicles">Vehicles</SelectItem>
+                    <SelectItem value="property">Property</SelectItem>
+                    <SelectItem value="electronics">Electronics</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-sm font-semibold">Default City</Label>
+                <Select value={defaultCity} onValueChange={(value) => value && setDefaultCity(value)}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Cities</SelectItem>
+                    <SelectItem value="lahore">Lahore</SelectItem>
+                    <SelectItem value="karachi">Karachi</SelectItem>
+                    <SelectItem value="islamabad">Islamabad</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-3 border-t border-border/10">
+              <div>
+                <p className="font-bold text-sm text-foreground">Auto-Renew Ads</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Automatically renew your ads before they expire.</p>
+              </div>
+              <Switch 
+                checked={autoRenewAds}
+                onCheckedChange={setAutoRenewAds}
+                className="data-[state=checked]:bg-[hsl(var(--primary))]"
+              />
+            </div>
+            <div className="flex items-center justify-between py-3">
+              <div>
+                <p className="font-bold text-sm text-foreground">Featured Ad Preference</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Default to featured when creating ads.</p>
+              </div>
+              <Switch 
+                checked={featuredAdPreference}
+                onCheckedChange={setFeaturedAdPreference}
+                className="data-[state=checked]:bg-[hsl(var(--primary))]"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* UI Personalization */}
+      <motion.div variants={itemVariants}>
+        <Card className="af-panel">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Palette className="w-5 h-5 text-primary" /> UI Personalization
+            </CardTitle>
+            <CardDescription>Customize your interface appearance.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label className="text-sm font-semibold">Theme Color</Label>
+              <div className="flex gap-3 mt-2">
+                {['indigo', 'violet', 'rose', 'emerald', 'cyan'].map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setThemeColor(color)}
+                    className={`w-10 h-10 rounded-full border-2 transition-all ${
+                      themeColor === color 
+                        ? 'border-[hsl(var(--primary))] scale-110' 
+                        : 'border-border/50 hover:border-border'
+                    }`}
+                    style={{ backgroundColor: color === 'indigo' ? '#6366f1' : color === 'violet' ? '#8b5cf6' : color === 'rose' ? '#f43f5e' : color === 'emerald' ? '#10b981' : '#06b6d4' }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-3 border-t border-border/10">
+              <div>
+                <p className="font-bold text-sm text-foreground">Compact Mode</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Use a more compact interface layout.</p>
+              </div>
+              <Switch 
+                checked={compactMode}
+                onCheckedChange={setCompactMode}
+                className="data-[state=checked]:bg-[hsl(var(--primary))]"
+              />
+            </div>
+            <div className="flex items-center justify-between py-3">
+              <div>
+                <p className="font-bold text-sm text-foreground">Card View</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Display ads as cards instead of list.</p>
+              </div>
+              <Switch 
+                checked={cardListView}
+                onCheckedChange={setCardListView}
+                className="data-[state=checked]:bg-[hsl(var(--primary))]"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Data Management */}
+      <motion.div variants={itemVariants}>
+        <Card className="af-panel">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Download className="w-5 h-5 text-primary" /> Data Management
+            </CardTitle>
+            <CardDescription>Export or delete your data.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between py-3 border-b border-border/10">
+              <div>
+                <p className="font-bold text-sm text-foreground">Export Data</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Download all your data in JSON format.</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleExportData}>
+                <Download className="w-4 h-4 mr-2" /> Export
+              </Button>
+            </div>
+            <div className="flex items-center justify-between py-3">
+              <div>
+                <p className="font-bold text-sm text-foreground">Delete All Ads</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Remove all your ads from the platform.</p>
+              </div>
+              <Button variant="destructive" size="sm">
+                <Trash2 className="w-4 h-4 mr-2" /> Delete All
               </Button>
             </div>
           </CardContent>
         </Card>
       </motion.div>
 
+      {/* Danger Zone */}
       <motion.div variants={itemVariants}>
-        <Card className="border-red-500/20 shadow-sm bg-red-500/[0.02] backdrop-blur-sm">
-          <CardHeader className="px-6 pt-6">
-            <CardTitle className="text-lg font-bold flex items-center gap-2 text-red-500">
+        <Card className="border-[hsl(var(--danger))]/20 bg-[hsl(var(--danger))]/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[hsl(var(--danger))]">
               <Trash2 className="w-5 h-5" /> Danger Zone
             </CardTitle>
-            <CardDescription className="text-red-500/50">These actions are irreversible.</CardDescription>
+            <CardDescription className="text-[hsl(var(--danger))]/70">These actions are irreversible.</CardDescription>
           </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="flex items-center justify-between">
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between py-3 border-b border-[hsl(var(--danger))]/10">
               <div>
-                <p className="font-bold text-sm text-red-500">Delete Account</p>
-                <p className="text-xs text-muted-foreground mt-0.5 font-medium">All your data, ads and history will be permanently removed.</p>
+                <p className="font-bold text-sm text-[hsl(var(--danger))]">Delete Account</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Permanently delete your account and all data.</p>
               </div>
-              <Button variant="destructive" className="font-bold h-11 px-6 shadow-lg shadow-red-500/20 active:scale-95 transition-all" onClick={handleDelete}>
-                Delete Account
+              <Button 
+                variant="destructive" 
+                size="sm"
+                className="bg-[hsl(var(--danger))] hover:bg-[hsl(var(--danger))]/90"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <Trash2 className="w-4 h-4 mr-2" /> Delete Account
+              </Button>
+            </div>
+            <div className="flex items-center justify-between py-3">
+              <div>
+                <p className="font-bold text-sm text-[hsl(var(--danger))]">Reset All Settings</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Restore all settings to default values.</p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-[hsl(var(--danger))] text-[hsl(var(--danger))] hover:bg-[hsl(var(--danger))]/10"
+              >
+                Reset Settings
               </Button>
             </div>
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="border-border/10 bg-card">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[hsl(var(--danger))]">
+              <Trash2 className="w-5 h-5" />
+              Delete Account
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-3">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="border-border/50">
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAccount}
+              className="bg-[hsl(var(--danger))] hover:bg-[hsl(var(--danger))]/90"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Account
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   )
 }
