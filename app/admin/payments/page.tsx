@@ -90,7 +90,7 @@ export default function PaymentVerificationQueuePage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredPayments.map((pay: any) => (
+            {filteredPayments.map((pay) => (
               <TableRow key={pay.id} className="hover:bg-muted/30 transition-colors">
                 <TableCell className="font-mono text-xs font-semibold px-6 py-4 text-muted-foreground">
                   {pay.ref}

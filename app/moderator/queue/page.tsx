@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { DUMMY_ADS } from '@/lib/dummy-data'
-import { CheckCircle2, XCircle, Eye, Search, AlertCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, Eye, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -17,7 +17,6 @@ import Link from 'next/link'
 export default function ReviewQueuePage() {
   const [ads, setAds] = useState(DUMMY_ADS)
   const [searchQuery, setSearchQuery] = useState('')
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [adToReject, setAdToReject] = useState<string | null>(null)
   const [rejectReason, setRejectReason] = useState('')
 
@@ -28,14 +27,12 @@ export default function ReviewQueuePage() {
   
   const handleReject = (adId: string) => {
     setAdToReject(adId)
-    setRejectDialogOpen(true)
   }
 
   const confirmReject = () => {
     if (adToReject) {
       setAds(ads.filter(ad => ad.id !== adToReject))
       toast.error('Ad rejected. Creator notified.')
-      setRejectDialogOpen(false)
       setAdToReject(null)
       setRejectReason('')
     }
