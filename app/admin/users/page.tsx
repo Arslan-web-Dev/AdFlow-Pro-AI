@@ -25,6 +25,26 @@ export default function UserManagementPage() {
   const [userToDelete, setUserToDelete] = useState<string | null>(null)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [newUser, setNewUser] = useState<{ name: string; email: string; role: string }>({ name: '', email: '', role: 'client' })
+  const [formErrors, setFormErrors] = useState<{ name?: string; email?: string }>({})
+
+  const validateForm = () => {
+    const errors: { name?: string; email?: string } = {}
+    
+    if (!newUser.name.trim()) {
+      errors.name = 'Name is required'
+    } else if (newUser.name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters'
+    }
+    
+    if (!newUser.email.trim()) {
+      errors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newUser.email)) {
+      errors.email = 'Invalid email address'
+    }
+    
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const handleRoleChange = (userId: string, newRole: string) => {
     setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u))
@@ -47,8 +67,7 @@ export default function UserManagementPage() {
   }
 
   const handleCreate = () => {
-    if (!newUser.name || !newUser.email) {
-      toast.error('Please fill in all fields')
+    if (!validateForm()) {
       return
     }
     const id = (users.length + 1).toString()
@@ -56,6 +75,7 @@ export default function UserManagementPage() {
     toast.success('User created successfully')
     setCreateDialogOpen(false)
     setNewUser({ name: '', email: '', role: 'client' })
+    setFormErrors({})
   }
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -181,28 +201,32 @@ export default function UserManagementPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
+              <Input 
+                id="name" 
                 value={newUser.name}
-                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
                 placeholder="Muhammad Arslan"
+                className={formErrors.name ? 'border-red-500' : ''}
               />
+              {formErrors.name && <p className="text-sm text-red-500">{formErrors.name}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
+              <Input 
+                id="email" 
                 type="email"
                 value={newUser.email}
-                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
                 placeholder="arslan@example.com"
+                className={formErrors.email ? 'border-red-500' : ''}
               />
+              {formErrors.email && <p className="text-sm text-red-500">{formErrors.email}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <Select 
                 value={newUser.role || 'client'} 
-                onValueChange={(val) => setNewUser({ ...newUser, role: val as string })}
+                onValueChange={(val) => setNewUser({...newUser, role: val as string})}
               >
                 <SelectTrigger>
                   <SelectValue />
