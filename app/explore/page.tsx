@@ -11,6 +11,7 @@ import {
   MapPin,
   Search,
   Clock,
+  Plus,
 } from 'lucide-react'
 import { SiteHeader, ThemeBar } from '@/components/layouts/site-header'
 import { SiteFooter } from '@/components/layouts/site-footer'
@@ -138,6 +139,12 @@ export default function ExplorePage() {
                 </p>
               </div>
               <div className="flex items-center gap-3">
+                <Link href="/dashboard/create">
+                  <Button className="af-gradient rounded-xl px-6 font-bold text-[hsl(var(--primary-foreground))] shadow-lg shadow-[hsl(var(--primary))]/20 hover:opacity-90">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Post Ad
+                  </Button>
+                </Link>
                 <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Sort By</span>
                 <div className="relative">
                   <select className="appearance-none rounded-lg border border-border/50 bg-surface-container py-2 pl-4 pr-10 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary">

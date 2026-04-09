@@ -84,12 +84,12 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           {/* Desktop Controls */}
           <div className="hidden items-center gap-3 md:flex">
-            <Link href="/dashboard">
+            <Link href="/auth/login">
               <Button variant="ghost" className="text-sm font-bold gap-2 hover:bg-muted/50">
                 Login
               </Button>
             </Link>
-            <Link href="/dashboard">
+            <Link href="/auth/register">
               <Button className="af-gradient rounded-xl px-6 text-sm font-bold text-[hsl(var(--primary-foreground))] shadow-lg shadow-[hsl(var(--primary))]/20">
                 Get Started
               </Button>
@@ -127,14 +127,14 @@ export function SiteHeader() {
                   
                   <div className="mt-4 space-y-4 border-t border-border/10 pt-6 px-4">
                     <div className="flex flex-col gap-3">
-                      <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                      <Link href="/auth/login" onClick={() => setMobileOpen(false)}>
                         <Button variant="outline" className="w-full h-12 rounded-xl border-border/50 bg-muted/50 font-bold">
-                          Dashboard Access
+                          Login
                         </Button>
                       </Link>
-                      <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                      <Link href="/auth/register" onClick={() => setMobileOpen(false)}>
                         <Button className="af-gradient w-full h-12 rounded-xl font-bold text-[hsl(var(--primary-foreground))] shadow-lg shadow-[hsl(var(--primary))]/20">
-                          Create Free Account
+                          Get Started
                         </Button>
                       </Link>
                     </div>
