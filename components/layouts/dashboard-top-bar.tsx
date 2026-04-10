@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { useState } from 'react'
-import { Bell, Search, Menu, Home, ShoppingBag, CreditCard, BarChart3, Users, UserCircle2, Settings, Plus, Bot, Sparkles } from 'lucide-react'
+import { Bell, Search, Menu, Home, ShoppingBag, CreditCard, BarChart3, Users, UserCircle2, Settings, Plus, Bot, Sparkles, Wand2 } from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { getDisplayName, getRoleLabel } from '@/lib/auth-display'
 import { Logo } from '@/components/ui/logo'
@@ -29,6 +29,7 @@ function getLinks(role: string) {
   const base = [
     { name: 'Home', href: role === 'admin' ? '/admin' : '/dashboard', icon: Home },
     { name: 'Ads', href: '/dashboard/ads', icon: ShoppingBag },
+    { name: 'AI Generator', href: '/dashboard/ai-generator', icon: Wand2 },
     { name: 'Payments', href: role === 'admin' ? '/admin/payments' : '/dashboard/payments', icon: CreditCard },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   ]
