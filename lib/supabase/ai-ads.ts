@@ -200,7 +200,8 @@ export async function getSuccessfulPatterns(): Promise<string> {
 
     return JSON.stringify(patterns, null, 2)
   } catch (error) {
-    console.error('Error fetching successful patterns:', error)
+    // If tables don't exist, return empty string instead of failing
+    console.warn('Database tables may not exist yet, skipping pattern learning')
     return ''
   }
 }
@@ -224,5 +225,47 @@ export async function updateAIAdStatus(
   } catch (error) {
     console.error('Error updating AI ad status:', error)
     throw error
+  }
+}
+
+// Save AI-generated ad to main ads table
+export async function saveAIAdToMainAds(
+  aiAd: AIGeneratedAd,
+  userId: string
+): Promise<string | null> {
+  try {
+    // Generate slug from headline
+    const slug = aiAd.headline
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+      .substring(0, 100) + '-' + Date.now()
+
+    const adData = {
+      user_id: userId,
+      title: aiAd.headline,
+      slug,
+      description: aiAd.description,
+      status: 'draft' as const,
+      is_featured: false,
+      admin_boost: 0,
+      rank_score: 0,
+    }
+
+    const { data, error } = await supabase
+      .from('ads')
+      .insert(adData)
+      .select('id')
+      .single()
+
+    if (error) throw error
+
+    // Update the AI-generated ad to link to the main ad
+    await updateAIAdStatus(aiAd.id || '', 'published', data.id)
+
+    return data.id
+  } catch (error) {
+    console.error('Error saving AI ad to main ads table:', error)
+    return null
   }
 }

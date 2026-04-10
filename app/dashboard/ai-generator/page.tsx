@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Sparkles, RefreshCw, Star, Save, CheckCircle2 } from 'lucide-react'
+import { Sparkles, RefreshCw, Star, Save, CheckCircle2, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
+import Link from 'next/link'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -69,6 +70,7 @@ export default function AIGeneratorPage() {
     }
     research_insights: string
     strategy_recommendations: string
+    saved_to_db: boolean
   } | null>(null)
   const [selectedAd, setSelectedAd] = useState<{
     headline: string
@@ -144,7 +146,11 @@ export default function AIGeneratorPage() {
       toast.success('Ads generated successfully!')
     } catch (error) {
       console.error('Error generating ads:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to generate ads')
+      if (error instanceof Error) {
+        toast.error(error.message)
+      } else {
+        toast.error('Failed to generate ads. Please check your OpenAI API key configuration.')
+      }
     } finally {
       setLoading(false)
     }
@@ -331,6 +337,19 @@ export default function AIGeneratorPage() {
                     </div>
                   </div>
                 </div>
+
+                {result.saved_to_db && (
+                  <div className="flex items-center gap-2 p-3 bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/20 rounded-lg">
+                    <CheckCircle2 className="w-5 h-5 text-[hsl(var(--success))]" />
+                    <span className="text-sm text-[hsl(var(--success))]">Ad automatically saved to your ads section</span>
+                    <Link href="/dashboard/ads" className="ml-auto">
+                      <Button size="sm" variant="ghost" className="text-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/20">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View in Ads
+                      </Button>
+                    </Link>
+                  </div>
+                )}
 
                 <div className="flex gap-3 pt-4 border-t border-[hsl(var(--success))]/10">
                   <Button 
