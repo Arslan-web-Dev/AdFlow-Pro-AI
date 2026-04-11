@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import { Sparkles, RefreshCw, Star, Save, CheckCircle2, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -38,6 +39,7 @@ const itemVariants = {
 export default function AIGeneratorPage() {
   const [loading, setLoading] = useState(false)
   const [generated, setGenerated] = useState(false)
+  const [demoMode, setDemoMode] = useState(true)
   const [formData, setFormData] = useState({
     product_name: '',
     audience: '',
@@ -129,8 +131,12 @@ export default function AIGeneratorPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
-          userId,
+          product_name: formData.product_name,
+          audience: formData.audience,
+          platform: formData.platform,
+          tone: formData.tone,
+          userId: localStorage.getItem('userId') || 'demo-user-id',
+          demoMode,
         }),
       })
 
@@ -271,6 +277,18 @@ export default function AIGeneratorPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="space-y-0.5">
+                <Label htmlFor="demo-mode" className="text-sm font-semibold">Demo Mode</Label>
+                <p className="text-xs text-muted-foreground">Use mock ads (free) or real AI (requires API key)</p>
+              </div>
+              <Switch
+                id="demo-mode"
+                checked={demoMode}
+                onCheckedChange={setDemoMode}
+              />
             </div>
 
             <Button 

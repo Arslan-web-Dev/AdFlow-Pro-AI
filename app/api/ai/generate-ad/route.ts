@@ -11,9 +11,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    const { product_name, audience, platform, tone, userId } = body
+    const { product_name, audience, platform, tone, userId, demoMode } = body
 
-    console.log('Received ad generation request:', { product_name, audience, platform, tone, userId })
+    console.log('Received ad generation request:', { product_name, audience, platform, tone, userId, demoMode })
 
     // Validate required fields
     if (!product_name || !audience || !platform || !tone || !userId) {
@@ -24,13 +24,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if OPENAI_API_KEY is set
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY is not set in environment variables')
-      return NextResponse.json(
-        { error: 'Server configuration error: OpenAI API key not configured' },
-        { status: 500 }
-      )
+    // If demo mode is requested, set environment variable for this request
+    if (demoMode) {
+      process.env.DEMO_MODE = 'true'
+      console.log('Using demo mode (no OpenAI API calls)')
+    } else {
+      // Check if OPENAI_API_KEY is set for real AI mode
+      if (!process.env.OPENAI_API_KEY) {
+        console.error('OPENAI_API_KEY is not set in environment variables')
+        return NextResponse.json(
+          { error: 'Server configuration error: OpenAI API key not configured. Use demo mode instead.' },
+          { status: 500 }
+        )
+      }
+      process.env.DEMO_MODE = 'false'
     }
 
     console.log('Fetching historical patterns...')
