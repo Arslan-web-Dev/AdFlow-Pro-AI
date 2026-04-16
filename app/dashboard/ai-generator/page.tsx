@@ -45,6 +45,9 @@ export default function AIGeneratorPage() {
     audience: '',
     platform: '',
     tone: '',
+    category: '',
+    image_url: '',
+    video_url: '',
   })
   
   const [result, setResult] = useState<{
@@ -111,9 +114,22 @@ export default function AIGeneratorPage() {
     { value: 'students', label: 'Students' },
   ]
 
+  const categories = [
+    { value: 'electronics', label: 'Electronics' },
+    { value: 'vehicles', label: 'Vehicles' },
+    { value: 'property', label: 'Property' },
+    { value: 'fashion', label: 'Fashion' },
+    { value: 'home-garden', label: 'Home & Garden' },
+    { value: 'sports', label: 'Sports' },
+    { value: 'services', label: 'Services' },
+    { value: 'jobs', label: 'Jobs' },
+    { value: 'pets', label: 'Pets' },
+    { value: 'other', label: 'Other' },
+  ]
+
   const handleGenerate = async () => {
-    if (!formData.product_name || !formData.audience || !formData.platform || !formData.tone) {
-      toast.error('Please fill in all fields')
+    if (!formData.product_name || !formData.audience || !formData.platform || !formData.tone || !formData.category) {
+      toast.error('Please fill in all required fields')
       return
     }
 
@@ -135,6 +151,9 @@ export default function AIGeneratorPage() {
           audience: formData.audience,
           platform: formData.platform,
           tone: formData.tone,
+          category: formData.category,
+          image_url: formData.image_url,
+          video_url: formData.video_url,
           userId,
           demoMode,
         }),
@@ -239,6 +258,21 @@ export default function AIGeneratorPage() {
                 />
               </div>
               <div className="space-y-3">
+                <Label className="text-base font-semibold">Category <span className="text-red-500">*</span></Label>
+                <Select value={formData.category} onValueChange={(value) => value && setFormData({ ...formData, category: value })}>
+                  <SelectTrigger className="h-14 text-base bg-muted/30 focus:bg-background transition-colors">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-3">
                 <Label className="text-base font-semibold">Target Audience <span className="text-red-500">*</span></Label>
                 <Select value={formData.audience} onValueChange={(value) => value && setFormData({ ...formData, audience: value })}>
                   <SelectTrigger className="h-14 text-base bg-muted/30 focus:bg-background transition-colors">
@@ -282,6 +316,27 @@ export default function AIGeneratorPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Image URL (Optional)</Label>
+                <Input
+                  placeholder="https://example.com/image.jpg"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  className="h-14 text-base bg-muted/30 focus:bg-background transition-colors"
+                />
+              </div>
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Video URL (Optional)</Label>
+                <Input
+                  placeholder="https://youtube.com/watch?v=..."
+                  value={formData.video_url}
+                  onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                  className="h-14 text-base bg-muted/30 focus:bg-background transition-colors"
+                />
               </div>
             </div>
 
