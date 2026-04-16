@@ -23,6 +23,8 @@ import {
   CheckCircle2
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { createBrowserClient } from '@supabase/ssr'
+import { getUserSettings, updateUserSettings, createUserSettingsIfNotExists } from '@/lib/supabase/settings'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -51,6 +53,12 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+  
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
   
   // 2FA Settings
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
@@ -84,20 +92,96 @@ export default function SettingsPage() {
   const [themeColor, setThemeColor] = useState('indigo')
   const [compactMode, setCompactMode] = useState(false)
   const [cardListView, setCardListView] = useState(true)
-  
+
+  // Load settings on mount
+  useEffect(() => {
+    loadSettings()
+  }, [])
+
+  const loadSettings = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      await createUserSettingsIfNotExists(user.id)
+      
+      const settings = await getUserSettings(user.id)
+      if (settings) {
+        setTwoFactorEnabled(settings.two_factor_enabled)
+        setTwoFactorMethod(settings.two_factor_method)
+        setLanguage(settings.language)
+        setTimezone(settings.timezone)
+        setCurrency(settings.currency)
+        setShowPhone(settings.show_phone)
+        setShowEmail(settings.show_email)
+        setProfileVisibility(settings.profile_visibility)
+        setPrivateMode(settings.private_mode)
+        setEmailAdApproved(settings.email_ad_approved)
+        setEmailAdRejected(settings.email_ad_rejected)
+        setEmailPaymentVerified(settings.email_payment_verified)
+        setInAppNotifications(settings.in_app_notifications)
+        setSoundNotifications(settings.sound_notifications)
+        setDefaultCategory(settings.default_category)
+        setDefaultCity(settings.default_city)
+        setAutoRenewAds(settings.auto_renew_ads)
+        setFeaturedAdPreference(settings.featured_ad_preference)
+        setThemeColor(settings.theme_color)
+        setCompactMode(settings.compact_mode)
+        setCardListView(settings.card_list_view)
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Auto-save effect
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (loading) return
+
+    const timer = setTimeout(async () => {
       setSaving(true)
-      // Simulate save
-      setTimeout(() => {
-        setSaving(false)
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        await updateUserSettings(user.id, {
+          two_factor_enabled: twoFactorEnabled,
+          two_factor_method: twoFactorMethod,
+          language,
+          timezone,
+          currency,
+          show_phone: showPhone,
+          show_email: showEmail,
+          profile_visibility: profileVisibility,
+          private_mode: privateMode,
+          email_ad_approved: emailAdApproved,
+          email_ad_rejected: emailAdRejected,
+          email_payment_verified: emailPaymentVerified,
+          in_app_notifications: inAppNotifications,
+          sound_notifications: soundNotifications,
+          default_category: defaultCategory,
+          default_city: defaultCity,
+          auto_renew_ads: autoRenewAds,
+          featured_ad_preference: featuredAdPreference,
+          theme_color: themeColor,
+          compact_mode: compactMode,
+          card_list_view: cardListView
+        })
+
         setLastSaved(new Date())
-      }, 500)
+      } catch (error) {
+        console.error('Error saving settings:', error)
+        toast.error('Failed to save settings')
+      } finally {
+        setSaving(false)
+      }
     }, 1000)
     
     return () => clearTimeout(timer)
   }, [
+    loading,
     twoFactorEnabled, twoFactorMethod, language, timezone, currency,
     showPhone, showEmail, profileVisibility, privateMode,
     emailAdApproved, emailAdRejected, emailPaymentVerified,
@@ -106,17 +190,99 @@ export default function SettingsPage() {
     themeColor, compactMode, cardListView
   ])
 
-  const handleDeleteAccount = () => {
-    toast.error('Account deletion requires email confirmation.')
-    setDeleteDialogOpen(false)
+  const handleDeleteAccount = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast.error('No user found')
+        return
+      }
+
+      // Delete user's ads
+      const { error: adsError } = await supabase
+        .from('ads')
+        .delete()
+        .eq('user_id', user.id)
+
+      if (adsError) {
+        console.error('Error deleting ads:', adsError)
+      }
+
+      // Delete user's settings
+      const { error: settingsError } = await supabase
+        .from('user_settings')
+        .delete()
+        .eq('user_id', user.id)
+
+      if (settingsError) {
+        console.error('Error deleting settings:', settingsError)
+      }
+
+      // Delete user from auth
+      const { error: authError } = await supabase.auth.admin.deleteUser(user.id)
+
+      if (authError) {
+        toast.error('Failed to delete account. Please contact support.')
+        return
+      }
+
+      toast.success('Account deleted successfully')
+      setDeleteDialogOpen(false)
+      
+      // Redirect to home
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Error deleting account:', error)
+      toast.error('Failed to delete account')
+    }
   }
 
-  const handleExportData = () => {
-    toast.success('Data exported successfully!')
+  const handleExportData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // Fetch all user data
+      const [adsData, settingsData, profileData] = await Promise.all([
+        supabase.from('ads').select('*').eq('user_id', user.id),
+        supabase.from('user_settings').select('*').eq('user_id', user.id),
+        supabase.from('users').select('*').eq('id', user.id).single()
+      ])
+
+      const exportData = {
+        profile: profileData.data,
+        settings: settingsData.data,
+        ads: adsData.data,
+        exportedAt: new Date().toISOString()
+      }
+
+      // Create and download JSON file
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `adflow-export-${user.id}-${Date.now()}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      toast.success('Data exported successfully!')
+    } catch (error) {
+      console.error('Error exporting data:', error)
+      toast.error('Failed to export data')
+    }
   }
 
-  const handleLogoutAllDevices = () => {
-    toast.success('Logged out from all devices')
+  const handleLogoutAllDevices = async () => {
+    try {
+      await supabase.auth.signOut({ scope: 'global' })
+      toast.success('Logged out from all devices')
+      window.location.href = '/auth/login'
+    } catch (error) {
+      console.error('Error logging out:', error)
+      toast.error('Failed to logout from all devices')
+    }
   }
 
   const securityLogs = [

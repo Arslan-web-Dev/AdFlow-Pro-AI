@@ -84,15 +84,47 @@ export default function CreateAdPage() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!category || !city) {
       toast.error('Please select a category and city')
       return
     }
-    toast.success('Draft saved successfully! Moving to package selection.')
-    router.push('/dashboard/create/package')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    const userId = localStorage.getItem('userId') || 'demo-user-id'
+
+    try {
+      const response = await fetch('/api/ads/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          price,
+          category,
+          city,
+          imageUrls,
+          videoUrl,
+          userId,
+          is_featured: false,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create ad')
+      }
+
+      toast.success('Ad created successfully! Moving to package selection.')
+      router.push('/dashboard/create/package')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (error) {
+      console.error('Error creating ad:', error)
+      toast.error('Failed to create ad. Please try again.')
+    }
   }
 
   return (

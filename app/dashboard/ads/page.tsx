@@ -59,6 +59,15 @@ export default function MyAdsPage() {
     fetchAds()
   }, [])
 
+  // Refresh ads when component gains focus (real-time sync)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchAds()
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
+
   const fetchAds = async () => {
     try {
       setLoading(true)

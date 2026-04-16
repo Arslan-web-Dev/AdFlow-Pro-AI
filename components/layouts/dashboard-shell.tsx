@@ -31,8 +31,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const displayName = getDisplayName(user, profile)
   const username = getUsername(user)
   const avatarUrl = profile?.avatar_url ?? DEFAULT_PROFILE_IMAGE_URL
+  const userRole = profile?.role || 'user'
 
-  const navItems = getDashboardNavItems(pathname)
+  const navItems = getDashboardNavItems(pathname, userRole)
 
   return (
     <div className="af-shell relative flex min-h-screen overflow-hidden bg-background text-on-surface transition-colors duration-500">

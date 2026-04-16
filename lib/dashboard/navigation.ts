@@ -48,11 +48,12 @@ export function getDashboardRoleFromPath(pathname: string): DashboardRole {
   return 'client'
 }
 
-export function getDashboardNavItems(pathname: string): DashboardNavItem[] {
-  const role = getDashboardRoleFromPath(pathname)
+export function getDashboardNavItems(pathname: string, userRole?: string): DashboardNavItem[] {
+  // If userRole is provided, use it; otherwise fall back to pathname-based detection
+  const role = userRole || getDashboardRoleFromPath(pathname)
 
   if (role === 'admin') return adminNavItems
-  if (role === 'moderator') return moderatorNavItems
+  if (role === 'manager' || role === 'moderator') return moderatorNavItems
 
   return clientNavItems
 }
