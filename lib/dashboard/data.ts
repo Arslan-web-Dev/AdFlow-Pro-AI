@@ -315,10 +315,10 @@ export async function fetchAdminDashboardData(
     pendingReviewAds,
     totalUsers: totalUsersResult.count ?? 0,
     pendingPayments: pendingPaymentsResult.count ?? 0,
-    statusBreakdown: [...statusCounts.entries()]
+    statusBreakdown: Array.from(statusCounts.entries())
       .map(([status, count]) => ({ status, count }))
       .sort((a, b) => b.count - a.count),
-    packageBreakdown: [...packageCounts.entries()]
+    packageBreakdown: Array.from(packageCounts.entries())
       .map(([label, count]) => ({ label, count }))
       .sort((a, b) => b.count - a.count),
     recentPayments,
