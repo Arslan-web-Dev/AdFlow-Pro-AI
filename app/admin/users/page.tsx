@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -13,12 +13,22 @@ import { Search, Ban, Trash2, UserCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { createBrowserClient } from '@supabase/ssr'
 
+interface User {
+  id: string
+  email: string
+  name: string | null
+  role: string | null
+  created_at: string | null
+  email_confirmed_at: string | null
+  user_metadata?: { banned?: boolean }
+}
+
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
-  const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [banDialogOpen, setBanDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
@@ -27,11 +37,7 @@ export default function AdminUsersPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -47,7 +53,11 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [fetchUsers])
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -111,7 +121,15 @@ export default function AdminUsersPage() {
     }
   }
 
-  const isBanned = (user: any) => user?.user_metadata?.banned === true
+  const isBanned = (user: User) => user?.user_metadata?.banned === true
+
+  const handleRoleFilterChange = (value: string | null) => {
+    if (value) setRoleFilter(value)
+  }
+
+  const handleUserRoleChange = (userId: string, value: string | null) => {
+    if (value) handleRoleChange(userId, value)
+  }
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
@@ -132,7 +150,7 @@ export default function AdminUsersPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Search users..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 w-64" />
               </div>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <Select value={roleFilter} onValueChange={handleRoleFilterChange}>
                 <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
@@ -167,7 +185,7 @@ export default function AdminUsersPage() {
                     <TableCell className="font-medium">{user.name || 'N/A'}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <Select value={user.role || 'user'} onValueChange={(value) => handleRoleChange(user.id, value)}>
+                      <Select value={user.role || 'user'} onValueChange={(value) => handleUserRoleChange(user.id, value)}>
                         <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="admin">Admin</SelectItem>

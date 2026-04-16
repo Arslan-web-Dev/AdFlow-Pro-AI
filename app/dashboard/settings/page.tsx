@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -93,12 +93,7 @@ export default function SettingsPage() {
   const [compactMode, setCompactMode] = useState(false)
   const [cardListView, setCardListView] = useState(true)
 
-  // Load settings on mount
-  useEffect(() => {
-    loadSettings()
-  }, [])
-
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -134,7 +129,12 @@ export default function SettingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase])
+
+  // Load settings on mount
+  useEffect(() => {
+    loadSettings()
+  }, [loadSettings])
 
   // Auto-save effect
   useEffect(() => {
@@ -187,7 +187,8 @@ export default function SettingsPage() {
     emailAdApproved, emailAdRejected, emailPaymentVerified,
     inAppNotifications, soundNotifications,
     defaultCategory, defaultCity, autoRenewAds, featuredAdPreference,
-    themeColor, compactMode, cardListView
+    themeColor, compactMode, cardListView,
+    supabase
   ])
 
   const handleDeleteAccount = async () => {
