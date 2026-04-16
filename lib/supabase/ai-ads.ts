@@ -201,7 +201,7 @@ export async function getSuccessfulPatterns(): Promise<string> {
     return JSON.stringify(patterns, null, 2)
   } catch (error) {
     // If tables don't exist, return empty string instead of failing
-    console.warn('Database tables may not exist yet, skipping pattern learning')
+    console.warn('Database tables may not exist yet, skipping pattern learning', error)
     return ''
   }
 }

@@ -39,8 +39,18 @@ const itemVariants = {
   },
 }
 
+type AdRow = {
+  id: string
+  title: string
+  slug: string
+  category_id: string | null
+  price: number | string | null
+  status: string | null
+  is_featured: boolean | null
+}
+
 export default function MyAdsPage() {
-  const [ads, setAds] = useState<any[]>([])
+  const [ads, setAds] = useState<AdRow[]>([])
   const [loading, setLoading] = useState(true)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [adToDelete, setAdToDelete] = useState<string | null>(null)
@@ -59,7 +69,7 @@ export default function MyAdsPage() {
 
       if (error) throw error
 
-      setAds(data || [])
+      setAds((data as AdRow[]) || [])
     } catch (error) {
       console.error('Error fetching ads:', error)
       toast.error('Failed to load ads')

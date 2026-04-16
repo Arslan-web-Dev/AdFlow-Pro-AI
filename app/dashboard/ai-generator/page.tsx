@@ -135,7 +135,7 @@ export default function AIGeneratorPage() {
           audience: formData.audience,
           platform: formData.platform,
           tone: formData.tone,
-          userId: localStorage.getItem('userId') || 'demo-user-id',
+          userId,
           demoMode,
         }),
       })
