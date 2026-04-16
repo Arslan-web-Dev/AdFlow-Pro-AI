@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { SVGProps } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -8,39 +8,109 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
-import { DUMMY_ADS } from '@/lib/dummy-data'
 import { CheckCircle2, XCircle, Eye, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import {
+  fetchModeratorQueue,
+  getStatusLabel,
+  getStatusTone,
+  updateModeratorAdStatus,
+  type ModeratorQueueItem,
+} from '@/lib/dashboard/data'
+import { useAuth } from '@/components/providers/auth-provider'
 
 export default function ReviewQueuePage() {
-  const [ads, setAds] = useState(DUMMY_ADS)
+  const supabase = useMemo(() => createClient(), [])
+  const { user } = useAuth()
+  const [ads, setAds] = useState<ModeratorQueueItem[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [adToReject, setAdToReject] = useState<string | null>(null)
   const [rejectReason, setRejectReason] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleApprove = (adId: string) => {
-    setAds(ads.map(ad => ad.id === adId ? { ...ad, status: 'approved' } : ad))
-    toast.success('Ad approved. Moving to payment pipeline.')
+  useEffect(() => {
+    const loadQueue = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const queue = await fetchModeratorQueue(supabase)
+        setAds(queue)
+      } catch (loadError) {
+        console.error('Error loading moderation queue:', loadError)
+        setError('Unable to load live moderation queue right now.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void loadQueue()
+  }, [supabase])
+
+  const handleApprove = async (adId: string) => {
+    const currentAd = ads.find((ad) => ad.id === adId)
+    if (!currentAd) return
+
+    try {
+      setSubmitting(true)
+      await updateModeratorAdStatus(supabase, {
+        adId,
+        previousStatus: currentAd.status,
+        newStatus: 'payment_pending',
+        changedBy: user?.id,
+        notes: 'Approved by moderator and moved to payment pipeline.',
+      })
+
+      setAds((current) => current.filter((ad) => ad.id !== adId))
+      toast.success('Ad approved and moved to payment pipeline.')
+    } catch (submitError) {
+      console.error('Error approving ad:', submitError)
+      toast.error('Failed to approve ad')
+    } finally {
+      setSubmitting(false)
+    }
   }
   
   const handleReject = (adId: string) => {
     setAdToReject(adId)
   }
 
-  const confirmReject = () => {
+  const confirmReject = async () => {
     if (adToReject) {
-      setAds(ads.filter(ad => ad.id !== adToReject))
-      toast.error('Ad rejected. Creator notified.')
+      const currentAd = ads.find((ad) => ad.id === adToReject)
+      if (!currentAd) return
+
+      try {
+        setSubmitting(true)
+        await updateModeratorAdStatus(supabase, {
+          adId: adToReject,
+          previousStatus: currentAd.status,
+          newStatus: 'rejected',
+          changedBy: user?.id,
+          notes: rejectReason.trim() || 'Rejected by moderator.',
+        })
+
+        setAds(ads.filter(ad => ad.id !== adToReject))
+        toast.error('Ad rejected. Creator notified.')
+      } catch (submitError) {
+        console.error('Error rejecting ad:', submitError)
+        toast.error('Failed to reject ad')
+      }
+
       setAdToReject(null)
       setRejectReason('')
+      setSubmitting(false)
     }
   }
 
   const filteredAds = ads.filter(ad =>
     ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ad.seller.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ad.sellerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (ad.sellerEmail ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
@@ -48,7 +118,7 @@ export default function ReviewQueuePage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-2">Review Queue</h1>
-          <p className="text-muted-foreground text-lg">Review and moderate user-submitted ads.</p>
+          <p className="text-muted-foreground text-lg">Review and moderate real user-submitted ads from the live queue.</p>
         </div>
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground" />
@@ -60,6 +130,12 @@ export default function ReviewQueuePage() {
           />
         </div>
       </div>
+
+      {error && (
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          {error}
+        </div>
+      )}
 
       <Card className="border-border/80 shadow-sm overflow-hidden">
         <Table>
@@ -73,20 +149,31 @@ export default function ReviewQueuePage() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {loading && (
+              <TableRow>
+                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                  Loading moderation queue...
+                </TableCell>
+              </TableRow>
+            )}
             {filteredAds.map((ad) => (
               <TableRow key={ad.id} className="hover:bg-muted/30 transition-colors">
                 <TableCell className="font-bold px-6 py-4">
                   <div className="line-clamp-1">{ad.title}</div>
-                  <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold tracking-widest uppercase block mt-1">{ad.category.name}</span>
+                  <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold tracking-widest uppercase block mt-1">
+                    {ad.categoryName ?? 'Uncategorized'}
+                  </span>
                 </TableCell>
                 <TableCell className="font-medium text-foreground/80">
-                  {ad.seller.name}
-                  {ad.seller.is_verified && <Badge variant="outline" className="ml-2 bg-green-50 text-green-700 border-green-200 text-[10px] font-bold tracking-widest uppercase leading-none px-2 py-0.5 shadow-sm">Verified</Badge>}
+                  <div>{ad.sellerName}</div>
+                  {ad.sellerEmail && (
+                    <div className="mt-1 text-xs text-muted-foreground">{ad.sellerEmail}</div>
+                  )}
                 </TableCell>
-                <TableCell className="font-bold text-indigo-600 dark:text-indigo-400">Premium</TableCell>
+                <TableCell className="font-bold text-indigo-600 dark:text-indigo-400">{ad.packageName ?? 'Standard'}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className="bg-amber-100/50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shadow-sm font-semibold">
-                    Pending Review
+                  <Badge variant="secondary" className={getStatusTone(ad.status)}>
+                    {getStatusLabel(ad.status)}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right px-6">
@@ -96,7 +183,14 @@ export default function ReviewQueuePage() {
                         <Eye className="h-4.5 w-4.5" />
                       </Button>
                     </Link>
-                    <Button variant="ghost" size="icon" onClick={() => handleApprove(ad.id)} title="Approve" className="hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors mr-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => void handleApprove(ad.id)}
+                      title="Approve"
+                      disabled={submitting}
+                      className="hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors mr-1"
+                    >
                       <CheckCircle2 className="h-4.5 w-4.5" />
                     </Button>
                     
@@ -123,7 +217,14 @@ export default function ReviewQueuePage() {
                         </div>
                         <DialogFooter className="gap-3 sm:gap-0">
                           <Button variant="outline" className="font-semibold text-muted-foreground">Cancel</Button>
-                          <Button variant="destructive" onClick={confirmReject} className="font-bold shadow-md shadow-red-500/20 px-8">Confirm Rejection</Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => void confirmReject()}
+                            disabled={submitting}
+                            className="font-bold shadow-md shadow-red-500/20 px-8"
+                          >
+                            Confirm Rejection
+                          </Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
@@ -131,7 +232,7 @@ export default function ReviewQueuePage() {
                 </TableCell>
               </TableRow>
             ))}
-            {filteredAds.length === 0 && (
+            {!loading && filteredAds.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
                   No ads found matching your search.

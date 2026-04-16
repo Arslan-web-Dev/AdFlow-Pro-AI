@@ -1,32 +1,74 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ClipboardList, CheckCircle2, XCircle, Clock } from 'lucide-react'
-import Link from 'next/link'
+import { ClipboardList, CreditCard, XCircle, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { createClient } from '@/lib/supabase/client'
+import {
+  fetchModeratorDashboardData,
+  getStatusLabel,
+  getStatusTone,
+  type ModeratorDashboardData,
+} from '@/lib/dashboard/data'
 
-const stats = [
-  { label: 'Pending Review', value: '12', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/30' },
-  { label: 'Approved Today', value: '34', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/30' },
-  { label: 'Rejected Today', value: '5', icon: XCircle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/30' },
-  { label: 'Total Reviewed', value: '1,284', icon: ClipboardList, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/30' },
-]
+const emptyModeratorData: ModeratorDashboardData = {
+  queueSize: 0,
+  underReviewCount: 0,
+  rejectedCount: 0,
+  readyForPaymentCount: 0,
+  recentActivity: [],
+}
 
-const recentActivity = [
-  { action: 'Approved', title: 'Luxury Apartment Downtown', time: '2 minutes ago' },
-  { action: 'Rejected', title: 'Fake iPhone 15 listing', time: '15 minutes ago' },
-  { action: 'Approved', title: 'Toyota Corolla 2022 GLi', time: '1 hour ago' },
-  { action: 'Flagged', title: 'Suspicious Job Offer', time: '2 hours ago' },
-]
+function formatRelativeTime(value: string | null): string {
+  if (!value) return 'Just now'
+  const diffMinutes = Math.max(1, Math.round((Date.now() - new Date(value).getTime()) / 60000))
+  if (diffMinutes < 60) return `${diffMinutes} min ago`
+  const diffHours = Math.round(diffMinutes / 60)
+  if (diffHours < 24) return `${diffHours} hr ago`
+  const diffDays = Math.round(diffHours / 24)
+  return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`
+}
 
 export default function ModeratorPage() {
+  const supabase = useMemo(() => createClient(), [])
+  const [data, setData] = useState<ModeratorDashboardData>(emptyModeratorData)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadModeratorDashboard = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const next = await fetchModeratorDashboardData(supabase)
+        setData(next)
+      } catch (loadError) {
+        console.error('Error loading moderator dashboard:', loadError)
+        setError('Unable to load moderation dashboard right now.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void loadModeratorDashboard()
+  }, [supabase])
+
+  const stats = [
+    { label: 'Pending Review', value: data.queueSize, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/30' },
+    { label: 'Under Review', value: data.underReviewCount, icon: ClipboardList, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/30' },
+    { label: 'Rejected', value: data.rejectedCount, icon: XCircle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/30' },
+    { label: 'Ready For Payment', value: data.readyForPaymentCount, icon: CreditCard, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/30' },
+  ]
+
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-2">Moderator Dashboard</h1>
-          <p className="text-muted-foreground text-lg">Review and moderate pending ads on the platform.</p>
+          <p className="text-muted-foreground text-lg">Review live marketplace ads currently waiting in the moderation workflow.</p>
         </div>
         <Link href="/moderator/queue">
           <Button className="bg-indigo-600 hover:bg-indigo-700 font-bold shadow-md shadow-indigo-500/20 h-11 px-6">
@@ -34,6 +76,12 @@ export default function ModeratorPage() {
           </Button>
         </Link>
       </div>
+
+      {error && (
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          {error}
+        </div>
+      )}
 
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
@@ -45,32 +93,36 @@ export default function ModeratorPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-extrabold">{stat.value}</div>
+              <div className="text-3xl font-extrabold">{loading ? '...' : stat.value}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <Card className="border-border/80 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">Recent Activity</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-xl font-bold">Recent Moderation Activity</CardTitle>
+          <Link href="/moderator/queue" className="text-sm font-semibold text-primary hover:underline">
+            View queue
+          </Link>
         </CardHeader>
         <CardContent className="divide-y divide-border/60">
-          {recentActivity.map((item, i) => (
-            <div key={i} className="flex items-center justify-between py-4">
+          {data.recentActivity.map((item) => (
+            <div key={item.id} className="flex items-center justify-between py-4">
               <div className="flex items-center gap-3">
-                <Badge className={
-                  item.action === 'Approved' ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800 font-bold' :
-                  item.action === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800 font-bold' :
-                  'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/40 dark:text-amber-400 dark:border-amber-800 font-bold'
-                }>
-                  {item.action}
+                <Badge className={getStatusTone(item.status)}>
+                  {getStatusLabel(item.status)}
                 </Badge>
                 <span className="font-medium text-foreground/80">{item.title}</span>
               </div>
-              <span className="text-xs text-muted-foreground font-medium">{item.time}</span>
+              <span className="text-xs text-muted-foreground font-medium">{formatRelativeTime(item.createdAt)}</span>
             </div>
           ))}
+          {!loading && data.recentActivity.length === 0 && (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No moderation activity found yet.
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

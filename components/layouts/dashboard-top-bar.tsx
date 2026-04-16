@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { useState } from 'react'
-import { Bell, Search, Menu, Home, ShoppingBag, CreditCard, BarChart3, Users, UserCircle2, Settings, Plus, Bot, Sparkles, Wand2 } from 'lucide-react'
+import { Bell, Search, Menu, Plus, Bot, Sparkles } from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { getDisplayName, getRoleLabel } from '@/lib/auth-display'
+import { getDashboardNavItems } from '@/lib/dashboard/navigation'
 import { Logo } from '@/components/ui/logo'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { cn } from '@/lib/utils'
@@ -18,33 +19,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Button } from '@/components/ui/button'
-
-function getRole(pathname: string) {
-  if (pathname.startsWith('/admin')) return 'admin'
-  if (pathname.startsWith('/moderator')) return 'moderator'
-  return 'client'
-}
-
-function getLinks(role: string) {
-  const base = [
-    { name: 'Home', href: role === 'admin' ? '/admin' : '/dashboard', icon: Home },
-    { name: 'Ads', href: '/dashboard/ads', icon: ShoppingBag },
-    { name: 'AI Generator', href: '/dashboard/ai-generator', icon: Wand2 },
-    { name: 'Payments', href: role === 'admin' ? '/admin/payments' : '/dashboard/payments', icon: CreditCard },
-    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  ]
-  
-  if (role === 'admin') {
-    base.push({ name: 'Users', href: '/admin/users', icon: Users })
-  }
-
-  base.push(
-    { name: 'Profile', href: '/dashboard/profile', icon: UserCircle2 },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings }
-  )
-  
-  return base
-}
 
 export function DashboardTopBar({ 
   isAIActive, 
@@ -59,8 +33,7 @@ export function DashboardTopBar({
 
   const displayName = getDisplayName(user, profile)
   const roleLabel = getRoleLabel(profile?.role)
-  const role = getRole(pathname)
-  const links = getLinks(role)
+  const links = getDashboardNavItems(pathname)
 
   const PROFILE_IMAGE_URL = 'https://raw.githubusercontent.com/Arslan-web-Dev/My-projects-picks/refs/heads/main/personalpicks%20(1).png'
 
@@ -118,20 +91,22 @@ export function DashboardTopBar({
                       )}
                     >
                       <Icon className="h-5 w-5" />
-                      {link.name}
+                      {link.label}
                     </Link>
                   )
                 })}
-                <div className="mt-4 pt-4 border-t border-border/10">
-                  <Link 
-                    href="/dashboard/create" 
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 rounded-xl bg-[hsl(var(--primary))] px-4 py-3 text-sm font-bold text-[hsl(var(--primary-foreground))] shadow-lg shadow-[hsl(var(--primary))]/25"
-                  >
-                    <Plus className="h-5 w-5" />
-                    Create Campaign
-                  </Link>
-                </div>
+                {pathname.startsWith('/dashboard') && (
+                  <div className="mt-4 pt-4 border-t border-border/10">
+                    <Link 
+                      href="/dashboard/create" 
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-xl bg-[hsl(var(--primary))] px-4 py-3 text-sm font-bold text-[hsl(var(--primary-foreground))] shadow-lg shadow-[hsl(var(--primary))]/25"
+                    >
+                      <Plus className="h-5 w-5" />
+                      Create Campaign
+                    </Link>
+                  </div>
+                )}
               </div>
             </SheetContent>
           </Sheet>
@@ -151,7 +126,7 @@ export function DashboardTopBar({
                   active ? "text-[hsl(var(--primary))] font-bold" : "text-muted-foreground"
                 )}
               >
-                {link.name}
+                {link.label}
                 {active && (
                   <span className="absolute bottom-[-18px] left-0 right-0 h-1 rounded-t-full bg-[hsl(var(--primary))]" />
                 )}

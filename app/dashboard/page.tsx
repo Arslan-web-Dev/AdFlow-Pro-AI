@@ -1,289 +1,310 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { MoreVertical, ArrowUpRight, CheckCircle2, Clock3, CalendarX2, Layers3 } from 'lucide-react'
+import { Bot, CalendarX2, CheckCircle2, Clock3, Layers3, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-
-const stats = [
-  { 
-    label: 'Total Ads', 
-    value: '1,284', 
-    chip: '+12%', 
-    icon: Layers3, 
-    color: 'bg-[hsl(var(--primary))] text-white',
-    chipClass: 'bg-[hsl(var(--success))] text-white',
-    borderColor: 'border-[hsl(var(--primary))]/20'
-  },
-  { 
-    label: 'Active', 
-    value: '842', 
-    chip: 'Active', 
-    icon: CheckCircle2, 
-    color: 'bg-[hsl(var(--success))] text-white',
-    chipClass: 'bg-[hsl(var(--success))] text-white',
-    borderColor: 'border-[hsl(var(--success))]/20'
-  },
-  { 
-    label: 'Pending', 
-    value: '156', 
-    chip: 'Wait', 
-    icon: Clock3, 
-    color: 'bg-[hsl(var(--warning))] text-white',
-    chipClass: 'bg-[hsl(var(--warning))] text-white',
-    borderColor: 'border-[hsl(var(--warning))]/20'
-  },
-  { 
-    label: 'Expired', 
-    value: '286', 
-    chip: '-3%', 
-    icon: CalendarX2, 
-    color: 'bg-[hsl(var(--danger))] text-white',
-    chipClass: 'bg-[hsl(var(--danger))] text-white',
-    borderColor: 'border-[hsl(var(--danger))]/20'
-  },
-]
-
-const campaigns = [
-  {
-    image: 'SG',
-    title: 'Summer Glow Campaign',
-    category: 'Retail / Lifestyle',
-    status: 'Approved',
-    statusClass: 'bg-[hsl(var(--success))] text-white',
-    performance: '75% Conversion',
-    note: 'Target',
-    created: 'May 12, 2024',
-    expiry: 'Aug 12, 2024',
-    progress: '75%',
-    barClass: 'bg-[hsl(var(--primary))]',
-  },
-  {
-    image: 'SR',
-    title: 'Skyline Real Estate',
-    category: 'B2B / PropTech',
-    status: 'Pending',
-    statusClass: 'bg-[hsl(var(--warning))] text-white',
-    performance: 'Under Review',
-    note: '',
-    created: 'May 24, 2024',
-    expiry: 'Dec 24, 2024',
-    progress: '18%',
-    barClass: 'bg-[hsl(var(--primary))]',
-  },
-  {
-    image: 'RT',
-    title: 'Retro Tech Revival',
-    category: 'Collectibles',
-    status: 'Rejected',
-    statusClass: 'bg-[hsl(var(--danger))] text-white',
-    performance: 'Compliance Issue',
-    note: '',
-    created: 'Apr 30, 2024',
-    expiry: '--',
-    progress: '10%',
-    barClass: 'bg-[hsl(var(--primary))]',
-  },
-]
-
-const activity = [
-  {
-    title: 'Campaign Approved',
-    text: 'Your "Summer Glow" campaign has been cleared for launch.',
-    time: '2 minutes ago',
-    dot: 'bg-[#bdb7ff]',
-  },
-  {
-    title: 'New Payment Received',
-    text: 'Payment for Invoice #AF-9283 was successful.',
-    time: '1 hour ago',
-    dot: 'bg-[#73c7ff]',
-  },
-  {
-    title: 'Action Required',
-    text: 'Compliance check failed for "Retro Tech" ad group.',
-    time: '3 hours ago',
-    dot: 'bg-[#ffb4aa]',
-  },
-  {
-    title: 'System Update',
-    text: 'Dashboard version 2.4.0 is now live with improvements.',
-    time: 'Yesterday',
-    dot: 'bg-white/20',
-  },
-]
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/client'
+import {
+  fetchAdvertiserDashboardData,
+  getStatusLabel,
+  getStatusTone,
+  type AdvertiserDashboardData,
+} from '@/lib/dashboard/data'
+import { useAuth } from '@/components/providers/auth-provider'
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.08,
     },
   },
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
     y: 0,
     transition: {
-      type: "spring" as const,
-      stiffness: 100,
-      damping: 15,
-    }
+      type: 'spring' as const,
+      stiffness: 110,
+      damping: 16,
+    },
   },
 }
 
+function formatCurrency(amount: number | null): string {
+  if (amount === null) return 'Not set'
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
+
+function formatDate(value: string | null): string {
+  if (!value) return 'Not scheduled'
+  return new Date(value).toLocaleDateString()
+}
+
+function formatRelativeTime(value: string | null): string {
+  if (!value) return 'Just now'
+  const now = Date.now()
+  const then = new Date(value).getTime()
+  const diffMinutes = Math.max(1, Math.round((now - then) / 60000))
+
+  if (diffMinutes < 60) return `${diffMinutes} min ago`
+
+  const diffHours = Math.round(diffMinutes / 60)
+  if (diffHours < 24) return `${diffHours} hr ago`
+
+  const diffDays = Math.round(diffHours / 24)
+  return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`
+}
+
+const emptyDashboard: AdvertiserDashboardData = {
+  totalAds: 0,
+  publishedAds: 0,
+  pendingAds: 0,
+  expiredAds: 0,
+  featuredAds: 0,
+  aiGeneratedAds: 0,
+  recentAds: [],
+  recentActivity: [],
+}
+
 export default function DashboardOverview() {
+  const supabase = useMemo(() => createClient(), [])
+  const { user } = useAuth()
+  const [data, setData] = useState<AdvertiserDashboardData>(emptyDashboard)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
+
+    const loadDashboard = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const next = await fetchAdvertiserDashboardData(supabase, user.id)
+        setData(next)
+      } catch (loadError) {
+        console.error('Error loading advertiser dashboard:', loadError)
+        setError('Unable to load live dashboard data right now.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void loadDashboard()
+  }, [supabase, user?.id])
+
+  const stats = [
+    {
+      label: 'Total Ads',
+      value: data.totalAds,
+      icon: Layers3,
+      tone: 'bg-primary text-primary-foreground',
+      border: 'border-primary/20',
+    },
+    {
+      label: 'Published',
+      value: data.publishedAds,
+      icon: CheckCircle2,
+      tone: 'bg-emerald-500 text-white',
+      border: 'border-emerald-500/20',
+    },
+    {
+      label: 'Pending Pipeline',
+      value: data.pendingAds,
+      icon: Clock3,
+      tone: 'bg-amber-500 text-white',
+      border: 'border-amber-500/20',
+    },
+    {
+      label: 'Expired',
+      value: data.expiredAds,
+      icon: CalendarX2,
+      tone: 'bg-red-500 text-white',
+      border: 'border-red-500/20',
+    },
+  ]
+
   return (
-    <motion.div 
+    <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
       className="space-y-6 lg:space-y-8"
     >
+      <motion.div variants={itemVariants} className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Project Control Panel</h1>
+          <p className="mt-2 text-muted-foreground">
+            Real-time project stats from your live ads, AI content, and workflow pipeline.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Link href="/dashboard/ads">
+            <Button variant="outline" className="rounded-xl border-border/50">
+              Manage Ads
+            </Button>
+          </Link>
+          <Link href="/dashboard/create">
+            <Button className="rounded-xl">Create New Ad</Button>
+          </Link>
+        </div>
+      </motion.div>
+
+      {error && (
+        <motion.div variants={itemVariants} className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          {error}
+        </motion.div>
+      )}
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
           <motion.div variants={containerVariants} className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {stats.map((stat) => (
-              <motion.div 
-                key={stat.label} 
+              <motion.div
+                key={stat.label}
                 variants={itemVariants}
-                whileHover={{ scale: 1.02, translateY: -5 }}
-                className={`af-panel p-7 border ${stat.borderColor} hover:shadow-lg hover:shadow-[hsl(var(--primary))]/10 transition-all duration-300`}
+                whileHover={{ scale: 1.01, y: -4 }}
+                className={`af-panel border ${stat.border} p-6`}
               >
                 <div className="flex items-start justify-between">
-                  <div className={`grid h-14 w-14 place-items-center rounded-2xl ${stat.color} shadow-md`}>
-                    <stat.icon className="h-7 w-7" />
+                  <div className={`grid h-12 w-12 place-items-center rounded-2xl ${stat.tone}`}>
+                    <stat.icon className="h-5 w-5" />
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-sm font-bold ${stat.chipClass} shadow-sm`}>{stat.chip}</span>
+                  <Badge variant="outline" className="border-border/40 bg-background/50">
+                    Live
+                  </Badge>
                 </div>
-                <p className="mt-6 text-[1.1rem] text-muted-foreground font-medium">{stat.label}</p>
-                <p className="mt-2 text-5xl font-extrabold tracking-tight text-foreground">{stat.value}</p>
+                <p className="mt-5 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {stat.label}
+                </p>
+                <p className="mt-2 text-4xl font-extrabold tracking-tight text-foreground">
+                  {loading ? '...' : stat.value}
+                </p>
               </motion.div>
             ))}
           </motion.div>
 
           <motion.section variants={itemVariants} className="af-panel overflow-hidden border-border/10">
-            <div className="flex flex-col gap-4 border-b border-border/10 px-7 py-6 sm:flex-row sm:items-center sm:justify-between bg-muted/30">
+            <div className="flex flex-col gap-3 border-b border-border/10 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-4xl font-extrabold tracking-tight text-foreground">My Active Campaigns</h1>
+                <h2 className="text-2xl font-extrabold tracking-tight text-foreground">Recent Project Ads</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Latest records from your real ads table.
+                </p>
               </div>
-              <div className="flex gap-3">
-                <Button variant="outline" className="rounded-2xl border-border/50 px-6 text-base font-semibold hover:bg-muted">Filter</Button>
-                <Button className="btn-primary rounded-2xl px-6 text-base font-semibold">Export CSV</Button>
-              </div>
-            </div>
-
-            <div className="hidden grid-cols-[2.2fr_1.1fr_1.5fr_1.1fr_1fr_40px] gap-4 border-b border-border/10 px-7 py-5 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground lg:grid">
-              <span>Campaign Name</span>
-              <span>Status</span>
-              <span>Performance</span>
-              <span>Created</span>
-              <span>Expiry</span>
-              <span />
+              <Link href="/dashboard/ads">
+                <Button variant="outline" className="rounded-xl border-border/50">
+                  View All Ads
+                </Button>
+              </Link>
             </div>
 
             <div className="divide-y divide-border/10">
-              {campaigns.map((campaign, idx) => (
-                <motion.div 
-                  key={campaign.title} 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + idx * 0.1 }}
-                  className="grid gap-5 px-7 py-6 lg:grid-cols-[2.2fr_1.1fr_1.5fr_1.1fr_1fr_40px] lg:items-center hover:bg-muted/30 transition-colors"
+              {data.recentAds.map((ad) => (
+                <div
+                  key={ad.id}
+                  className="grid gap-4 px-6 py-5 lg:grid-cols-[minmax(0,1.8fr)_1fr_1fr_auto] lg:items-center"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="grid h-14 w-14 place-items-center rounded-2xl bg-muted text-sm font-black text-muted-foreground shadow-inner group hover:bg-muted/70 transition-colors">
-                      {campaign.image}
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold leading-tight text-foreground">{campaign.title}</p>
-                      <p className="mt-1 text-lg text-muted-foreground">{campaign.category}</p>
-                    </div>
+                  <div className="min-w-0">
+                    <Link href={`/ad/${ad.slug}`} className="text-lg font-bold text-foreground transition hover:text-primary">
+                      {ad.title}
+                    </Link>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {ad.categoryName ?? 'Uncategorized'}
+                      {ad.packageName ? ` • ${ad.packageName}` : ''}
+                    </p>
                   </div>
                   <div>
-                    <span className={`inline-flex rounded-full px-4 py-2 text-lg font-bold ${campaign.statusClass}`}>{campaign.status}</span>
+                    <Badge variant="outline" className={getStatusTone(ad.status)}>
+                      {getStatusLabel(ad.status)}
+                    </Badge>
                   </div>
-                  <div>
-                    <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: campaign.progress }}
-                        transition={{ duration: 1, delay: 0.5 + idx * 0.1 }}
-                        className={`h-full rounded-full ${campaign.barClass}`} 
-                      />
-                    </div>
-                    <p className="text-lg font-semibold text-muted-foreground">{campaign.performance}</p>
-                    {campaign.note ? <p className="text-sm text-muted-foreground">{campaign.note}</p> : null}
+                  <div className="text-sm text-muted-foreground">
+                    <p>{formatCurrency(ad.price)}</p>
+                    <p className="mt-1">{formatDate(ad.expiresAt)}</p>
                   </div>
-                  <p className="text-lg text-muted-foreground">{campaign.created}</p>
-                  <p className="text-lg text-muted-foreground">{campaign.expiry}</p>
-                  <button type="button" className="text-muted-foreground transition hover:text-foreground" aria-label={`More actions for ${campaign.title}`}>
-                    <MoreVertical className="h-5 w-5" />
-                  </button>
-                </motion.div>
+                  <div className="text-right text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    {ad.isFeatured ? 'Featured' : 'Standard'}
+                  </div>
+                </div>
               ))}
-            </div>
 
-            <div className="border-t border-border/10 px-7 py-5 text-center">
-              <button type="button" className="text-xl font-semibold text-primary transition hover:text-primary/80">View All Campaigns</button>
+              {!loading && data.recentAds.length === 0 && (
+                <div className="px-6 py-10 text-center text-muted-foreground">
+                  No project ads found yet. Create your first ad to populate the control panel.
+                </div>
+              )}
             </div>
           </motion.section>
         </div>
 
         <aside className="space-y-6">
-          <motion.section variants={itemVariants} className="af-panel p-7 border-border/10">
-            <h2 className="text-4xl font-extrabold tracking-tight text-foreground">Recent Activity</h2>
-            <div className="mt-8 space-y-8">
-              {activity.map((item, idx) => (
-                <motion.div 
-                  key={item.title} 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 + idx * 0.1 }}
-                  className="flex gap-4 group"
-                >
-                  <span className={`mt-2 h-3 w-3 flex-none rounded-full bg-primary ring-4 ring-transparent group-hover:ring-primary/20 transition-all`} />
-                  <div>
-                    <p className="text-[1.7rem] font-bold leading-tight text-foreground group-hover:text-primary transition-colors">{item.title}</p>
-                    <p className="mt-2 text-lg leading-8 text-muted-foreground">{item.text}</p>
-                    <p className="mt-3 text-base text-muted-foreground">{item.time}</p>
+          <motion.section variants={itemVariants} className="af-panel p-6">
+            <h2 className="text-2xl font-extrabold tracking-tight text-foreground">Recent Activity</h2>
+            <div className="mt-6 space-y-5">
+              {data.recentActivity.map((item) => (
+                <div key={item.id} className="flex gap-3">
+                  <span className="mt-2 h-2.5 w-2.5 rounded-full bg-primary" />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-foreground">{item.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                      {formatRelativeTime(item.createdAt)}
+                    </p>
                   </div>
-                </motion.div>
+                </div>
               ))}
+
+              {!loading && data.recentActivity.length === 0 && (
+                <p className="text-sm text-muted-foreground">Your project activity will appear here once ads start moving through the pipeline.</p>
+              )}
             </div>
-            <Button variant="outline" className="mt-10 h-14 w-full rounded-2xl border-border/50 text-lg font-bold uppercase tracking-[0.1em] hover:bg-muted transition-all">View Full History</Button>
           </motion.section>
 
-          <motion.section 
-            variants={itemVariants}
-            whileHover={{ scale: 1.02 }}
-            className="overflow-hidden rounded-[28px] border border-primary/20 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] p-7 shadow-lg shadow-primary/20 relative group"
-          >
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-            <h3 className="text-4xl font-extrabold tracking-tight text-white">Upgrade to Enterprise</h3>
-            <p className="mt-4 text-lg leading-8 text-white/90">Unlock advanced analytics and direct support.</p>
-            <Button className="mt-10 h-14 rounded-2xl bg-white/90 px-8 text-xl font-bold text-primary hover:bg-white shadow-xl shadow-black/10">Upgrade Now <ArrowUpRight className="ml-2 h-5 w-5" /></Button>
+          <motion.section variants={itemVariants}>
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/15 to-accent/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl font-extrabold">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  Automation Snapshot
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm text-muted-foreground">
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-background/40 px-4 py-3">
+                  <span>Featured ads</span>
+                  <span className="font-bold text-foreground">{loading ? '...' : data.featuredAds}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-background/40 px-4 py-3">
+                  <span>AI-generated ads</span>
+                  <span className="font-bold text-foreground">{loading ? '...' : data.aiGeneratedAds}</span>
+                </div>
+                <Link href="/dashboard/ai-generator">
+                  <Button variant="outline" className="w-full rounded-xl border-border/50">
+                    <Bot className="mr-2 h-4 w-4" />
+                    Open AI Generator
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
           </motion.section>
         </aside>
       </div>
-
-      <motion.footer 
-        variants={itemVariants}
-        className="flex flex-col gap-4 border-t border-border/10 px-1 pt-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div>
-          <p className="text-2xl font-extrabold uppercase text-foreground tracking-wider">AdFlow <span className="text-primary">Pro</span></p>
-          <p className="mt-2">© 2024 AdFlow Pro. The Digital Curator.</p>
-        </div>
-        <div className="flex flex-wrap gap-6 text-xs font-semibold uppercase tracking-[0.18em]">
-          <span className="cursor-pointer hover:text-foreground transition-colors">Privacy Policy</span>
-          <span className="cursor-pointer hover:text-foreground transition-colors">Terms of Service</span>
-          <span className="cursor-pointer hover:text-foreground transition-colors">Cookie Policy</span>
-        </div>
-      </motion.footer>
     </motion.div>
   )
 }

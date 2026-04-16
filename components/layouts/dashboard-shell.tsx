@@ -12,48 +12,12 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/components/providers/auth-provider'
 import { getDisplayName, getUsername } from '@/lib/auth-display'
+import { getDashboardNavItems } from '@/lib/dashboard/navigation'
 import { 
-  Home, 
-  LayoutDashboard, 
-  Package, 
-  CreditCard, 
-  Users, 
-  Settings, 
-  Shield,
-  BarChart3,
-  FileText,
   LogOut,
   Menu,
   X,
-  LucideIcon
 } from 'lucide-react'
-
-interface NavItem {
-  label: string
-  href: string
-  icon: LucideIcon
-}
-
-const sidebarNavItems: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: Home },
-  { label: 'My Ads', href: '/dashboard/ads', icon: LayoutDashboard },
-  { label: 'Create Ad', href: '/dashboard/create', icon: Package },
-  { label: 'Payments', href: '/dashboard/payments', icon: CreditCard },
-  { label: 'Profile', href: '/dashboard/profile', icon: Users },
-  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
-]
-
-const adminNavItems: NavItem[] = [
-  { label: 'Admin Dashboard', href: '/admin', icon: BarChart3 },
-  { label: 'User Management', href: '/admin/users', icon: Users },
-  { label: 'Payment Verification', href: '/admin/payments', icon: CreditCard },
-  { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-]
-
-const moderatorNavItems: NavItem[] = [
-  { label: 'Moderator Dashboard', href: '/moderator', icon: Shield },
-  { label: 'Review Queue', href: '/moderator/queue', icon: FileText },
-]
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const DEFAULT_PROFILE_IMAGE_URL =
@@ -68,14 +32,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const username = getUsername(user)
   const avatarUrl = profile?.avatar_url ?? DEFAULT_PROFILE_IMAGE_URL
 
-  const isDashboardRoute = pathname.startsWith('/dashboard')
-  const isAdminRoute = pathname.startsWith('/admin')
-  const isModeratorRoute = pathname.startsWith('/moderator')
-
-  let navItems: NavItem[] = []
-  if (isDashboardRoute) navItems = sidebarNavItems
-  else if (isAdminRoute) navItems = adminNavItems
-  else if (isModeratorRoute) navItems = moderatorNavItems
+  const navItems = getDashboardNavItems(pathname)
 
   return (
     <div className="af-shell relative flex min-h-screen overflow-hidden bg-background text-on-surface transition-colors duration-500">
