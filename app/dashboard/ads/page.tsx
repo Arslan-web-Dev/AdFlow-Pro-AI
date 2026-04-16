@@ -41,6 +41,7 @@ const itemVariants = {
 
 type AdRow = {
   id: string
+  user_id: string
   title: string
   slug: string
   category_id: string | null
