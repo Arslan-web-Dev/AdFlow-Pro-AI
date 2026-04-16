@@ -73,6 +73,8 @@ export default function MyAdsPage() {
       setLoading(true)
       const { data: { user } } = await supabase.auth.getUser()
       
+      console.log('Current user:', user?.id)
+
       if (!user) {
         toast.error('Please login to view your ads')
         setAds([])
@@ -80,15 +82,22 @@ export default function MyAdsPage() {
         return
       }
 
+      // Temporarily fetch all ads to debug
       const { data, error } = await supabase
         .from('ads')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
+
+      console.log('Fetched ads:', data)
+      console.log('Fetch error:', error)
 
       if (error) throw error
 
-      setAds((data as AdRow[]) || [])
+      // Filter by user_id after fetching
+      const userAds = (data as AdRow[]).filter(ad => ad.user_id === user.id)
+      console.log('User ads after filter:', userAds)
+
+      setAds(userAds || [])
     } catch (error) {
       console.error('Error fetching ads:', error)
       toast.error('Failed to load ads')
