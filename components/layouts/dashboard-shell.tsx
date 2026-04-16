@@ -2,12 +2,16 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { DashboardTopBar } from './dashboard-top-bar'
 import { ThemeBar } from './site-header'
 import { AIAssistant, AIToggle } from '@/components/ai/ai-assistant'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/components/providers/auth-provider'
+import { getDisplayName, getUsername } from '@/lib/auth-display'
 import { 
   Home, 
   LayoutDashboard, 
@@ -19,6 +23,8 @@ import {
   BarChart3,
   FileText,
   LogOut,
+  Menu,
+  X,
   LucideIcon
 } from 'lucide-react'
 
@@ -50,9 +56,17 @@ const moderatorNavItems: NavItem[] = [
 ]
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
+  const DEFAULT_PROFILE_IMAGE_URL =
+    'https://raw.githubusercontent.com/Arslan-web-Dev/My-projects-picks/refs/heads/main/personalpicks%20(1).png'
+
   const [isAIActive, setIsAIActive] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+
+  const { user, profile, signOut } = useAuth()
+  const displayName = getDisplayName(user, profile)
+  const username = getUsername(user)
+  const avatarUrl = profile?.avatar_url ?? DEFAULT_PROFILE_IMAGE_URL
 
   const isDashboardRoute = pathname.startsWith('/dashboard')
   const isAdminRoute = pathname.startsWith('/admin')
@@ -109,7 +123,34 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
           {/* Sidebar Footer */}
           <div className="border-t border-border/10 p-4">
-            <Button variant="outline" className="w-full gap-2">
+            <Link
+              href="/dashboard/profile"
+              onClick={() => setSidebarOpen(false)}
+              className="mb-3 flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-muted/50"
+              title="Open profile"
+            >
+              <motion.div
+                whileHover={{ y: -2, rotate: -6, scale: 1.06 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+                className="relative h-10 w-10 shrink-0"
+              >
+                <div className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-primary to-accent opacity-30 blur-sm" />
+                <Image
+                  src={avatarUrl}
+                  alt={displayName}
+                  width={40}
+                  height={40}
+                  className="relative h-full w-full rounded-full border border-white/10 object-cover shadow-sm"
+                />
+                <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#1a1f2e] bg-green-500" />
+              </motion.div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-on-surface">{displayName}</p>
+                <p className="truncate text-[11px] text-muted-foreground/60">@{username}</p>
+              </div>
+            </Link>
+
+            <Button variant="outline" className="w-full gap-2" onClick={() => void signOut()}>
               <LogOut className="h-4 w-4" />
               Logout
             </Button>
@@ -124,11 +165,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
+            aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
 

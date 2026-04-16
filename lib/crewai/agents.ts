@@ -130,7 +130,7 @@ export function isDemoMode(): boolean {
 }
 
 // Generate mock response for demo mode
-function generateMockResponse(agent: Agent, task: string, context?: string): string {
+function generateMockResponse(agentType: AgentType, task: string, context?: string): string {
   const mockResponses: Record<AgentType, string> = {
     research: `Based on analysis of the product "${context?.split('product_name:')[1]?.split(',')[0] || 'product'}" for ${context?.split('audience:')[1]?.split(',')[0] || 'adults'} audience:\n\nKey insights:\n- Target audience values authenticity and practicality\n- Pain points include time constraints and information overload\n- Competitors focus on price, not value proposition\n- Market opportunity in emphasizing quality and convenience`,
     strategy: `Strategic approach:\n\n1. Primary angle: Emphasize how this product solves daily problems\n2. Secondary angle: Highlight quality and reliability\n3. Platform-specific tactics: Use storytelling for Facebook, quick value propositions for Twitter\n4. Tone balance: Mix humor with practical information`,
@@ -140,7 +140,7 @@ function generateMockResponse(agent: Agent, task: string, context?: string): str
     optimization: `Optimized ad:\n\nHeadline: Make the Smart Choice Today\n\nDescription: Join thousands who've upgraded their experience. Quality you can trust, results you can see.\n\nCTA: Start Your Journey\n\nHashtags: #smartchoice #quality #lifestyle\n\nOptimizations made:\n- Strengthened social proof\n- Improved clarity\n- Enhanced emotional appeal`
   }
 
-  return mockResponses[agent.type] || 'Mock response for demo mode'
+  return mockResponses[agentType] || 'Mock response for demo mode'
 }
 
 // Helper function to execute agent task
@@ -152,8 +152,8 @@ export async function executeAgentTask(
   // Use demo mode if no API key or explicitly enabled
   if (isDemoMode()) {
     console.log(`[DEMO MODE] Executing ${agent.role} task (no API call)`)
-    const demoAgent = agents[agent.role.toLowerCase() as AgentType]
-    return generateMockResponse(demoAgent, task, context)
+    const agentType = agent.role.toLowerCase() as AgentType
+    return generateMockResponse(agentType, task, context)
   }
 
   try {
@@ -186,8 +186,8 @@ Instructions:
     
     // Fall back to demo mode on API error (quota exceeded, etc.)
     console.log(`[FALLBACK] Using demo mode due to API error`)
-    const demoAgent = agents[agent.role.toLowerCase() as AgentType]
-    return generateMockResponse(demoAgent, task, context)
+    const agentType = agent.role.toLowerCase() as AgentType
+    return generateMockResponse(agentType, task, context)
   }
 }
 
