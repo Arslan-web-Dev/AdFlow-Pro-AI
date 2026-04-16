@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
-import { Sparkles, RefreshCw, Star, Save, CheckCircle2, ExternalLink } from 'lucide-react'
+import { Sparkles, RefreshCw, Star, Save, CheckCircle2, ExternalLink, ArrowRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
@@ -205,37 +205,43 @@ export default function AIGeneratorPage() {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-8 max-w-6xl"
+      className="max-w-3xl mx-auto space-y-8 pb-12"
     >
       <motion.div variants={itemVariants}>
-        <h1 className="text-3xl font-extrabold tracking-tight mb-2 text-foreground">AI Ad Generator</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">AI Ad Generator</h1>
         <p className="text-muted-foreground text-lg">Generate compelling ads using AI-powered copywriting.</p>
       </motion.div>
 
+      <div className="flex items-center gap-3 mb-8 px-2">
+        <div className="flex-1 h-2.5 rounded-full shadow-inner bg-gradient-to-r from-indigo-500 to-purple-500" />
+        <div className="flex-1 h-2.5 rounded-full shadow-inner bg-muted" />
+        <div className="flex-1 h-2.5 rounded-full shadow-inner bg-muted" />
+      </div>
+
       {/* Input Form */}
       <motion.div variants={itemVariants}>
-        <Card className="af-panel">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-foreground">
-              <Sparkles className="w-5 h-5 text-primary" /> Ad Details
+        <Card className="border-border/80 shadow-md">
+          <CardHeader className="bg-muted/20 border-b border-border/40 pb-6 mb-6">
+            <CardTitle className="text-2xl font-bold flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-indigo-500" /> Ad Details
             </CardTitle>
-            <CardDescription>Provide information about your product and target audience.</CardDescription>
+            <CardDescription className="text-base">Provide information about your product and target audience.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label className="text-sm font-semibold">Product Name</Label>
+          <CardContent className="space-y-8 px-6 md:px-8">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Product Name <span className="text-red-500">*</span></Label>
                 <Input
                   placeholder="e.g., Premium Fitness Tracker"
                   value={formData.product_name}
                   onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
-                  className="mt-2"
+                  className="h-14 text-base bg-muted/30 focus:bg-background transition-colors"
                 />
               </div>
-              <div>
-                <Label className="text-sm font-semibold">Target Audience</Label>
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Target Audience <span className="text-red-500">*</span></Label>
                 <Select value={formData.audience} onValueChange={(value) => value && setFormData({ ...formData, audience: value })}>
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="h-14 text-base bg-muted/30 focus:bg-background transition-colors">
                     <SelectValue placeholder="Select audience" />
                   </SelectTrigger>
                   <SelectContent>
@@ -247,10 +253,10 @@ export default function AIGeneratorPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="text-sm font-semibold">Platform</Label>
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Platform <span className="text-red-500">*</span></Label>
                 <Select value={formData.platform} onValueChange={(value) => value && setFormData({ ...formData, platform: value })}>
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="h-14 text-base bg-muted/30 focus:bg-background transition-colors">
                     <SelectValue placeholder="Select platform" />
                   </SelectTrigger>
                   <SelectContent>
@@ -262,10 +268,10 @@ export default function AIGeneratorPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="text-sm font-semibold">Tone</Label>
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Tone <span className="text-red-500">*</span></Label>
                 <Select value={formData.tone} onValueChange={(value) => value && setFormData({ ...formData, tone: value })}>
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="h-14 text-base bg-muted/30 focus:bg-background transition-colors">
                     <SelectValue placeholder="Select tone" />
                   </SelectTrigger>
                   <SelectContent>
@@ -279,10 +285,10 @@ export default function AIGeneratorPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border/40">
               <div className="space-y-0.5">
-                <Label htmlFor="demo-mode" className="text-sm font-semibold">Demo Mode</Label>
-                <p className="text-xs text-muted-foreground">Use mock ads (free) or real AI (requires API key)</p>
+                <Label htmlFor="demo-mode" className="text-base font-semibold">Demo Mode</Label>
+                <p className="text-sm text-muted-foreground">Use mock ads (free) or real AI (requires API key)</p>
               </div>
               <Switch
                 id="demo-mode"
@@ -291,23 +297,25 @@ export default function AIGeneratorPage() {
               />
             </div>
 
-            <Button 
-              onClick={handleGenerate}
-              disabled={loading}
-              className="w-full bg-[hsl(var(--primary))] hover:opacity-90 font-bold h-12 shadow-lg shadow-[hsl(var(--primary))]/25 transition-all active:scale-95"
-            >
-              {loading ? (
-                <>
-                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Generate Ads
-                </>
-              )}
-            </Button>
+            <div className="pt-4 flex justify-end">
+              <Button 
+                onClick={handleGenerate}
+                disabled={loading}
+                className="bg-indigo-600 hover:bg-indigo-700 h-14 px-10 text-lg font-bold shadow-md shadow-indigo-500/20 w-full sm:w-auto"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Generate Ads <ArrowRight className="ml-2 w-5 h-5" />
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </motion.div>
@@ -317,94 +325,103 @@ export default function AIGeneratorPage() {
         <>
           {/* Best Ad */}
           <motion.div variants={itemVariants}>
-            <Card className="af-panel border-[hsl(var(--success))]/20 bg-[hsl(var(--success))]/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-[hsl(var(--success))]">
-                  <CheckCircle2 className="w-5 h-5" />
+            <Card className="border-indigo-200/60 shadow-md bg-indigo-50/10 overflow-hidden">
+              <CardHeader className="bg-indigo-50/40 border-b border-indigo-100/50 pb-6 mb-6">
+                <CardTitle className="text-2xl font-bold flex items-center gap-2 text-indigo-900 dark:text-indigo-100">
+                  <CheckCircle2 className="w-6 h-6 text-indigo-600" />
                   Best Generated Ad
-                  <Badge className="ml-2 bg-[hsl(var(--success))] text-white">
+                  <Badge className="ml-2 bg-indigo-600 text-white border-none">
                     Score: {result.best_ad.overall_score.toFixed(1)}/10
                   </Badge>
                 </CardTitle>
-                <CardDescription className="text-[hsl(var(--success))]/70">
+                <CardDescription className="text-base text-indigo-700/70 dark:text-indigo-300/70">
                   This ad scored highest in engagement and conversion potential.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-8 px-6 md:px-8">
                 <div className="space-y-3">
-                  <div>
-                    <Label className="text-sm font-semibold text-foreground">Headline</Label>
-                    <p className="mt-1 text-lg font-bold text-foreground">{result.best_ad.headline || ''}</p>
+                <div className="grid gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-base font-semibold text-foreground">Headline</Label>
+                    <p className="text-xl font-extrabold text-foreground leading-tight tracking-tight">{result.best_ad.headline || ''}</p>
                   </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-foreground">Description</Label>
-                    <p className="mt-1 text-foreground">{result.best_ad.description || ''}</p>
+                  <div className="space-y-2">
+                    <Label className="text-base font-semibold text-foreground">Description</Label>
+                    <p className="text-lg text-muted-foreground leading-relaxed">{result.best_ad.description || ''}</p>
                   </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-foreground">Call to Action</Label>
-                    <p className="mt-1 text-[hsl(var(--primary))] font-semibold">{result.best_ad.cta || ''}</p>
+                  <div className="flex flex-wrap gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-base font-semibold text-foreground">Call to Action</Label>
+                      <p className="text-lg text-indigo-600 font-bold">{result.best_ad.cta || ''}</p>
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-foreground">Hashtags</Label>
-                    <div className="mt-1 flex flex-wrap gap-2">
+                  <div className="space-y-3">
+                    <Label className="text-base font-semibold text-foreground">Hashtags</Label>
+                    <div className="flex flex-wrap gap-2">
                       {(result.best_ad.hashtags || []).map((tag: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="bg-muted/50">
+                        <Badge key={idx} variant="secondary" className="bg-muted px-3 py-1 text-sm font-medium">
                           {tag}
                         </Badge>
                       ))}
                     </div>
                   </div>
                 </div>
+                </div>
 
                 {result.saved_to_db && (
-                  <div className="flex items-center gap-2 p-3 bg-[hsl(var(--success))]/10 border border-[hsl(var(--success))]/20 rounded-lg">
-                    <CheckCircle2 className="w-5 h-5 text-[hsl(var(--success))]" />
-                    <span className="text-sm text-[hsl(var(--success))]">Ad automatically saved to your ads section</span>
+                  <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-xl">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                    <span className="text-base font-medium text-emerald-800 dark:text-emerald-200">Ad automatically saved to your ads</span>
                     <Link href="/dashboard/ads" className="ml-auto">
-                      <Button size="sm" variant="ghost" className="text-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/20">
+                      <Button size="sm" variant="ghost" className="text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900/40">
                         <ExternalLink className="w-4 h-4 mr-2" />
-                        View in Ads
+                        View
                       </Button>
                     </Link>
                   </div>
                 )}
 
-                <div className="flex gap-3 pt-4 border-t border-[hsl(var(--success))]/10">
+                <div className="flex flex-col sm:flex-row gap-4 pt-6 mt-6 border-t border-border/60">
                   <Button 
                     onClick={handleSaveAd}
                     disabled={saving}
-                    className="bg-[hsl(var(--primary))] hover:opacity-90 font-bold"
+                    className="bg-indigo-600 hover:bg-indigo-700 h-14 px-8 text-base font-bold shadow-md shadow-indigo-500/20 flex-1"
                   >
-                    <Save className="w-4 h-4 mr-2" />
+                    <Save className="w-5 h-5 mr-2" />
                     Save Ad
                   </Button>
                   <Button 
                     onClick={handleRegenerate}
                     variant="outline"
-                    className="border-border/50"
+                    className="h-14 px-8 border-border/80 hover:bg-muted font-bold flex-1"
                   >
-                    <RefreshCw className="w-4 h-4 mr-2" />
+                    <RefreshCw className="w-5 h-5 mr-2" />
                     Regenerate
                   </Button>
                 </div>
 
                 {/* Feedback Section */}
-                <div className="pt-4 border-t border-[hsl(var(--success))]/10">
-                  <Label className="text-sm font-semibold text-foreground mb-3 block">Rate this ad</Label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onClick={() => handleFeedback(star)}
-                        className="hover:scale-110 transition-transform"
-                      >
-                        <Star
-                          className={`w-6 h-6 ${
-                            star <= 3 ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
-                          }`}
-                        />
-                      </button>
-                    ))}
+                <div className="pt-8 mt-8 border-t border-border/60">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-muted/20 rounded-xl border border-border/40">
+                    <div>
+                      <Label className="text-base font-bold text-foreground block mb-1">Rate this generation</Label>
+                      <p className="text-sm text-muted-foreground">Your feedback helps us improve the AI quality.</p>
+                    </div>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => handleFeedback(star)}
+                          className="p-1 hover:scale-125 transition-transform bg-background rounded-full shadow-sm border border-border/50"
+                        >
+                          <Star
+                            className={`w-6 h-6 ${
+                              star <= 4 ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -413,53 +430,53 @@ export default function AIGeneratorPage() {
 
           {/* Other Variants */}
           <motion.div variants={itemVariants}>
-            <Card className="af-panel">
-              <CardHeader>
-                <CardTitle className="text-foreground">Other Variants</CardTitle>
-                <CardDescription>Alternative ad versions for A/B testing.</CardDescription>
+            <Card className="border-border/80 shadow-md">
+              <CardHeader className="bg-muted/20 border-b border-border/40 pb-6 mb-6">
+                <CardTitle className="text-2xl font-bold">Other Variants</CardTitle>
+                <CardDescription className="text-base">Alternative ad versions for A/B testing.</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-6 md:px-8">
                 <div className="grid gap-4 md:grid-cols-2">
                   {result.ads
                     .filter((ad) => ad.variant_number !== result.best_ad.variant_number)
                     .map((ad, idx: number) => (
                       <Card 
                         key={idx}
-                        className={`af-panel cursor-pointer transition-all hover:scale-[1.02] ${
-                          selectedAd?.id === ad.id ? 'ring-2 ring-[hsl(var(--primary))]' : ''
+                        className={`cursor-pointer transition-all hover:bg-muted/30 border-border/60 shadow-sm ${
+                          selectedAd?.variant_number === ad.variant_number ? 'ring-2 ring-indigo-500 bg-indigo-50/20' : ''
                         }`}
                         onClick={() => setSelectedAd(ad)}
                       >
-                        <CardContent className="p-4 space-y-3">
+                        <CardContent className="p-5 space-y-4">
                           <div className="flex justify-between items-start">
-                            <Badge variant="outline" className="bg-muted/50 border-border/50">
+                            <Badge variant="outline" className="bg-background/50 border-border/60 font-semibold">
                               Variant {ad.variant_number}
                             </Badge>
                             <Badge className={`${
                               ad.overall_score >= 7 
-                                ? 'bg-[hsl(var(--success))] text-white' 
+                                ? 'bg-emerald-500 text-white' 
                                 : ad.overall_score >= 5 
-                                ? 'bg-[hsl(var(--warning))] text-white'
-                                : 'bg-[hsl(var(--danger))] text-white'
-                            }`}>
+                                ? 'bg-amber-500 text-white'
+                                : 'bg-rose-500 text-white'
+                            } border-none`}>
                               Score: {ad.overall_score.toFixed(1)}
                             </Badge>
                           </div>
                           <div>
-                            <p className="font-bold text-foreground text-sm">{ad.headline || ''}</p>
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{ad.description || ''}</p>
+                            <p className="font-bold text-foreground text-sm line-clamp-1">{ad.headline || ''}</p>
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-3 leading-relaxed">{ad.description || ''}</p>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 pt-2">
                             <Button 
                               size="sm" 
-                              variant="outline"
+                              variant="secondary"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleSaveAd()
                               }}
-                              className="border-border/50"
+                              className="h-9 px-4 font-bold bg-white dark:bg-zinc-900 border border-border shadow-sm hover:bg-muted"
                             >
-                              <Save className="w-3 h-3 mr-1" />
+                              <Save className="w-3.5 h-3.5 mr-2" />
                               Save
                             </Button>
                           </div>
@@ -473,23 +490,25 @@ export default function AIGeneratorPage() {
 
           {/* Research & Strategy Insights */}
           <motion.div variants={itemVariants}>
-            <Card className="af-panel">
-              <CardHeader>
-                <CardTitle className="text-foreground">AI Insights</CardTitle>
-                <CardDescription>Research findings and strategy recommendations.</CardDescription>
+            <Card className="border-border/80 shadow-md">
+              <CardHeader className="bg-muted/20 border-b border-border/40 pb-6 mb-6">
+                <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                  <Sparkles className="w-6 h-6 text-indigo-500" /> AI Insights
+                </CardTitle>
+                <CardDescription className="text-base">Research findings and strategy recommendations.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-semibold text-foreground">Research Analysis</Label>
-                  <p className="mt-2 text-sm text-muted-foreground whitespace-pre-line">
+              <CardContent className="space-y-8 px-6 md:px-8 pb-10">
+                <div className="space-y-4">
+                  <Label className="text-lg font-bold text-foreground">Research Analysis</Label>
+                  <div className="p-6 bg-muted/20 rounded-xl border border-border/40 leading-relaxed text-muted-foreground whitespace-pre-line">
                     {result.research_insights}
-                  </p>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-sm font-semibold text-foreground">Strategy Recommendations</Label>
-                  <p className="mt-2 text-sm text-muted-foreground whitespace-pre-line">
+                <div className="space-y-4 pt-4 border-t border-border/40">
+                  <Label className="text-lg font-bold text-foreground">Strategy Recommendations</Label>
+                  <div className="p-6 bg-indigo-50/20 dark:bg-indigo-950/20 rounded-xl border border-indigo-100/30 dark:border-indigo-900/30 leading-relaxed text-muted-foreground whitespace-pre-line">
                     {result.strategy_recommendations}
-                  </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
