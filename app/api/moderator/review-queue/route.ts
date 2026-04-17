@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 import connectDB from '@/lib/db/mongodb';
 import Ad from '@/lib/models/Ad';
-import { hasPermission } from '@/lib/auth/rbac';
+import { hasPermission, UserRole } from '@/lib/auth/rbac';
 import { moveToPaymentPending, rejectAd } from '@/lib/utils/ad-workflow';
 
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check permission
-    if (!hasPermission(payload.role as any, 'canReviewAds')) {
+    if (!hasPermission(payload.role as UserRole, 'canReviewAds')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 

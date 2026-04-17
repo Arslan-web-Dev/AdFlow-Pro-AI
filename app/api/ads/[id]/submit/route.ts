@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 import { submitAdForReview } from '@/lib/utils/ad-workflow';
 
 export async function POST(
@@ -7,7 +7,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -17,7 +17,7 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const result = await submitAdForReview(params.id, payload.userId);
+    const result = await submitAdForReview(params.id, payload.userId, payload.role);
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 import connectDB from '@/lib/db/mongodb';
 import User from '@/lib/models/User';
 
@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     
     if (!token) {
       return NextResponse.json(

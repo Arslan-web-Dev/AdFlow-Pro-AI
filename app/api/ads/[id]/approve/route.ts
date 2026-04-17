@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
-import { approveAd } from '@/lib/utils/ad-workflow';
-import { hasPermission } from '@/lib/auth/rbac';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
+import { moveToPaymentPending } from '@/lib/utils/ad-workflow';
+import { hasPermission, UserRole } from '@/lib/auth/rbac';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -19,11 +19,11 @@ export async function POST(
     }
 
     // Check if user has permission to approve ads
-    if (!hasPermission(payload.role as any, 'canApproveAds')) {
+    if (!hasPermission(payload.role as UserRole, 'canApproveAds')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    const result = await approveAd(params.id, payload.userId);
+    const result = await moveToPaymentPending(params.id, payload.userId, payload.role);
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });

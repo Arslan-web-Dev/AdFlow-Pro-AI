@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 import connectDB from '@/lib/db/mongodb';
 import Ad from '@/lib/models/Ad';
-import { hasPermission } from '@/lib/auth/rbac';
+import { hasPermission, UserRole } from '@/lib/auth/rbac';
 import { scheduleAd, publishAd } from '@/lib/utils/ad-workflow';
 import { setExpireDate } from '@/lib/utils/package-engine';
 
@@ -13,7 +13,7 @@ export async function POST(
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -24,7 +24,7 @@ export async function POST(
     }
 
     // Check permission
-    if (!hasPermission(payload.role as any, 'canPublishAds')) {
+    if (!hasPermission(payload.role as UserRole, 'canPublishAds')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 

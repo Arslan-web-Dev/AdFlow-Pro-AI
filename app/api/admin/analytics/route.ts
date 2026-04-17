@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
-import { hasPermission } from '@/lib/auth/rbac';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
+import { hasPermission, UserRole } from '@/lib/auth/rbac';
 import { getAnalyticsSummary } from '@/lib/utils/analytics';
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check permission
-    if (!hasPermission(payload.role as any, 'canViewAnalytics')) {
+    if (!hasPermission(payload.role as UserRole, 'canViewAnalytics')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
