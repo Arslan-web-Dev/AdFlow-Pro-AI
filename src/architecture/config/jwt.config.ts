@@ -5,8 +5,8 @@ import jwt from 'jsonwebtoken';
  * Handles JWT token generation and verification
  */
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_SECRET = process.env.JWT_SECRET ?? 'your-secret-key-change-in-production';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? '7d';
 
 export interface JWTPayload {
   userId: string;
@@ -19,6 +19,7 @@ export class JWTService {
    * Generate JWT token
    */
   public static generateToken(payload: JWTPayload): string {
+    // @ts-ignore - jsonwebtoken type definitions issue
     return jwt.sign(payload, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
     });

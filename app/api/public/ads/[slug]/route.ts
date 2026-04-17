@@ -5,12 +5,13 @@ import AdMedia from '@/lib/models/AdMedia';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     await connectDB();
 
-    const ad = await Ad.findOne({ slug: params.slug })
+    const { slug } = await params;
+    const ad = await Ad.findOne({ slug })
       .populate('userId', 'name email')
       .populate('categoryId', 'name slug')
       .populate('cityId', 'name slug')
@@ -22,7 +23,7 @@ export async function GET(
     }
 
     // Only show published and non-expired ads
-    if (ad.status !== 'published' || ad.expAt && new Date(ad.expireAt) < new Date()) {
+    if (ad.status !== 'published' || (ad.expireAt && new Date(ad.expireAt) < new Date())) {
       return NextResponse.json({ error: 'Ad not available' }, { status: 404 });
     }
 

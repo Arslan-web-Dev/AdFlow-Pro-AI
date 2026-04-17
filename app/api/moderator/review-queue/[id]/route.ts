@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 import connectDB from '@/lib/db/mongodb';
 import Ad from '@/lib/models/Ad';
 import AdMedia from '@/lib/models/AdMedia';
-import { hasPermission } from '@/lib/auth/rbac';
+import { hasPermission, UserRole } from '@/lib/auth/rbac';
 import { moveToPaymentPending, rejectAd } from '@/lib/utils/ad-workflow';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -24,21 +24,22 @@ export async function PATCH(
     }
 
     // Check permission
-    if (!hasPermission(payload.role as any, 'canReviewAds')) {
+    if (!hasPermission(payload.role as UserRole, 'canReviewAds')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     const body = await request.json();
     const { action, moderationNote } = body;
 
-    const ad = await Ad.findById(params.id).populate('packageId');
+    const { id } = await params;
+    const ad = await Ad.findById(id).populate('packageId');
     if (!ad) {
       return NextResponse.json({ error: 'Ad not found' }, { status: 404 });
     }
 
     if (action === 'approve') {
       // Move to payment pending stage
-      await moveToPaymentPending(params.id, payload.userId, payload.role);
+      await moveToPaymentPending(id, payload.userId, payload.role);
       
       // Add moderation note if provided
       if (moderationNote) {
@@ -55,7 +56,7 @@ export async function PATCH(
         return NextResponse.json({ error: 'Rejection reason is required' }, { status: 400 });
       }
 
-      await rejectAd(params.id, payload.userId, payload.role, rejectionReason);
+      await rejectAd(id, payload.userId, payload.role, rejectionReason);
       
       if (moderationNote) {
         ad.moderationNote = moderationNote;
@@ -74,12 +75,12 @@ export async function PATCH(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -90,11 +91,12 @@ export async function GET(
     }
 
     // Check permission
-    if (!hasPermission(payload.role as any, 'canReviewAds')) {
+    if (!hasPermission(payload.role as UserRole, 'canReviewAds')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    const ad = await Ad.findById(params.id)
+    const { id } = await params;
+    const ad = await Ad.findById(id)
       .populate('userId', 'name email')
       .populate('categoryId', 'name')
       .populate('cityId', 'name')
@@ -106,7 +108,7 @@ export async function GET(
     }
 
     // Get media for this ad
-    const media = await AdMedia.find({ adId: params.id });
+    const media = await AdMedia.find({ adId: id });
 
     return NextResponse.json({ ad, media });
   } catch (error) {

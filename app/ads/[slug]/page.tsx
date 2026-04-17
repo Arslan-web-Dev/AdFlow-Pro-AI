@@ -10,7 +10,7 @@ import StatusBadge from '@/components/ui/status-badge';
 import FadeOnScroll from '@/components/animations/fade-on-scroll';
 import MagnetButton from '@/components/animations/magnet-button';
 import GlareHover from '@/components/animations/glare-hover';
-import { MapPin, Calendar, Package, Clock, Star, Flag, ArrowLeft } from 'lucide-react';
+import { MapPin, Calendar, Package, Clock, Star, Flag, ArrowLeft, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 interface Ad {

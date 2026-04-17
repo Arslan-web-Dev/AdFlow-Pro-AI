@@ -3,8 +3,8 @@ import Ad from '@/lib/models/Ad';
 import Payment from '@/lib/models/Payment';
 import Log from '@/lib/models/Log';
 import SystemHealthLog from '@/lib/models/SystemHealthLog';
-import { supabaseClient } from '@/lib/supabase/client';
-import { generateAdCopy } from '@/lib/ai/ad-generator';
+import { supabaseAdmin } from '@/lib/supabase/client';
+import { createAIGeneratedAd, generateDailyAdsForUser } from '@/lib/ai/ad-generator';
 
 /**
  * Cron Job System
@@ -12,7 +12,7 @@ import { generateAdCopy } from '@/lib/ai/ad-generator';
  */
 export class CronJobSystem {
   private static instance: CronJobSystem;
-  private tasks: cron.ScheduledTask[] = [];
+  private tasks: any[] = [];
 
   private constructor() {}
 
@@ -181,7 +181,7 @@ export class CronJobSystem {
       console.log('🔄 Running sync to Supabase job...');
 
       // Check Supabase health
-      const { error } = await supabaseClient.from('users').select('id').limit(1);
+      const { error } = await supabaseAdmin.from('users').select('id').limit(1);
       if (error) {
         console.warn('⚠️ Supabase is not healthy, skipping sync');
         return;
@@ -213,7 +213,7 @@ export class CronJobSystem {
       const mongoHealthy = true; // In production, check actual connection
 
       // Check Supabase connection
-      const { error } = await supabaseClient.from('users').select('id').limit(1);
+      const { error } = await supabaseAdmin.from('users').select('id').limit(1);
       const supabaseHealthy = !error;
 
       const health = {
@@ -224,9 +224,10 @@ export class CronJobSystem {
 
       // Log health check
       await SystemHealthLog.create({
+        source: 'cron-health-check',
         status: mongoHealthy && supabaseHealthy ? 'healthy' : 'unhealthy',
-        details: health,
-        responseTime: 0, // In production, measure actual response time
+        responseMs: 0, // In production, measure actual response time
+        checkedAt: new Date(),
       });
 
       console.log('✅ System health check completed:', health);

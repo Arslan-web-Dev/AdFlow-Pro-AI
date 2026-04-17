@@ -12,18 +12,20 @@ export async function createAIGeneratedAd(userId: string, topic: string) {
     // Generate ad content using AI
     const generatedAd = await generateAdContent(topic);
 
-    // Create the ad in database
+    // Generate slug from title
+    const slug = generatedAd.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
+
+    // Create the ad in database with required fields
     const ad = await Ad.create({
       title: generatedAd.title,
       description: generatedAd.description,
-      imagePrompt: generatedAd.imagePrompt,
+      slug,
       userId,
+      packageId: 'default', // Will need to be updated by user
+      categoryId: 'default', // Will need to be updated by user
+      cityId: 'default', // Will need to be updated by user
       status: 'draft',
-      category: generatedAd.category,
-      tags: generatedAd.tags,
-      budget: 0,
-      aiGenerated: true,
-      aiPrompt: topic,
+      tags: generatedAd.tags || [],
     });
 
     // Log the AI generation
@@ -32,7 +34,7 @@ export async function createAIGeneratedAd(userId: string, topic: string) {
       action: 'ai_ad_generated',
       userId,
       adId: ad._id.toString(),
-      details: { topic, category: generatedAd.category },
+      details: { topic },
     });
 
     // Sync to Supabase
@@ -52,7 +54,7 @@ export async function generateDailyAdsForUser(userId: string, topics: string[] =
     // If no topics provided, generate suggestions based on user's previous ads
     if (topics.length === 0) {
       const userAds = await Ad.find({ userId }).limit(5);
-      const categories = [...new Set(userAds.map(ad => ad.category))];
+      const categories = [...new Set(userAds.map(ad => ad.categoryId))];
       
       if (categories.length > 0) {
         // Generate topics based on most common category

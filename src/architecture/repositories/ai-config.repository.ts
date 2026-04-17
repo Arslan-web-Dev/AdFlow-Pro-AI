@@ -1,6 +1,5 @@
 import BaseRepository from './base.repository';
 import AIConfigModel, { IAIConfig } from '../../models/ai-config.model';
-import supabaseSync from './supabase-sync.repository';
 
 /**
  * AI Config Repository
@@ -26,28 +25,18 @@ export class AIConfigRepository extends BaseRepository<IAIConfig> {
   }
 
   /**
-   * Create AI config with sync
+   * Create AI config
    */
   public async createConfig(data: Partial<IAIConfig>): Promise<IAIConfig> {
     const config = await this.create(data);
-    
-    // Sync to Supabase
-    await supabaseSync.syncRecord('ai_configs', config.toJSON(), 'create');
-    
     return config;
   }
 
   /**
-   * Update AI config with sync
+   * Update AI config
    */
   public async updateConfig(configId: string, data: Partial<IAIConfig>): Promise<IAIConfig | null> {
     const config = await this.updateById(configId, data);
-    
-    if (config) {
-      // Sync to Supabase
-      await supabaseSync.syncRecord('ai_configs', config.toJSON(), 'update');
-    }
-    
     return config;
   }
 
@@ -59,11 +48,6 @@ export class AIConfigRepository extends BaseRepository<IAIConfig> {
     if (!config) return null;
 
     const updated = await this.updateById(configId, { isActive: !config.isActive });
-    
-    if (updated) {
-      await supabaseSync.syncRecord('ai_configs', updated.toJSON(), 'update');
-    }
-    
     return updated;
   }
 }
