@@ -280,6 +280,7 @@ export default function SettingsPage() {
   }
 
   const handleLogoutAllDevices = async () => {
+    if (!supabase) return
     try {
       await supabase.auth.signOut({ scope: 'global' })
       toast.success('Logged out from all devices')
