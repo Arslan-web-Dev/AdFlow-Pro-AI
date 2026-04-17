@@ -8,7 +8,7 @@ import { setExpireDate } from '@/lib/utils/package-engine';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -31,7 +31,8 @@ export async function POST(
     const body = await request.json();
     const { action, publishDate, isFeatured } = body;
 
-    const ad = await Ad.findById(params.id);
+    const { id } = await params;
+    const ad = await Ad.findById(id);
     if (!ad) {
       return NextResponse.json({ error: 'Ad not found' }, { status: 404 });
     }

@@ -5,7 +5,7 @@ import { hasPermission, UserRole } from '@/lib/auth/rbac';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = extractTokenFromHeader(request.headers.get('authorization'));
@@ -30,7 +30,8 @@ export async function POST(
       return NextResponse.json({ error: 'Rejection reason is required' }, { status: 400 });
     }
 
-    const result = await rejectAd(params.id, payload.userId, payload.role, reason);
+    const { id } = await params;
+    const result = await rejectAd(id, payload.userId, payload.role, reason);
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });

@@ -4,7 +4,10 @@ import { hasPermission, UserRole } from '@/lib/auth/rbac';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 
 // GET /api/users/[id] - Get user by ID (Admin only)
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
@@ -21,7 +24,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const targetUser = await User.findById(params.id).select('-password');
+    const { id } = await params;
+    const targetUser = await User.findById(id).select('-password');
     if (!targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -34,7 +38,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PATCH /api/users/[id] - Update user (Admin only)
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
@@ -59,7 +66,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     if (role) updateData.role = role;
     if (isActive !== undefined) updateData.isActive = isActive;
 
-    const updatedUser = await User.findByIdAndUpdate(params.id, updateData, { new: true }).select('-password');
+    const { id } = await params;
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true }).select('-password');
     if (!updatedUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -72,7 +80,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 // DELETE /api/users/[id] - Delete user (Admin only)
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
@@ -89,7 +100,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const deletedUser = await User.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const deletedUser = await User.findByIdAndDelete(id);
     if (!deletedUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }

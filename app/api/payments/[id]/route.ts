@@ -6,7 +6,7 @@ import { hasPermission, UserRole } from '@/lib/auth/rbac';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -21,7 +21,8 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const payment = await Payment.findById(params.id).populate('adId', 'title status');
+    const { id } = await params;
+    const payment = await Payment.findById(id).populate('adId', 'title status');
 
     if (!payment) {
       return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
@@ -46,7 +47,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -69,7 +70,8 @@ export async function PATCH(
     const body = await request.json();
     const { status, rejectionReason } = body;
 
-    const payment = await Payment.findById(params.id);
+    const { id } = await params;
+    const payment = await Payment.findById(id);
     if (!payment) {
       return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
     }

@@ -5,7 +5,7 @@ import { hasPermission, UserRole } from '@/lib/auth/rbac';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = extractTokenFromHeader(request.headers.get('authorization'));
@@ -23,7 +23,8 @@ export async function POST(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    const result = await moveToPaymentPending(params.id, payload.userId, payload.role);
+    const { id } = await params;
+    const result = await moveToPaymentPending(id, payload.userId, payload.role);
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });

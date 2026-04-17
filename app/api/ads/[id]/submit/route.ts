@@ -4,7 +4,7 @@ import { submitAdForReview } from '@/lib/utils/ad-workflow';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = extractTokenFromHeader(request.headers.get('authorization'));
@@ -17,7 +17,8 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const result = await submitAdForReview(params.id, payload.userId, payload.role);
+    const { id } = await params;
+    const result = await submitAdForReview(id, payload.userId, payload.role);
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });

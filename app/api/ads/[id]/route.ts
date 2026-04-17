@@ -10,7 +10,7 @@ import { transitionAdStatus } from '@/lib/utils/ad-workflow';
 // GET single ad by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -25,7 +25,8 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const ad = await Ad.findById(params.id)
+    const { id } = await params;
+    const ad = await Ad.findById(id)
       .populate('userId', 'name email avatar')
       .populate('moderatorId', 'name email');
 
@@ -48,7 +49,7 @@ export async function GET(
 // PUT update ad
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -63,7 +64,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const ad = await Ad.findById(params.id);
+    const { id } = await params;
+    const ad = await Ad.findById(id);
     if (!ad) {
       return NextResponse.json({ error: 'Ad not found' }, { status: 404 });
     }
@@ -119,7 +121,7 @@ export async function PUT(
 // DELETE ad
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -134,7 +136,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const ad = await Ad.findById(params.id);
+    const { id } = await params;
+    const ad = await Ad.findById(id);
     if (!ad) {
       return NextResponse.json({ error: 'Ad not found' }, { status: 404 });
     }
@@ -152,14 +155,14 @@ export async function DELETE(
       );
     }
 
-    await Ad.findByIdAndDelete(params.id);
+    await Ad.findByIdAndDelete(id);
 
     // Log the deletion
     await Log.create({
       level: 'info',
       action: 'ad_deleted',
       userId: payload.userId,
-      adId: params.id,
+      adId: id,
       details: { title: ad.title },
     });
 

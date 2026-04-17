@@ -4,7 +4,10 @@ import connectDB from '@/lib/db/mongodb';
 import Log from '@/lib/models/Log';
 
 // PATCH /api/notifications/[id] - Mark notification as read
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     await connectDB();
 
@@ -18,7 +21,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const notification = await Log.findById(params.id);
+    const { id } = await params;
+    const notification = await Log.findById(id);
     if (!notification) {
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
     }
@@ -41,7 +45,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 // DELETE /api/notifications/[id] - Delete notification
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     await connectDB();
 
@@ -55,7 +62,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const notification = await Log.findById(params.id);
+    const { id } = await params;
+    const notification = await Log.findById(id);
     if (!notification) {
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
     }
@@ -65,7 +73,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await Log.findByIdAndDelete(params.id);
+    await Log.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true, message: 'Notification deleted' });
   } catch (error) {
