@@ -1,9 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+
+  return createClient(supabaseUrl, supabaseKey)
+}
 
 export interface UserSettings {
   id: string
@@ -33,6 +39,7 @@ export interface UserSettings {
 }
 
 export async function getUserSettings(userId: string): Promise<UserSettings | null> {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from('user_settings')
     .select('*')
@@ -51,6 +58,7 @@ export async function updateUserSettings(
   userId: string,
   settings: Partial<UserSettings>
 ): Promise<boolean> {
+  const supabase = getSupabaseClient()
   const { error } = await supabase
     .from('user_settings')
     .upsert({
@@ -68,6 +76,7 @@ export async function updateUserSettings(
 }
 
 export async function createUserSettingsIfNotExists(userId: string): Promise<void> {
+  const supabase = getSupabaseClient()
   const { data: existing } = await supabase
     .from('user_settings')
     .select('id')

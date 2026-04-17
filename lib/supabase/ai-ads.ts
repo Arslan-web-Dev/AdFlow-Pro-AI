@@ -1,9 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+
+  return createClient(supabaseUrl, supabaseKey)
+}
 
 // Types for AI-generated ads
 export interface AIGeneratedAd {
@@ -63,6 +69,7 @@ export interface AIGenerationHistory {
 // Save AI-generated ad to database
 export async function saveAIGeneratedAd(ad: AIGeneratedAd): Promise<AIGeneratedAd> {
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('ai_generated_ads')
       .insert(ad)
@@ -80,6 +87,7 @@ export async function saveAIGeneratedAd(ad: AIGeneratedAd): Promise<AIGeneratedA
 // Get all AI-generated ads for a user
 export async function getAIGeneratedAds(userId: string): Promise<AIGeneratedAd[]> {
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('ai_generated_ads')
       .select('*')
@@ -97,6 +105,7 @@ export async function getAIGeneratedAds(userId: string): Promise<AIGeneratedAd[]
 // Get top-rated AI-generated ads for learning
 export async function getTopRatedAds(limit: number = 10): Promise<AIGeneratedAd[]> {
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('ai_generated_ads')
       .select('*')
@@ -115,6 +124,7 @@ export async function getTopRatedAds(limit: number = 10): Promise<AIGeneratedAd[
 // Save feedback for AI-generated ad
 export async function saveAIAdFeedback(feedback: AIAdFeedback): Promise<AIAdFeedback> {
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('ai_ad_feedback')
       .insert(feedback)
@@ -132,6 +142,7 @@ export async function saveAIAdFeedback(feedback: AIAdFeedback): Promise<AIAdFeed
 // Get feedback for an AI-generated ad
 export async function getAIAdFeedback(aiAdId: string): Promise<AIAdFeedback[]> {
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('ai_ad_feedback')
       .select('*')
@@ -149,6 +160,7 @@ export async function getAIAdFeedback(aiAdId: string): Promise<AIAdFeedback[]> {
 // Save generation history for learning
 export async function saveGenerationHistory(history: AIGenerationHistory): Promise<AIGenerationHistory> {
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('ai_generation_history')
       .insert(history)
@@ -166,6 +178,7 @@ export async function saveGenerationHistory(history: AIGenerationHistory): Promi
 // Get generation history for a user
 export async function getGenerationHistory(userId: string): Promise<AIGenerationHistory[]> {
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('ai_generation_history')
       .select('*')
@@ -216,6 +229,7 @@ export async function updateAIAdStatus(
     const updateData: { status: string; ad_id?: string } = { status }
     if (adId) updateData.ad_id = adId
 
+    const supabase = getSupabaseClient()
     const { error } = await supabase
       .from('ai_generated_ads')
       .update(updateData)
@@ -252,6 +266,7 @@ export async function saveAIAdToMainAds(
       rank_score: 0,
     }
 
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('ads')
       .insert(adData)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo as useMemoReact } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
@@ -44,12 +44,12 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
 
-  const supabase = createBrowserClient(
+  const supabase = useMemoReact(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ), [])
 
-  const ruleResults = useMemo(
+  const ruleResults = useMemoReact(
     () => passwordRules.map((rule) => ({ ...rule, passed: rule.test(password) })),
     [password]
   )

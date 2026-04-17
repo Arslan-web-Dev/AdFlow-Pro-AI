@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,14 +8,14 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { 
-  Bell, 
-  Globe, 
-  Trash2, 
-  Shield, 
-  Lock, 
-  Download, 
-  Smartphone, 
+import {
+  Bell,
+  Globe,
+  Trash2,
+  Shield,
+  Lock,
+  Download,
+  Smartphone,
   CreditCard,
   Palette,
   Languages,
@@ -54,11 +54,11 @@ export default function SettingsPage() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [loading, setLoading] = useState(true)
-  
-  const supabase = createBrowserClient(
+
+  const supabase = useMemo(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ), [])
   
   // 2FA Settings
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)

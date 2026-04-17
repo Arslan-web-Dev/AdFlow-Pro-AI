@@ -11,10 +11,16 @@ import { PlusCircle, ExternalLink, Edit, Trash2, AlertCircle } from 'lucide-reac
 import { toast } from 'sonner'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+
+  return createClient(supabaseUrl, supabaseKey)
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -81,7 +87,9 @@ export default function MyAdsPage() {
   const fetchAds = async () => {
     try {
       setLoading(true)
-      
+
+      const supabase = getSupabaseClient()
+
       // Fetch all ads from database (not filtered by user_id for now)
       const { data, error } = await supabase
         .from('ads')
@@ -124,6 +132,7 @@ export default function MyAdsPage() {
   const confirmDelete = async () => {
     if (adToDelete) {
       try {
+        const supabase = getSupabaseClient()
         const { error } = await supabase
           .from('ads')
           .delete()
