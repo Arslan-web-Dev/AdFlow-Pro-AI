@@ -50,6 +50,7 @@ type AdRow = {
   is_featured: boolean | null
   image_url?: string | null
   image_urls?: string[] | null
+  related_products?: string[] | null
 }
 
 export default function MyAdsPage() {
@@ -240,14 +241,33 @@ export default function MyAdsPage() {
                     <h3 className="text-lg font-bold text-foreground line-clamp-1">{ad.title}</h3>
                     <p className="text-sm text-muted-foreground">{ad.category_id ? `Category ID: ${ad.category_id}` : 'AI Generated Ad'}</p>
                   </div>
-                  
+
+                  {/* Related Products */}
+                  {ad.related_products && ad.related_products.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Related Products</p>
+                      <div className="flex flex-wrap gap-1">
+                        {ad.related_products.slice(0, 3).map((product, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {product}
+                          </Badge>
+                        ))}
+                        {ad.related_products.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{ad.related_products.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-black text-foreground">
                       {ad.price ? `$${Number(ad.price).toLocaleString()}` : 'N/A'}
                     </span>
-                    <Badge 
-                      className={ad.status === 'published' 
-                        ? 'bg-[hsl(var(--success))] text-white font-bold' 
+                    <Badge
+                      className={ad.status === 'published'
+                        ? 'bg-[hsl(var(--success))] text-white font-bold'
                         : 'bg-[hsl(var(--warning))] text-white font-bold'
                       }
                     >
