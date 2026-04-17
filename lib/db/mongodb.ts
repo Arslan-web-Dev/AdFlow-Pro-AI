@@ -1,9 +1,13 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('MONGODB_URI not defined in production. Using Supabase as primary database.');
+  } else {
+    throw new Error('Please define the MONGODB_URI environment variable for development');
+  }
 }
 
 interface MongooseCache {
@@ -22,11 +26,17 @@ if (!global.mongoose) {
 }
 
 async function connectDB() {
+  // If no MongoDB URI in production, return null to indicate using Supabase
+  if (!MONGODB_URI && process.env.NODE_ENV === 'production') {
+    console.log('Using Supabase as primary database (MongoDB not configured)');
+    return null;
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
 
-  if (!cached.promise) {
+  if (!cached.promise && MONGODB_URI) {
     const opts = {
       bufferCommands: false,
     };
@@ -37,7 +47,9 @@ async function connectDB() {
   }
 
   try {
-    cached.conn = await cached.promise;
+    if (cached.promise) {
+      cached.conn = await cached.promise;
+    }
   } catch (e) {
     cached.promise = null;
     throw e;
