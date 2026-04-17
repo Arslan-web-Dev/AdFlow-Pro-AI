@@ -9,18 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { PlusCircle, ExternalLink, Edit, Trash2, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { createClient } from '@supabase/supabase-js'
-
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase environment variables')
-  }
-
-  return createClient(supabaseUrl, supabaseKey)
-}
+import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -60,6 +50,7 @@ type AdRow = {
 }
 
 export default function MyAdsPage() {
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
   const [ads, setAds] = useState<AdRow[]>([])
   const [loading, setLoading] = useState(true)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -72,23 +63,27 @@ export default function MyAdsPage() {
   })
 
   useEffect(() => {
-    fetchAds()
+    setSupabase(createClient())
   }, [])
+
+  useEffect(() => {
+    if (!supabase) return
+    fetchAds()
+  }, [supabase])
 
   // Refresh ads when component gains focus (real-time sync)
   useEffect(() => {
     const handleFocus = () => {
-      fetchAds()
+      if (supabase) fetchAds()
     }
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
-  }, [])
+  }, [supabase])
 
   const fetchAds = async () => {
+    if (!supabase) return
     try {
       setLoading(true)
-
-      const supabase = getSupabaseClient()
 
       // Fetch all ads from database (not filtered by user_id for now)
       const { data, error } = await supabase
@@ -130,9 +125,8 @@ export default function MyAdsPage() {
   }
 
   const confirmDelete = async () => {
-    if (adToDelete) {
+    if (adToDelete && supabase) {
       try {
-        const supabase = getSupabaseClient()
         const { error } = await supabase
           .from('ads')
           .delete()
