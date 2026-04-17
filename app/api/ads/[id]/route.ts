@@ -1,139 +1,170 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/auth/jwt';
+import connectDB from '@/lib/db/mongodb';
+import Ad from '@/lib/models/Ad';
+import { canEditAd, canDeleteAd, hasPermission } from '@/lib/auth/rbac';
+import Log from '@/lib/models/Log';
+import { syncAdToSupabase } from '@/lib/supabase/sync';
+import { transitionAdStatus } from '@/lib/utils/ad-workflow';
 
-// GET - Fetch single ad
+// GET single ad by ID
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    await connectDB();
 
-    const { data: ad, error } = await supabase
-      .from('ads')
-      .select('*')
-      .eq('id', params.id)
-      .single()
-
-    if (error) {
-      return NextResponse.json(
-        { error: 'Ad not found' },
-        { status: 404 }
-      )
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    return NextResponse.json({ ad }, { status: 200 })
+    const payload = verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const ad = await Ad.findById(params.id)
+      .populate('userId', 'name email avatar')
+      .populate('moderatorId', 'name email');
+
+    if (!ad) {
+      return NextResponse.json({ error: 'Ad not found' }, { status: 404 });
+    }
+
+    // Check permission - clients can only view their own ads
+    if (payload.role === 'client' && ad.userId.toString() !== payload.userId) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    return NextResponse.json({ ad });
   } catch (error) {
-    console.error('Error fetching ad:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Get ad error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// PUT - Update ad
+// PUT update ad
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    await connectDB();
 
-    const body = await request.json()
-    
-    const { 
-      title, 
-      description, 
-      price, 
-      category, 
-      city, 
-      imageUrls, 
-      videoUrl,
-      status,
-      is_featured 
-    } = body
-
-    // Generate new slug if title changed
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-
-    const { data: ad, error } = await supabase
-      .from('ads')
-      .update({
-        title,
-        slug,
-        description,
-        price: price ? parseFloat(price) : undefined,
-        category_id: category,
-        city_id: city,
-        status,
-        is_featured,
-        thumbnail: imageUrls?.[0] || undefined,
-        images: imageUrls,
-        video_url: videoUrl || undefined,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', params.id)
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error updating ad:', error)
-      return NextResponse.json(
-        { error: 'Failed to update ad' },
-        { status: 500 }
-      )
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    return NextResponse.json({ success: true, ad }, { status: 200 })
+    const payload = verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const ad = await Ad.findById(params.id);
+    if (!ad) {
+      return NextResponse.json({ error: 'Ad not found' }, { status: 404 });
+    }
+
+    // Check edit permission
+    if (!canEditAd(payload.role as any, ad.userId.toString(), payload.userId)) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    // Can only edit draft or rejected ads
+    if (ad.status !== 'draft' && ad.status !== 'rejected') {
+      return NextResponse.json(
+        { error: 'Can only edit draft or rejected ads' },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    const { title, description, imagePrompt, category, tags, budget, startDate, endDate } = body;
+
+    // Update ad
+    if (title) ad.title = title;
+    if (description) ad.description = description;
+    if (imagePrompt) ad.imagePrompt = imagePrompt;
+    if (category) ad.category = category;
+    if (tags) ad.tags = tags;
+    if (budget !== undefined) ad.budget = budget;
+    if (startDate) ad.startDate = startDate;
+    if (endDate) ad.endDate = endDate;
+
+    await ad.save();
+
+    // Log the update
+    await Log.create({
+      level: 'info',
+      action: 'ad_updated',
+      userId: payload.userId,
+      adId: ad._id.toString(),
+      details: { title: ad.title },
+    });
+
+    // Sync to Supabase
+    await syncAdToSupabase(ad._id.toString());
+
+    return NextResponse.json({ ad });
   } catch (error) {
-    console.error('Error in update ad API:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Update ad error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// DELETE - Delete ad
+// DELETE ad
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    await connectDB();
 
-    const { error } = await supabase
-      .from('ads')
-      .delete()
-      .eq('id', params.id)
-
-    if (error) {
-      console.error('Error deleting ad:', error)
-      return NextResponse.json(
-        { error: 'Failed to delete ad' },
-        { status: 500 }
-      )
+    const token = request.cookies.get('token')?.value;
+    if (!token) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    return NextResponse.json({ success: true }, { status: 200 })
+    const payload = verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const ad = await Ad.findById(params.id);
+    if (!ad) {
+      return NextResponse.json({ error: 'Ad not found' }, { status: 404 });
+    }
+
+    // Check delete permission
+    if (!canDeleteAd(payload.role as any, ad.userId.toString(), payload.userId)) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    // Can only delete draft or rejected ads
+    if (ad.status !== 'draft' && ad.status !== 'rejected') {
+      return NextResponse.json(
+        { error: 'Can only delete draft or rejected ads' },
+        { status: 400 }
+      );
+    }
+
+    await Ad.findByIdAndDelete(params.id);
+
+    // Log the deletion
+    await Log.create({
+      level: 'info',
+      action: 'ad_deleted',
+      userId: payload.userId,
+      adId: params.id,
+      details: { title: ad.title },
+    });
+
+    return NextResponse.json({ message: 'Ad deleted successfully' });
   } catch (error) {
-    console.error('Error in delete ad API:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Delete ad error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

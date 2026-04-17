@@ -1,252 +1,190 @@
-import Link from 'next/link'
-import Image from 'next/image'
-import { ArrowRight, BadgeCheck, Rocket, Sparkles } from 'lucide-react'
-import { SiteHeader, ThemeBar } from '@/components/layouts/site-header'
-import { SiteFooter } from '@/components/layouts/site-footer'
-import { MeetTheCreator } from '@/components/dashboard/meet-the-creator'
-import { Button } from '@/components/ui/button'
-import { DUMMY_ADS } from '@/lib/dummy-data'
+'use client';
 
-const featuredListings = [
-  {
-    tier: 'Premium Tier',
-    category: 'Analytics Platform',
-    title: 'Sidebar Banner - 7M Views',
-    price: '$1,200',
-    meta: '30 Day Placement',
-    image: DUMMY_ADS[0].thumbnail,
-  },
-  {
-    tier: 'Standard Tier',
-    category: 'Curated Newsletter',
-    title: 'Main Slot - Dev Digest',
-    price: '$450',
-    meta: 'Per Issue',
-    image: DUMMY_ADS[2].thumbnail,
-  },
-  {
-    tier: 'Premium Tier',
-    category: 'Product Search',
-    title: 'Search Top Result',
-    price: '$2,800',
-    meta: '14 Day Exclusive',
-    image: DUMMY_ADS[1].thumbnail,
-  },
-  {
-    tier: 'Basic Tier',
-    category: 'Blog Network',
-    title: 'Native Text Placement',
-    price: '$150',
-    meta: '7 Day Slot',
-    image: DUMMY_ADS[2].thumbnail,
-  },
-]
-
-const packages = [
-  {
-    name: 'Basic',
-    price: '$49',
-    period: '/week',
-    features: ['Single Listing Placement', 'Standard Analytics', 'Community Support'],
-  },
-  {
-    name: 'Standard',
-    price: '$149',
-    period: '/month',
-    features: ['3 Concurrent Listings', 'Advanced Audience Insights', 'Priority Review', 'Ad Optimization AI'],
-    featured: true,
-  },
-  {
-    name: 'Premium',
-    price: '$499',
-    period: '/quarter',
-    features: ['Unlimited Listings', 'Full API Access', 'Custom White-labelling', 'Dedicated Account Lead'],
-  },
-]
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import AntigravityBackground from '@/components/animations/antigravity-bg';
+import BlobCursor from '@/components/animations/blob-cursor';
+import GlassCard from '@/components/ui/glass-card';
+import Button from '@/components/ui/button';
+import MagnetButton from '@/components/animations/magnet-button';
+import GlareHover from '@/components/animations/glare-hover';
+import FadeOnScroll from '@/components/animations/fade-on-scroll';
+import ElectricBorder from '@/components/animations/electric-border';
+import { Sparkles, Zap, Shield, TrendingUp, Users, Bot } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="af-shell relative flex min-h-screen flex-col overflow-x-hidden bg-background">
-      <SiteHeader />
-      <ThemeBar />
-      <main className="flex-1">
-        <section className="af-hero-gradient relative flex min-h-[560px] items-center justify-center overflow-hidden px-4 pb-20 pt-12 sm:px-6 lg:min-h-[640px] lg:px-10 lg:pb-28 lg:pt-16">
-          <div className="pointer-events-none absolute inset-0 -z-0 opacity-30">
-            <div className="absolute left-1/4 top-0 h-96 w-96 rounded-full bg-primary/40 blur-[128px]" />
-            <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-accent/30 blur-[128px]" />
-          </div>
-          <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
-            <div className="af-pill mb-8">
-              <span className="h-2 w-2 rounded-full bg-primary" />
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span>New: AI-Powered Targeting</span>
+    <div className="min-h-screen bg-black text-white overflow-hidden">
+      <BlobCursor />
+      <AntigravityBackground />
+      
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-3"
+          >
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+              <span className="text-white font-bold text-xl">A</span>
             </div>
-            <h1 className="text-balance text-5xl font-extrabold tracking-tight text-on-surface md:text-6xl lg:text-7xl">
-              Launch Your Ads
+            <span className="text-white font-bold text-xl">AdFlow Pro</span>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-4"
+          >
+            <Link href="/login">
+              <Button variant="ghost">Login</Button>
+            </Link>
+            <Link href="/register">
+              <Button variant="primary">Get Started</Button>
+            </Link>
+          </motion.div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-4xl mx-auto"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/20 border border-purple-500/30 mb-6"
+            >
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              <span className="text-purple-300 text-sm font-medium">AI-Powered Advertising Platform</span>
+            </motion.div>
+            
+            <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
+              <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Transform Your Ads
+              </span>
               <br />
-              <span className="af-gradient-text">Like a Pro</span>
+              <span className="text-white">with AI Intelligence</span>
             </h1>
-            <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-on-surface-variant sm:text-xl">
-              Access high-traffic sponsorship opportunities and premium placements across the digital curator network. Precision data meets editorial excellence.
+            
+            <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+              The next-generation sponsored ads marketplace powered by artificial intelligence. 
+              Create, manage, and optimize your advertising campaigns with cutting-edge automation.
             </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/dashboard/create">
-                <Button className="af-gradient flex h-14 items-center gap-2 rounded-xl px-8 text-base font-bold text-primary-foreground shadow-lg shadow-primary/25 hover:opacity-95">
-                  Post Ad <Rocket className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/explore">
-                <Button
-                  variant="secondary"
-                  className="h-14 rounded-xl border border-border/40 bg-surface-container-high px-8 text-base font-bold text-on-surface hover:bg-muted/50"
-                >
-                  Explore Ads
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-surface-container-low/40 px-4 py-12 sm:px-6 lg:px-10 shadow-inner shadow-black/5 flex items-center justify-center">
-          <div className="mx-auto max-w-[1280px] text-center">
-            <p className="text-center text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              Trusted by Industry Leaders
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-10 opacity-50 grayscale transition-all duration-500 hover:opacity-90 hover:grayscale-0 md:gap-16">
-              {['MetaFlow', 'Curio', 'Pulse', 'Apex', 'Signal', 'Arc'].map((name) => (
-                <span key={name} className="text-sm font-bold text-on-surface-variant">
-                  {name}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-4 py-20 sm:px-6 lg:px-10">
-          <div className="mx-auto max-w-7xl">
-            <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h2 className="text-3xl font-bold tracking-tight text-on-surface sm:text-4xl">Featured Listings</h2>
-                <p className="mt-2 text-on-surface-variant">Top performing placements currently available.</p>
-              </div>
-              <Link
-                href="/explore"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:underline"
-              >
-                View Marketplace <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {featuredListings.map((listing) => (
-                <article
-                  key={listing.title}
-                  className="group overflow-hidden rounded-xl bg-surface-container transition-colors duration-300 hover:bg-surface-container-high"
-                >
-                  <div className="relative aspect-video overflow-hidden">
-                    <Image
-                      src={listing.image}
-                      alt={listing.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute left-3 top-3 rounded border border-white/10 bg-background/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-primary backdrop-blur-md">
-                      {listing.tier}
-                    </div>
-                  </div>
-                  <div className="space-y-3 p-5">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{listing.category}</p>
-                    <h3 className="text-lg font-bold text-on-surface">{listing.title}</h3>
-                    <div className="flex items-center justify-between pt-4">
-                      <span className="text-xl font-black text-on-surface">{listing.price}</span>
-                      <span className="text-xs text-on-surface-variant">{listing.meta}</span>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="pricing" className="bg-surface-container-low/50 px-4 py-20 sm:px-6 lg:px-10">
-          <div className="mx-auto max-w-7xl">
-            <div className="mx-auto mb-14 max-w-2xl text-center">
-              <h2 className="text-4xl font-extrabold tracking-tight text-on-surface">Marketplace Packages</h2>
-              <p className="mt-3 text-on-surface-variant">
-                Flexible plans designed for publishers and advertisers of all sizes.
-              </p>
-            </div>
-            <div className="grid gap-8 lg:grid-cols-3">
-              {packages.map((pkg) => (
-                <div
-                  key={pkg.name}
-                  className={`relative flex flex-col rounded-2xl p-6 md:p-8 ${pkg.featured ? 'scale-100 border-2 border-primary bg-muted/40 shadow-2xl md:scale-[1.02]' : 'bg-surface-container/60 hover:bg-surface-container transition-all hover:scale-[1.01]'}`}
-                >
-                  {pkg.featured && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-[10px] font-black uppercase tracking-widest text-primary-foreground">
-                      Most Popular
-                    </span>
-                  )}
-                  <h3 className="text-xl font-bold text-on-surface">{pkg.name}</h3>
-                  <div className="mt-2 flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-on-surface">{pkg.price}</span>
-                    <span className="text-sm text-on-surface-variant">{pkg.period}</span>
-                  </div>
-                  <ul className="mt-8 flex flex-1 flex-col gap-4 text-sm text-on-surface-variant">
-                    {pkg.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        <span className={pkg.featured ? 'text-on-surface' : ''}>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className={`mt-10 h-12 w-full rounded-xl text-base font-bold ${pkg.featured ? 'af-gradient text-primary-foreground shadow-lg shadow-primary/20' : ''}`}
-                    variant={pkg.featured ? 'default' : 'outline'}
-                  >
-                    {pkg.featured ? 'Choose Plan' : pkg.name === 'Premium' ? 'Contact Sales' : 'Get Started'}
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <MagnetButton>
+                <Link href="/register">
+                  <Button variant="primary" size="lg" className="px-8">
+                    Start Free Trial
                   </Button>
-                </div>
-              ))}
+                </Link>
+              </MagnetButton>
+              <MagnetButton>
+                <Link href="/marketplace">
+                  <Button variant="secondary" size="lg" className="px-8">
+                    View Marketplace
+                  </Button>
+                </Link>
+              </MagnetButton>
             </div>
-          </div>
-        </section>
+          </motion.div>
+        </div>
+      </section>
 
-        <section
-          id="creator"
-          aria-labelledby="meet-creator-heading"
-          className="bg-background/40 px-4 py-16 sm:px-6 sm:py-20 lg:px-10 shadow-inner shadow-black/10"
-        >
-          <div className="mx-auto max-w-7xl">
-            <MeetTheCreator />
-          </div>
-        </section>
-
-        <section className="px-4 pb-20 sm:px-6 lg:px-10">
-          <div className="mx-auto max-w-7xl overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-accent p-12 text-center shadow-2xl md:p-16">
-            <div className="relative z-10">
-              <h2 className="text-4xl font-black text-primary-foreground md:text-5xl">Ready to Scale Your Reach?</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-lg text-primary-foreground/85">
-                Join over 2,500+ advertisers who are already leveraging AdFlow Pro to find premium sponsorship opportunities.
-              </p>
-              <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-                <Button className="h-12 rounded-xl bg-background px-10 font-black text-on-surface hover:bg-background/90">
-                  Start Posting Now
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-12 rounded-xl border-2 border-primary-foreground/25 bg-transparent px-10 font-bold text-primary-foreground hover:bg-primary-foreground/10"
-                >
-                  Schedule a Demo
-                </Button>
-              </div>
+      {/* Features Section */}
+      <section className="py-20 px-6">
+        <div className="max-w-7xl mx-auto">
+          <FadeOnScroll direction="up">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold mb-4">Powerful Features</h2>
+              <p className="text-gray-400 text-lg">Everything you need to succeed in advertising</p>
             </div>
+          </FadeOnScroll>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: <Bot className="w-8 h-8 text-purple-400" />,
+                title: 'AI Ad Generation',
+                description: 'Automatically generate compelling ad content using advanced AI technology.',
+              },
+              {
+                icon: <Zap className="w-8 h-8 text-blue-400" />,
+                title: 'Lightning Fast',
+                description: 'Deploy your ads in seconds with our optimized infrastructure.',
+              },
+              {
+                icon: <Shield className="w-8 h-8 text-green-400" />,
+                title: 'Secure & Reliable',
+                description: 'Enterprise-grade security with dual database redundancy.',
+              },
+              {
+                icon: <TrendingUp className="w-8 h-8 text-pink-400" />,
+                title: 'Advanced Analytics',
+                description: 'Track performance with real-time analytics and insights.',
+              },
+              {
+                icon: <Users className="w-8 h-8 text-orange-400" />,
+                title: 'Role-Based Access',
+                description: 'Multi-role system with granular permissions for teams.',
+              },
+              {
+                icon: <Sparkles className="w-8 h-8 text-yellow-400" />,
+                title: 'Smart Workflow',
+                description: 'Automated approval workflow from draft to publication.',
+              },
+            ].map((feature, index) => (
+              <FadeOnScroll key={index} delay={index * 0.1}>
+                <GlareHover>
+                  <GlassCard className="p-6 h-full">
+                    <div className="mb-4">{feature.icon}</div>
+                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-gray-400">{feature.description}</p>
+                  </GlassCard>
+                </GlareHover>
+              </FadeOnScroll>
+            ))}
           </div>
-        </section>
-        </main>
-        <SiteFooter />
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <FadeOnScroll>
+            <ElectricBorder>
+              <GlassCard glow className="p-12 text-center">
+                <h2 className="text-4xl font-bold mb-4">Ready to Get Started?</h2>
+                <p className="text-gray-400 text-lg mb-8">
+                  Join thousands of advertisers using AdFlow Pro to transform their campaigns.
+                </p>
+                <MagnetButton>
+                  <Link href="/register">
+                    <Button variant="primary" size="lg" className="px-12">
+                      Create Free Account
+                    </Button>
+                  </Link>
+                </MagnetButton>
+              </GlassCard>
+            </ElectricBorder>
+          </FadeOnScroll>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 px-6 border-t border-white/10">
+        <div className="max-w-7xl mx-auto text-center text-gray-400">
+          <p>&copy; 2024 AdFlow Pro. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
-  )
+  );
 }
-
-

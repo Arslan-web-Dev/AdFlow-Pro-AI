@@ -1,264 +1,305 @@
-import Link from 'next/link'
-import Image from 'next/image'
-import {
-  Briefcase,
-  Car,
-  ChevronDown,
-  Grid3X3,
-  Home,
-  Laptop,
-  LayoutGrid,
-  MapPin,
-  Search,
-  Clock,
-  Plus,
-} from 'lucide-react'
-import { SiteHeader, ThemeBar } from '@/components/layouts/site-header'
-import { SiteFooter } from '@/components/layouts/site-footer'
-import { Button } from '@/components/ui/button'
-import { DUMMY_ADS, DUMMY_CATEGORIES, DUMMY_CITIES } from '@/lib/dummy-data'
-import { cn } from '@/lib/utils'
+'use client';
 
-const categoryIcon = (slug: string) => {
-  switch (slug) {
-    case 'real-estate':
-      return Home
-    case 'jobs':
-      return Briefcase
-    case 'electronics':
-      return Laptop
-    case 'vehicles':
-      return Car
-    default:
-      return Grid3X3
-  }
+import { useEffect, useState } from 'react';
+import AntigravityBackground from '@/components/animations/antigravity-bg';
+import BlobCursor from '@/components/animations/blob-cursor';
+import GlassCard from '@/components/ui/glass-card';
+import Button from '@/components/ui/button';
+import StatusBadge from '@/components/ui/status-badge';
+import FadeOnScroll from '@/components/animations/fade-on-scroll';
+import MagnetButton from '@/components/animations/magnet-button';
+import GlareHover from '@/components/animations/glare-hover';
+import { Search, Filter, MapPin, Sparkles, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+
+interface Ad {
+  _id: string;
+  title: string;
+  slug: string;
+  description: string;
+  status: string;
+  categoryId: { name: string; slug: string };
+  cityId: { name: string; slug: string };
+  packageId: { name: string; durationDays: number; weight: number };
+  tags: string[];
+  media: any[];
+  expireAt: string;
+}
+
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+interface City {
+  _id: string;
+  name: string;
+  slug: string;
 }
 
 export default function ExplorePage() {
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [sort, setSort] = useState('rank');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    fetchData();
+  }, [selectedCategory, selectedCity, sort, page]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        ...(search && { search }),
+        ...(selectedCategory && { category: selectedCategory }),
+        ...(selectedCity && { city: selectedCity }),
+        sort,
+        page: page.toString(),
+      });
+
+      const response = await fetch(`/api/public/ads?${params}`);
+      const data = await response.json();
+      if (response.ok) {
+        setAds(data.ads);
+        setTotalPages(data.pagination.pages);
+      }
+    } catch (error) {
+      console.error('Error fetching ads:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+    fetchCities();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/categories');
+      const data = await response.json();
+      if (response.ok) {
+        setCategories(data.categories);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchCities = async () => {
+    try {
+      const response = await fetch('/api/cities');
+      const data = await response.json();
+      if (response.ok) {
+        setCities(data.cities);
+      }
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    fetchData();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen flex-col bg-background text-on-surface">
-      <SiteHeader />
-      <ThemeBar />
-      <div className="flex min-h-0 flex-1">
-        {/* Filter sidebar — discovery UI beside main nav */}
-        <aside className="scrollbar-hide sticky top-28 z-20 hidden h-[calc(100vh-112px)] w-72 shrink-0 overflow-y-auto border-r border-border/30 bg-surface-container-low py-8 pl-6 pr-5 md:block">
-          <div className="space-y-8">
-            <div>
-              <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Discovery</h3>
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search ads..."
-                  className="w-full rounded-lg border-0 bg-[hsl(var(--input))] py-2.5 pl-10 pr-4 text-sm text-on-surface placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-            </div>
+    <div className="min-h-screen bg-black text-white overflow-hidden">
+      <BlobCursor />
+      <AntigravityBackground />
+      
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            AdFlow Pro
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/login">
+              <Button variant="ghost">Login</Button>
+            </Link>
+            <Link href="/register">
+              <Button variant="primary">Get Started</Button>
+            </Link>
+          </div>
+        </div>
+      </nav>
 
-            <div>
-              <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Categories</h3>
-              <div className="space-y-1">
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between rounded-lg bg-primary/15 px-3 py-2 text-left text-sm font-medium text-primary"
+      <div className="pt-24 pb-12 px-6">
+        <div className="max-w-7xl mx-auto">
+          <FadeOnScroll>
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold mb-2">Explore Ads</h1>
+              <p className="text-gray-400">Browse through our curated collection of advertisements</p>
+            </div>
+          </FadeOnScroll>
+
+          {/* Search and Filters */}
+          <FadeOnScroll delay={0.1}>
+            <GlassCard className="p-6 mb-8">
+              <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search ads..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all"
+                  />
+                </div>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-purple-500/50 transition-all"
                 >
-                  <span className="flex items-center gap-3">
-                    <LayoutGrid className="h-5 w-5 shrink-0" />
-                    All Ads
-                  </span>
-                </button>
-                {DUMMY_CATEGORIES.slice(0, 5).map((c) => {
-                  const Icon = categoryIcon(c.slug)
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm text-on-surface-variant transition-colors hover:bg-muted/50"
-                    >
-                      <span className="flex items-center gap-3">
-                        <Icon className="h-5 w-5 shrink-0 opacity-90" />
-                        {c.name}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Location</h3>
-              <div className="relative">
-                <select className="w-full appearance-none rounded-lg border-0 bg-[hsl(var(--input))] py-2.5 pl-4 pr-10 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary">
-                  {DUMMY_CITIES.slice(0, 6).map((c) => (
-                    <option key={c.id}>
-                      {c.name}, {c.state}
-                    </option>
+                  <option value="">All Categories</option>
+                  {categories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>{cat.name}</option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              </div>
-            </div>
+                <select
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-purple-500/50 transition-all"
+                >
+                  <option value="">All Cities</option>
+                  {cities.map((city) => (
+                    <option key={city._id} value={city._id}>{city.name}</option>
+                  ))}
+                </select>
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-purple-500/50 transition-all"
+                >
+                  <option value="rank">Rank Score</option>
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                </select>
+                <Button type="submit">Search</Button>
+              </form>
+            </GlassCard>
+          </FadeOnScroll>
 
-            <div>
-              <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Price Range</h3>
-              <div className="space-y-4">
-                <input
-                  type="range"
-                  className="h-1.5 w-full cursor-pointer appearance-none rounded-lg accent-primary"
-                  aria-label="Price range"
-                />
-                <div className="flex items-center gap-3">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    className="w-full rounded-lg border-0 bg-[hsl(var(--input))] px-3 py-2 text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                  <span className="text-xs text-muted-foreground">to</span>
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    className="w-full rounded-lg border-0 bg-[hsl(var(--input))] px-3 py-2 text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <Button className="w-full bg-primary font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:opacity-90">
-              Apply Filters
-            </Button>
-          </div>
-        </aside>
-
-        <main className="min-w-0 flex-1">
-          <div className="p-6 lg:p-10">
-            <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-              <div className="max-w-xl">
-                <h1 className="text-3xl font-extrabold tracking-tight text-on-surface md:text-4xl">Explore Ads</h1>
-                <p className="mt-2 text-base text-on-surface-variant md:text-lg">
-                  Discover premium opportunities in the global marketplace.
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Link href="/dashboard/create">
-                  <Button className="af-gradient rounded-xl px-6 font-bold text-[hsl(var(--primary-foreground))] shadow-lg shadow-[hsl(var(--primary))]/20 hover:opacity-90">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Post Ad
-                  </Button>
-                </Link>
-                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Sort By</span>
-                <div className="relative">
-                  <select className="appearance-none rounded-lg border border-border/50 bg-surface-container py-2 pl-4 pr-10 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option>Latest Arrivals</option>
-                    <option>Featured First</option>
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 xl:grid-cols-3">
-              {DUMMY_ADS.map((ad) => (
-                <Link href={`/ad/${ad.slug}`} key={ad.id} className="group block h-full">
-                  <article
-                    className={cn(
-                      'flex h-full flex-col overflow-hidden rounded-xl bg-surface-container ring-1 ring-border/40 transition-all duration-300',
-                      'hover:-translate-y-1 hover:ring-primary/35'
-                    )}
-                  >
-                    <div className="relative aspect-[16/10] overflow-hidden">
-                      <Image
-                        src={ad.thumbnail}
-                        alt={ad.title}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      {ad.is_featured && (
-                        <div className="absolute left-4 top-4">
-                          <span className="rounded border border-indigo-400/30 bg-indigo-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-indigo-300 backdrop-blur-md">
-                            Premium
-                          </span>
+          {/* Ads Grid */}
+          {ads.length === 0 ? (
+            <FadeOnScroll delay={0.2}>
+              <GlassCard className="p-12 text-center">
+                <Sparkles className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+                <h3 className="text-2xl font-semibold mb-2">No ads found</h3>
+                <p className="text-gray-400">Try adjusting your search or filters</p>
+              </GlassCard>
+            </FadeOnScroll>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {ads.map((ad, index) => (
+                <FadeOnScroll key={ad._id} delay={0.2 + index * 0.05}>
+                  <GlareHover>
+                    <GlassCard className="p-6 h-full flex flex-col">
+                      {ad.media && ad.media.length > 0 && ad.media[0].thumbnailUrl && (
+                        <div className="w-full h-48 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 mb-4 overflow-hidden">
+                          <img
+                            src={ad.media[0].thumbnailUrl}
+                            alt={ad.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
                         </div>
                       )}
-                      {!ad.is_featured && ad.seller.is_verified && (
-                        <div className="absolute left-4 top-4">
-                          <span className="rounded border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-300 backdrop-blur-md">
-                            Verified
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-1 flex-col p-6">
-                      <div className="mb-4 flex items-start justify-between gap-4">
-                        <div>
-                          <span className="mb-1 block text-[10px] font-semibold uppercase tracking-widest text-primary">
-                            {ad.category.name}
-                          </span>
-                          <h3 className="text-xl font-bold leading-tight text-on-surface transition-colors group-hover:text-primary/90">
-                            {ad.title}
-                          </h3>
-                        </div>
-                        <p className="text-xl font-black text-on-surface">${ad.price.toLocaleString()}</p>
+                      
+                      <div className="flex items-start justify-between mb-3">
+                        <StatusBadge status={ad.status} />
+                        <span className="text-xs text-gray-400">{ad.packageId.name}</span>
                       </div>
-                      <div className="mb-6 flex flex-wrap items-center gap-4 text-xs text-on-surface-variant">
-                        <span className="flex items-center gap-1.5">
-                          <MapPin className="h-4 w-4 shrink-0" />
-                          {ad.city.name}, {ad.city.state}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="h-4 w-4 shrink-0" />
-                          Recently listed
-                        </span>
+                      
+                      <h3 className="text-xl font-semibold mb-2">{ad.title}</h3>
+                      <p className="text-gray-400 text-sm mb-4 line-clamp-2">{ad.description}</p>
+                      
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {ad.tags.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-2 py-1 text-xs rounded-full bg-white/5 text-gray-300"
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       </div>
-                      <span className="mt-auto block w-full rounded-lg border border-border/50 py-2.5 text-center text-sm font-medium text-on-surface transition-colors group-hover:bg-muted/40">
-                        View Details
-                      </span>
-                    </div>
-                  </article>
-                </Link>
+                      
+                      <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          <span>{ad.cityId.name}</span>
+                        </div>
+                        <span>{ad.categoryId.name}</span>
+                      </div>
+                      
+                      <div className="mt-auto">
+                        <MagnetButton>
+                          <Link href={`/ads/${ad.slug}`}>
+                            <Button variant="primary" className="w-full">
+                              View Details
+                            </Button>
+                          </Link>
+                        </MagnetButton>
+                      </div>
+                    </GlassCard>
+                  </GlareHover>
+                </FadeOnScroll>
               ))}
             </div>
+          )}
 
-            <div className="mt-16 flex items-center justify-center gap-2">
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant transition-colors hover:bg-primary hover:text-primary-foreground"
-                aria-label="Previous page"
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary font-bold text-primary-foreground"
-              >
-                1
-              </button>
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant transition-colors hover:bg-muted"
-              >
-                2
-              </button>
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant transition-colors hover:bg-muted"
-              >
-                3
-              </button>
-              <span className="px-2 text-muted-foreground">…</span>
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant transition-colors hover:bg-primary hover:text-primary-foreground"
-                aria-label="Next page"
-              >
-                ›
-              </button>
-            </div>
-          </div>
-        </main>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <FadeOnScroll delay={0.3}>
+              <div className="flex justify-center gap-2 mt-8">
+                <Button
+                  variant="ghost"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="px-4 py-2 text-gray-400">
+                  Page {page} of {totalPages}
+                </span>
+                <Button
+                  variant="ghost"
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </FadeOnScroll>
+          )}
+        </div>
       </div>
-      <SiteFooter />
     </div>
-  )
+  );
 }
