@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { DUMMY_CATEGORIES } from '@/lib/dummy-data'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: Request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Bot, CalendarX2, CheckCircle2, Clock3, Layers3, Sparkles } from 'lucide-react'
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   fetchAdvertiserDashboardData,
   getStatusLabel,
@@ -80,14 +81,18 @@ const emptyDashboard: AdvertiserDashboardData = {
 }
 
 export default function DashboardOverview() {
-  const supabase = useMemo(() => createClient(), [])
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
   const { user } = useAuth()
   const [data, setData] = useState<AdvertiserDashboardData>(emptyDashboard)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!user?.id) {
+    setSupabase(createClient())
+  }, [])
+
+  useEffect(() => {
+    if (!user?.id || !supabase) {
       setLoading(false)
       return
     }

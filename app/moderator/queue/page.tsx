@@ -59,7 +59,7 @@ export default function ReviewQueuePage() {
 
   const handleApprove = async (adId: string) => {
     const currentAd = ads.find((ad) => ad.id === adId)
-    if (!currentAd) return
+    if (!currentAd || !supabase) return
 
     try {
       setSubmitting(true)
@@ -88,7 +88,7 @@ export default function ReviewQueuePage() {
   const confirmReject = async () => {
     if (adToReject) {
       const currentAd = ads.find((ad) => ad.id === adToReject)
-      if (!currentAd) return
+      if (!currentAd || !supabase) return
 
       try {
         setSubmitting(true)

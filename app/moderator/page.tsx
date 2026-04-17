@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ClipboardList, CreditCard, XCircle, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   fetchModeratorDashboardData,
   getStatusLabel,
@@ -33,12 +34,17 @@ function formatRelativeTime(value: string | null): string {
 }
 
 export default function ModeratorPage() {
-  const supabase = useMemo(() => createClient(), [])
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
   const [data, setData] = useState<ModeratorDashboardData>(emptyModeratorData)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    setSupabase(createClient())
+  }, [])
+
+  useEffect(() => {
+    if (!supabase) return
     const loadModeratorDashboard = async () => {
       try {
         setLoading(true)

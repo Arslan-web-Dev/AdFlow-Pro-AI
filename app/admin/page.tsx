@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Activity, Clock3, MousePointerClick, Wallet2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   fetchAdminDashboardData,
   getStatusLabel,
@@ -39,12 +40,17 @@ function formatDate(value: string | null): string {
 }
 
 export default function AdminPage() {
-  const supabase = useMemo(() => createClient(), [])
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
   const [data, setData] = useState<AdminDashboardData>(emptyAdminData)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    setSupabase(createClient())
+  }, [])
+
+  useEffect(() => {
+    if (!supabase) return
     const loadAdminDashboard = async () => {
       try {
         setLoading(true)
