@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 import connectDB from '@/lib/db/mongodb';
 import Ad from '@/lib/models/Ad';
-import { canEditAd, canDeleteAd, hasPermission } from '@/lib/auth/rbac';
+import { canEditAd, canDeleteAd, hasPermission, UserRole } from '@/lib/auth/rbac';
 import Log from '@/lib/models/Log';
 import { syncAdToSupabase } from '@/lib/supabase/sync';
 import { transitionAdStatus } from '@/lib/utils/ad-workflow';
@@ -15,7 +15,7 @@ export async function GET(
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -53,7 +53,7 @@ export async function PUT(
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -69,7 +69,7 @@ export async function PUT(
     }
 
     // Check edit permission
-    if (!canEditAd(payload.role as any, ad.userId.toString(), payload.userId)) {
+    if (!canEditAd(payload.role as UserRole, ad.userId.toString(), payload.userId)) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -82,17 +82,18 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, imagePrompt, category, tags, budget, startDate, endDate } = body;
+    const { title, description, categoryId, cityId, tags } = body;
 
     // Update ad
-    if (title) ad.title = title;
+    if (title) {
+      ad.title = title;
+      // Regenerate slug if title changed
+      ad.slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
+    }
     if (description) ad.description = description;
-    if (imagePrompt) ad.imagePrompt = imagePrompt;
-    if (category) ad.category = category;
+    if (categoryId) ad.categoryId = categoryId;
+    if (cityId) ad.cityId = cityId;
     if (tags) ad.tags = tags;
-    if (budget !== undefined) ad.budget = budget;
-    if (startDate) ad.startDate = startDate;
-    if (endDate) ad.endDate = endDate;
 
     await ad.save();
 
@@ -123,7 +124,7 @@ export async function DELETE(
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -139,7 +140,7 @@ export async function DELETE(
     }
 
     // Check delete permission
-    if (!canDeleteAd(payload.role as any, ad.userId.toString(), payload.userId)) {
+    if (!canDeleteAd(payload.role as UserRole, ad.userId.toString(), payload.userId)) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 

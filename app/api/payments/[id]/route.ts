@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 import connectDB from '@/lib/db/mongodb';
 import Payment from '@/lib/models/Payment';
-import { hasPermission } from '@/lib/auth/rbac';
+import { hasPermission, UserRole } from '@/lib/auth/rbac';
 
 export async function GET(
   request: NextRequest,
@@ -11,7 +11,7 @@ export async function GET(
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -51,7 +51,7 @@ export async function PATCH(
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -62,7 +62,7 @@ export async function PATCH(
     }
 
     // Check permission - only admin can verify payments
-    if (!hasPermission(payload.role as any, 'canVerifyPayments')) {
+    if (!hasPermission(payload.role as UserRole, 'canVerifyPayments')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 import connectDB from '@/lib/db/mongodb';
 import Ad from '@/lib/models/Ad';
 import { canEditAd, canDeleteAd } from '@/lib/auth/rbac';
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
-    const token = request.cookies.get('token')?.value;
+    const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -86,21 +86,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, imagePrompt, category, tags, budget, startDate, endDate, aiGenerated, aiPrompt } = body;
+    const { title, description, packageId, categoryId, cityId, tags } = body;
+
+    // Generate slug from title
+    const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
 
     const ad = await Ad.create({
       title,
       description,
-      imagePrompt,
+      slug,
       userId: payload.userId,
+      packageId: packageId,
+      categoryId: categoryId,
+      cityId: cityId,
       status: 'draft',
-      category,
       tags: tags || [],
-      budget: budget || 0,
-      startDate,
-      endDate,
-      aiGenerated: aiGenerated || false,
-      aiPrompt,
     });
 
     // Log ad creation
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       action: 'ad_created',
       userId: payload.userId,
       adId: ad._id.toString(),
-      details: { title, category },
+      details: { title, categoryId },
     });
 
     // Sync to Supabase

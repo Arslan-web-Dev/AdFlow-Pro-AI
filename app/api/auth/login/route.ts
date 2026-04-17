@@ -62,9 +62,10 @@ export async function POST(request: NextRequest) {
       userAgent: request.headers.get('user-agent') || 'unknown',
     });
 
-    // Set token in cookie
+    // Return token in response body for consistency
     const response = NextResponse.json(
       {
+        success: true,
         message: 'Login successful',
         token,
         user: {
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
 
+    // Also set token in cookie for backward compatibility
     response.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
