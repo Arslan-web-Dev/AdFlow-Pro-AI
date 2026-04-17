@@ -3,18 +3,18 @@ import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { DUMMY_CATEGORIES } from '@/lib/dummy-data'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 export async function GET(req: Request) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+
   const authHeader = req.headers.get('Authorization')
-  
+
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
