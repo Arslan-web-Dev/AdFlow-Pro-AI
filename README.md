@@ -1,6 +1,6 @@
 # AdFlow Pro
 
-**Sponsored listing marketplace** — Next.js 14, Supabase, role-based dashboards, and a production-ready UI.
+**Sponsored listing marketplace** — Next.js 16, MongoDB + Supabase, role-based dashboards, JWT authentication, and a production-ready UI.
 
 <p align="center">
   <a href="https://ad-flow-pro-ai.vercel.app"><img src="https://img.shields.io/badge/🚀_Live-ad--flow--pro--ai.vercel.app-111827?style=for-the-badge&logo=vercel&logoColor=white" alt="Live on Vercel" /></a>
@@ -9,11 +9,30 @@
 </p>
 
 <p align="center">
-  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js" alt="Next.js 14" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js" alt="Next.js 16" /></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://www.mongodb.com/"><img src="https://img.shields.io/badge/MongoDB-4.7-47A248?style=flat-square&logo=mongodb&logoColor=white" alt="MongoDB" /></a>
   <a href="https://supabase.com/"><img src="https://img.shields.io/badge/Supabase-Auth_%2B_DB-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" /></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License MIT" /></a>
 </p>
+
+---
+
+### Demo Credentials
+
+Use these demo accounts to test different roles:
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Super Admin** | superadmin@adflow.com | SuperAdmin123 |
+| **Admin** | admin@adflow.com | Admin123 |
+| **Moderator** | moderator@adflow.com | Moderator123 |
+| **Client** | client@adflow.com | Client123 |
+
+**Note:** These demo accounts are created by running the seed script. To create them, run:
+```bash
+npx tsx scripts/seed-ads.ts
+```
 
 ---
 
@@ -175,25 +194,28 @@ Dark, **Material-inspired** palette: deep navy surfaces, indigo primary (`#4f46e
 
 | Layer | Technology |
 |-------|------------|
-| Framework | Next.js 14 (App Router), React 18 |
+| Framework | Next.js 16 (App Router), React 19 |
 | Language | TypeScript 5 |
-| Styling | Tailwind CSS v3, project tokens |
+| Styling | Tailwind CSS v4, project tokens |
 | Components | shadcn/ui-style + Base UI |
 | Icons | Lucide React |
-| Animations | `tailwindcss-animate`, `tw-animate-css` |
-| Toasts | Sonner |
+| Animations | Framer Motion |
+| State Management | Zustand |
+| Validation | Zod |
 
 ### Backend and data
 
 | Layer | Technology |
 |-------|------------|
-| Database / BaaS | Supabase (PostgreSQL) |
-| Auth | Supabase Auth + `@supabase/ssr` |
-| Data fetching | TanStack Query v5 |
-| Client state | Zustand |
-| Validation | Zod |
-| Charts | Recharts |
+| Primary Database | MongoDB (Mongoose ODM) |
+| Secondary Database | Supabase (PostgreSQL) - for sync/backup |
+| Authentication | JWT (jsonwebtoken) |
+| Authorization | Custom RBAC middleware |
+| Data Sync | MongoDB to Supabase sync service |
+| Cron Jobs | node-cron for scheduled tasks |
+| API Routes | Next.js 16 API routes |
 | Optional AI | OpenAI via `/api/ai/*` |
+| Password Hashing | bcryptjs |
 
 ---
 
@@ -203,17 +225,28 @@ Dark, **Material-inspired** palette: deep navy surfaces, indigo primary (`#4f46e
 Browser
    │
    ▼
-middleware.ts     Session refresh, auth, RBAC by path
+middleware.ts     JWT auth, RBAC by path
    │
    ▼
-Next.js App Router
+Next.js App Router (API Routes + Pages)
    ├── Public:  /, /explore, /ad/[slug], /auth/*
    ├── /dashboard/*     (client+)
    ├── /moderator/*     (moderator+)
-   └── /admin/*         (admin, super_admin)
+   ├── /admin/*         (admin, super_admin)
+   └── /api/*           (REST API)
    │
-   ▼
-Supabase (PostgreSQL: users, ads, categories, cities, packages, payments)
+   ├─────────────────────────────────────┐
+   ▼                                     ▼
+MongoDB (Primary)                   Supabase (Sync/Backup)
+- Users                               - Users (synced)
+- Ads                                 - Ads (synced)
+- Categories                          - Categories (synced)
+- Cities                              - Cities (synced)
+- Packages                            - Packages (synced)
+- Payments                            - Payments (synced)
+- Logs                                - Logs (synced)
+- Analytics                           - Analytics (synced)
+- System Health Logs
 ```
 
 ---
@@ -226,11 +259,30 @@ AdFlow-Pro-AI/
 ├── docs/
 │   ├── screenshots/        # e.g. vercel-root-directory.png (deploy)
 │   └── DEPLOY.md
+├── scripts/                # Seed and sync scripts
+│   ├── seed-ads.ts        # MongoDB seeding script
+│   ├── sync-ads-to-supabase.ts  # Sync script
+│   └── sync-to-supabase.ts  # Full sync script
+├── supabase-setup.sql      # Supabase database schema
 ├── app/                      # Routes, layouts, API routes
 ├── components/               # layouts/, providers/, theme/, ui/
-├── lib/                      # supabase/, color-themes, auth-display, dummy-data, …
+├── lib/                      # Utilities and helpers
+│   ├── db/                 # MongoDB connection
+│   ├── models/             # Mongoose models (User, Ad, Category, etc.)
+│   ├── auth/               # JWT authentication
+│   ├── supabase/           # Supabase client and sync
+│   ├── ai/                 # AI integration
+│   └── utils/              # Utility functions
+├── src/                      # Backend architecture
+│   ├── architecture/
+│   │   ├── config/        # Configuration files
+│   │   ├── cron/          # Scheduled jobs
+│   │   ├── middleware/    # Custom middleware
+│   │   ├── repositories/  # Data access layer
+│   │   └── services/      # Business logic layer
+│   └── models/            # TypeScript interfaces
 ├── middleware.ts
-├── next.config.mjs
+├── next.config.ts
 ├── tailwind.config.ts
 └── package.json
 ```
@@ -303,70 +355,33 @@ Shared primitives live in `components/ui/` and follow the same design tokens as 
 
 ## Database schema
 
-Run in the Supabase SQL editor (adjust naming and add **RLS** for production):
+### MongoDB (Primary Database)
 
-```sql
-CREATE TABLE public.users (
-  id          UUID PRIMARY KEY REFERENCES auth.users(id),
-  role        TEXT NOT NULL DEFAULT 'client',
-  name        TEXT,
-  avatar_url  TEXT,
-  is_verified BOOLEAN DEFAULT false,
-  created_at  TIMESTAMPTZ DEFAULT NOW()
-);
+MongoDB models are defined in `lib/models/`:
 
-CREATE TABLE public.categories (
-  id    SERIAL PRIMARY KEY,
-  name  TEXT NOT NULL,
-  slug  TEXT NOT NULL UNIQUE,
-  icon  TEXT
-);
+- **User**: `_id`, email, password, name, role, avatar, isActive, isVerified
+- **Ad**: `_id`, userId, packageId, categoryId, cityId, title, slug, description, status, tags, publishAt, expireAt, isFeatured, rankScore, adminBoost, verifiedSellerPoints, rejectionReason, moderatorId, moderationNote
+- **Category**: `_id`, name, slug, isActive
+- **City**: `_id`, name, slug, isActive
+- **Package**: `_id`, name, durationDays, weight, isFeatured, homepageVisibility, autoRefreshDays, price, features, isActive
+- **Payment**: `_id`, userId, adId, amount, status, paymentMethod, transactionId
+- **Log**: `_id`, level, action, userId, adId, details, ipAddress, userAgent
+- **Analytics**: `_id`, date, totalUsers, totalAds, activeAds, pendingAds, totalRevenue, dailyRevenue, newUsers, newAds, adsByStatus, adsByCategory, usersByRole, aiGeneratedAds
+- **SystemHealthLog**: `_id`, source, responseMs, status, errorMessage, checkedAt
 
-CREATE TABLE public.cities (
-  id    SERIAL PRIMARY KEY,
-  name  TEXT NOT NULL,
-  state TEXT
-);
+### Supabase (Sync/Backup Database)
 
-CREATE TABLE public.packages (
-  id             SERIAL PRIMARY KEY,
-  name           TEXT NOT NULL,
-  price          NUMERIC(10, 2) NOT NULL,
-  duration_days  INTEGER NOT NULL,
-  weight         INTEGER NOT NULL DEFAULT 0,
-  is_featured    BOOLEAN DEFAULT false
-);
+Run the `supabase-setup.sql` script in the Supabase SQL editor to create the sync tables:
 
-CREATE TABLE public.ads (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  seller_id    UUID REFERENCES public.users(id),
-  category_id  INTEGER REFERENCES public.categories(id),
-  city_id      INTEGER REFERENCES public.cities(id),
-  package_id   INTEGER REFERENCES public.packages(id),
-  title        TEXT NOT NULL,
-  slug         TEXT NOT NULL UNIQUE,
-  description  TEXT,
-  price        NUMERIC(12, 2) NOT NULL,
-  thumbnail    TEXT,
-  status       TEXT DEFAULT 'pending',
-  is_featured  BOOLEAN DEFAULT false,
-  admin_boost  INTEGER DEFAULT 0,
-  rank_score   INTEGER DEFAULT 0,
-  expires_at   TIMESTAMPTZ,
-  created_at   TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE public.payments (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id      UUID REFERENCES public.users(id),
-  ad_id        UUID REFERENCES public.ads(id),
-  package_id   INTEGER REFERENCES public.packages(id),
-  amount       NUMERIC(10, 2) NOT NULL,
-  status       TEXT DEFAULT 'pending',
-  proof_url    TEXT,
-  created_at   TIMESTAMPTZ DEFAULT NOW()
-);
+```bash
+# Run the setup script
+# Copy contents of supabase-setup.sql and run in Supabase SQL Editor
 ```
+
+The Supabase schema mirrors MongoDB with tables for:
+- users, categories, cities, packages, ads, payments, logs, analytics, notifications
+
+Data is synced from MongoDB to Supabase using the sync scripts.
 
 ---
 
@@ -375,12 +390,21 @@ CREATE TABLE public.payments (
 Root file: **`.env.local`** (do not commit).
 
 ```bash
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017/adflow-pro
+
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
+
+# JWT Authentication
+JWT_SECRET=your-secret-key-here
 
 # Optional
-# OPENAI_API_KEY=
-# CRON_SECRET=
+OPENAI_API_KEY=your-openai-api-key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NODE_ENV=development
 ```
 
 Only `NEXT_PUBLIC_*` keys are available in the browser.
@@ -389,7 +413,7 @@ Only `NEXT_PUBLIC_*` keys are available in the browser.
 
 ## Getting started
 
-**Prerequisites:** Node.js ≥ 18.17, npm ≥ 9 (or pnpm/yarn), a Supabase project.
+**Prerequisites:** Node.js ≥ 18.17, npm ≥ 9 (or pnpm/yarn), MongoDB, a Supabase project.
 
 ```bash
 git clone https://github.com/Arslan-web-Dev/AdFlow-Pro-AI.git
@@ -397,7 +421,45 @@ cd AdFlow-Pro-AI
 npm install
 ```
 
-Create `.env.local` as above, run the SQL schema in Supabase, seed data if needed (or use `lib/dummy-data.ts` for local UI only).
+### 1. Setup MongoDB
+
+Ensure MongoDB is running on your system:
+- **Windows:** Run MongoDB as a service or start `mongod` manually
+- **Mac/Linux:** Install MongoDB and start the service
+
+### 2. Setup Supabase
+
+1. Create a Supabase project at https://supabase.com
+2. Run the `supabase-setup.sql` script in the Supabase SQL Editor to create the database tables
+
+### 3. Configure Environment Variables
+
+Create `.env.local` with the required variables (see Environment Variables section above).
+
+### 4. Seed Database
+
+Run the seed script to create demo users and sample ads:
+
+```bash
+npx tsx scripts/seed-ads.ts
+```
+
+This will create:
+- 4 demo users (super_admin, admin, moderator, client)
+- 10 categories
+- 6 cities
+- 1 package
+- 30 sample ads
+
+### 5. Sync to Supabase (Optional)
+
+Sync MongoDB data to Supabase:
+
+```bash
+npx tsx scripts/sync-ads-to-supabase.ts
+```
+
+### 6. Start Development Server
 
 ```bash
 npm run dev

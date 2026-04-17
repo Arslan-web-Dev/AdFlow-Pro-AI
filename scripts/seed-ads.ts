@@ -324,19 +324,36 @@ async function seedDatabase() {
       console.log('  ✓ Created default package');
     }
 
-    // Get or create a demo user
-    console.log('\n👤 Getting demo user...');
-    let user = await User.findOne({ email: 'demo@adflow.com' });
-    if (!user) {
-      user = await User.create({
-        email: 'demo@adflow.com',
-        name: 'Demo User',
-        password: 'demo123456',
-        role: 'client',
-        isActive: true,
-        isVerified: true
-      });
-      console.log('  ✓ Created demo user');
+    // Get or create demo users for different roles
+    console.log('\n👤 Creating demo users...');
+    const demoUsers = [
+      { email: 'superadmin@adflow.com', name: 'Super Admin', password: 'SuperAdmin123', role: 'super_admin' },
+      { email: 'admin@adflow.com', name: 'Admin User', password: 'Admin123', role: 'admin' },
+      { email: 'moderator@adflow.com', name: 'Moderator User', password: 'Moderator123', role: 'moderator' },
+      { email: 'client@adflow.com', name: 'Client User', password: 'Client123', role: 'client' },
+    ];
+
+    for (const demoUser of demoUsers) {
+      let user = await User.findOne({ email: demoUser.email });
+      if (!user) {
+        user = await User.create({
+          email: demoUser.email,
+          name: demoUser.name,
+          password: demoUser.password,
+          role: demoUser.role,
+          isActive: true,
+          isVerified: true
+        });
+        console.log(`  ✓ Created ${demoUser.role}: ${demoUser.email}`);
+      } else {
+        console.log(`  ✓ User exists: ${demoUser.email}`);
+      }
+    }
+
+    // Use client user for ads
+    const clientUser = await User.findOne({ email: 'client@adflow.com' });
+    if (!clientUser) {
+      throw new Error('Client user not found');
     }
 
     // Create ads
@@ -367,7 +384,7 @@ async function seedDatabase() {
         title: adData.title,
         description: adData.description,
         slug,
-        userId: user._id.toString(),
+        userId: clientUser._id.toString(),
         packageId: adPackage._id.toString(),
         categoryId,
         cityId,
