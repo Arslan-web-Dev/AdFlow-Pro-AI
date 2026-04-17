@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -54,15 +55,11 @@ const itemVariants = {
 export default function ProfilePage() {
   const { user, loading, profile, profileLoading, refreshUser } = useAuth()
   const [saving, setSaving] = useState(false)
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
 
-  const supabase = useMemo(
-    () =>
-      createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
-      ),
-    []
-  )
+  useEffect(() => {
+    setSupabase(createClient())
+  }, [])
 
   const displayName = getDisplayName(user, profile)
   const usernameFromAuth = getUsername(user)
@@ -87,7 +84,7 @@ export default function ProfilePage() {
   }, [user, displayName])
 
   const handleSave = async () => {
-    if (!user) return
+    if (!user || !supabase) return
     const u = username.trim().toLowerCase()
     if (!USERNAME_RE.test(u)) {
       toast.error('Username: 3–24 chars, lowercase letters, numbers, underscore only.')

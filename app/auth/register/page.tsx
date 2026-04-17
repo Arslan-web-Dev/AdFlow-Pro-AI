@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo as useMemoReact } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -43,13 +44,13 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
 
-  const supabase = useMemoReact(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  ), [])
+  useEffect(() => {
+    setSupabase(createClient())
+  }, [])
 
-  const ruleResults = useMemoReact(
+  const ruleResults = useMemo(
     () => passwordRules.map((rule) => ({ ...rule, passed: rule.test(password) })),
     [password]
   )
@@ -87,6 +88,10 @@ export default function RegisterPage() {
       process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_url_here'
 
     if (hasKeys) {
+      if (!supabase) {
+        setLoading(false)
+        return
+      }
       const { error } = await supabase.auth.signUp({
         email,
         password,

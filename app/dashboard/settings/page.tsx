@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,8 @@ import {
   CheckCircle2
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { getUserSettings, updateUserSettings, createUserSettingsIfNotExists } from '@/lib/supabase/settings'
 
 const containerVariants = {
@@ -54,11 +55,11 @@ export default function SettingsPage() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
 
-  const supabase = useMemo(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  ), [])
+  useEffect(() => {
+    setSupabase(createClient())
+  }, [])
   
   // 2FA Settings
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
@@ -94,6 +95,7 @@ export default function SettingsPage() {
   const [cardListView, setCardListView] = useState(true)
 
   const loadSettings = useCallback(async () => {
+    if (!supabase) return
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -138,7 +140,7 @@ export default function SettingsPage() {
 
   // Auto-save effect
   useEffect(() => {
-    if (loading) return
+    if (loading || !supabase) return
 
     const timer = setTimeout(async () => {
       setSaving(true)
@@ -192,6 +194,7 @@ export default function SettingsPage() {
   ])
 
   const handleDeleteAccount = async () => {
+    if (!supabase) return
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -239,6 +242,7 @@ export default function SettingsPage() {
   }
 
   const handleExportData = async () => {
+    if (!supabase) return
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return

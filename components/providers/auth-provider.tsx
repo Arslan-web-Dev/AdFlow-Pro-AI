@@ -5,12 +5,11 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useState,
   type ReactNode,
 } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
-import type { User } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
+import type { User, SupabaseClient } from '@supabase/supabase-js'
 import type { DbUserRow } from '@/lib/auth-display'
 
 type AuthContextType = {
@@ -29,18 +28,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<DbUserRow | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
 
-  const supabase = useMemo(
-    () =>
-      createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
-      ),
-    []
-  )
+  useEffect(() => {
+    setSupabase(createClient())
+  }, [])
 
   const loadProfile = useCallback(
     async (userId: string) => {
+      if (!supabase) return
       setProfileLoading(true)
       const { data, error } = await supabase
         .from('users')
@@ -63,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const refreshUser = useCallback(async () => {
+    if (!supabase) return
     const {
       data: { session },
     } = await supabase.auth.getSession()
@@ -73,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase, loadProfile])
 
   useEffect(() => {
+    if (!supabase) return
     let cancelled = false
 
     const init = async () => {
@@ -105,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase, loadProfile])
 
   const signOut = async () => {
+    if (!supabase) return
     await supabase.auth.signOut()
     setProfile(null)
     window.location.href = '/auth/login'

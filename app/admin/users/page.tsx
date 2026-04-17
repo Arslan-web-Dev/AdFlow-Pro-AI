@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Search, Ban, Trash2, UserCheck } from 'lucide-react'
 import { toast } from 'sonner'
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 interface User {
   id: string
@@ -31,13 +32,14 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [banDialogOpen, setBanDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
 
-  const supabase = useMemo(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  ), [])
+  useEffect(() => {
+    setSupabase(createClient())
+  }, [])
 
   const fetchUsers = useCallback(async () => {
+    if (!supabase) return
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -67,6 +69,7 @@ export default function AdminUsersPage() {
   })
 
   const handleRoleChange = async (userId: string, newRole: string) => {
+    if (!supabase) return
     try {
       const { error } = await supabase.from('users').update({ role: newRole }).eq('id', userId)
       if (error) throw error
@@ -79,7 +82,7 @@ export default function AdminUsersPage() {
   }
 
   const handleBanUser = async () => {
-    if (!selectedUser) return
+    if (!selectedUser || !supabase) return
     try {
       const { error } = await supabase.auth.admin.updateUserById(selectedUser.id, { user_metadata: { banned: true } })
       if (error) throw error
@@ -94,6 +97,7 @@ export default function AdminUsersPage() {
   }
 
   const handleUnbanUser = async (userId: string) => {
+    if (!supabase) return
     try {
       const { error } = await supabase.auth.admin.updateUserById(userId, { user_metadata: { banned: false } })
       if (error) throw error
@@ -106,7 +110,7 @@ export default function AdminUsersPage() {
   }
 
   const handleDeleteUser = async () => {
-    if (!selectedUser) return
+    if (!selectedUser || !supabase) return
     try {
       await supabase.from('ads').delete().eq('user_id', selectedUser.id)
       await supabase.from('user_settings').delete().eq('user_id', selectedUser.id)
