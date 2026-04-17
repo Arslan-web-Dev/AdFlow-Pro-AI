@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { SVGProps } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   fetchModeratorQueue,
   getStatusLabel,
@@ -23,17 +24,22 @@ import {
 import { useAuth } from '@/components/providers/auth-provider'
 
 export default function ReviewQueuePage() {
-  const supabase = useMemo(() => createClient(), [])
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
   const { user } = useAuth()
   const [ads, setAds] = useState<ModeratorQueueItem[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [adToReject, setAdToReject] = useState<string | null>(null)
+
+  useEffect(() => {
+    setSupabase(createClient())
+  }, [])
   const [rejectReason, setRejectReason] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!supabase) return
     const loadQueue = async () => {
       try {
         setLoading(true)
