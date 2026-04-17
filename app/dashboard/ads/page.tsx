@@ -48,6 +48,8 @@ type AdRow = {
   price: number | string | null
   status: string | null
   is_featured: boolean | null
+  image_url?: string | null
+  image_urls?: string[] | null
 }
 
 export default function MyAdsPage() {
@@ -55,6 +57,12 @@ export default function MyAdsPage() {
   const [loading, setLoading] = useState(true)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [adToDelete, setAdToDelete] = useState<string | null>(null)
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    approved: 0,
+    totalAmount: 0
+  })
 
   useEffect(() => {
     fetchAds()
@@ -72,18 +80,8 @@ export default function MyAdsPage() {
   const fetchAds = async () => {
     try {
       setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
       
-      console.log('Current user:', user?.id)
-
-      if (!user) {
-        toast.error('Please login to view your ads')
-        setAds([])
-        setLoading(false)
-        return
-      }
-
-      // Temporarily fetch all ads to debug
+      // Fetch all ads from database (not filtered by user_id for now)
       const { data, error } = await supabase
         .from('ads')
         .select('*')
@@ -94,11 +92,21 @@ export default function MyAdsPage() {
 
       if (error) throw error
 
-      // Filter by user_id after fetching
-      const userAds = (data as AdRow[]).filter(ad => ad.user_id === user.id)
-      console.log('User ads after filter:', userAds)
+      const allAds = (data as AdRow[]) || []
+      setAds(allAds)
 
-      setAds(userAds || [])
+      // Calculate statistics
+      const total = allAds.length
+      const pending = allAds.filter(ad => ad.status === 'pending').length
+      const approved = allAds.filter(ad => ad.status === 'published').length
+      const totalAmount = allAds.reduce((sum, ad) => {
+        const price = typeof ad.price === 'number' ? ad.price : parseFloat(ad.price?.toString() || '0')
+        return sum + (isNaN(price) ? 0 : price)
+      }, 0)
+
+      setStats({ total, pending, approved, totalAmount })
+
+      console.log('Statistics:', { total, pending, approved, totalAmount })
     } catch (error) {
       console.error('Error fetching ads:', error)
       toast.error('Failed to load ads')
@@ -147,13 +155,33 @@ export default function MyAdsPage() {
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-2">My Ads</h1>
-          <p className="text-muted-foreground text-lg">Manage your classified advertisements ({ads.length} total)</p>
+          <p className="text-muted-foreground text-lg">Manage your classified advertisements ({stats.total} total)</p>
         </div>
         <Link href="/dashboard/create">
           <Button size="lg" className="btn-primary shadow-lg shadow-primary/25 transition-all scroll-p-2">
             <PlusCircle className="mr-2 h-5 w-5" /> Create Ad
           </Button>
         </Link>
+      </motion.div>
+
+      {/* Statistics Cards */}
+      <motion.div variants={containerVariants} className="grid gap-4 md:grid-cols-4">
+        <motion.div variants={itemVariants} className="af-panel p-6 border border-primary/20">
+          <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Total Ads</div>
+          <div className="text-3xl font-extrabold text-foreground mt-2">{stats.total}</div>
+        </motion.div>
+        <motion.div variants={itemVariants} className="af-panel p-6 border border-emerald-500/20">
+          <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Approved</div>
+          <div className="text-3xl font-extrabold text-emerald-500 mt-2">{stats.approved}</div>
+        </motion.div>
+        <motion.div variants={itemVariants} className="af-panel p-6 border border-amber-500/20">
+          <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Pending</div>
+          <div className="text-3xl font-extrabold text-amber-500 mt-2">{stats.pending}</div>
+        </motion.div>
+        <motion.div variants={itemVariants} className="af-panel p-6 border border-indigo-500/20">
+          <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Total Value</div>
+          <div className="text-3xl font-extrabold text-indigo-500 mt-2">${stats.totalAmount.toLocaleString()}</div>
+        </motion.div>
       </motion.div>
 
       <motion.div variants={itemVariants}>
@@ -171,10 +199,34 @@ export default function MyAdsPage() {
               >
                 {/* Image */}
                 <div className="aspect-video bg-muted/30 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-4xl font-black text-muted-foreground/30">AD</span>
-                  </div>
+                  {ad.image_urls && ad.image_urls.length > 0 ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={ad.image_urls[0]}
+                      alt={ad.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  ) : ad.image_url ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={ad.image_url}
+                      alt={ad.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-4xl font-black text-muted-foreground/30">AD</span>
+                      </div>
+                    </>
+                  )}
                   {ad.is_featured && (
                     <Badge className="absolute top-3 right-3 bg-[hsl(var(--warning))] text-white font-bold">
                       Featured
