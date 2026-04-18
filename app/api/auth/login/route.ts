@@ -50,15 +50,20 @@ export async function POST(request: NextRequest) {
           role: user.role,
         });
 
-        // Log the login
-        await Log.create({
-          level: 'info',
-          action: 'login',
-          userId: user._id.toString(),
-          details: { email: user.email },
-          ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-          userAgent: request.headers.get('user-agent') || 'unknown',
-        });
+        // Log the login (optional - don't fail if MongoDB is not available)
+        try {
+          await Log.create({
+            level: 'info',
+            action: 'login',
+            userId: user._id.toString(),
+            details: { email: user.email },
+            ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+            userAgent: request.headers.get('user-agent') || 'unknown',
+          });
+        } catch (logError) {
+          // Log error but don't fail the login
+          console.error('Failed to create log entry:', logError);
+        }
 
         // Return token in response body
         const response = NextResponse.json(
@@ -89,64 +94,79 @@ export async function POST(request: NextRequest) {
     }
 
     // Fallback to Supabase (for production/Vercel)
-    if (!user && supabaseAdmin) {
-      const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError || !authData.user) {
+    if (!user) {
+      if (!supabaseAdmin) {
         return NextResponse.json(
-          { error: 'Invalid credentials' },
-          { status: 401 }
+          { error: 'Database not configured. Please contact administrator.' },
+          { status: 500 }
         );
       }
 
-      // Get user role from Supabase users table
-      const { data: userData, error: userError } = await supabaseAdmin
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .single();
+      try {
+        const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (userError || !userData) {
-        return NextResponse.json(
-          { error: 'User profile not found' },
-          { status: 401 }
-        );
-      }
+        if (authError || !authData.user) {
+          return NextResponse.json(
+            { error: 'Invalid credentials' },
+            { status: 401 }
+          );
+        }
 
-      // Generate JWT token
-      const token = generateToken({
-        userId: userData.id,
-        email: userData.email,
-        role: userData.role,
-      });
+        // Get user role from Supabase users table
+        const { data: userData, error: userError } = await supabaseAdmin
+          .from('users')
+          .select('*')
+          .eq('email', email)
+          .single();
 
-      const response = NextResponse.json(
-        {
-          success: true,
-          message: 'Login successful',
-          token,
-          user: {
-            id: userData.id,
-            email: userData.email,
-            name: userData.name,
-            role: userData.role,
-            avatar: userData.avatar,
+        if (userError || !userData) {
+          return NextResponse.json(
+            { error: 'User profile not found' },
+            { status: 401 }
+          );
+        }
+
+        // Generate JWT token
+        const token = generateToken({
+          userId: userData.id,
+          email: userData.email,
+          role: userData.role,
+        });
+
+        const response = NextResponse.json(
+          {
+            success: true,
+            message: 'Login successful',
+            token,
+            user: {
+              id: userData.id,
+              email: userData.email,
+              name: userData.name,
+              role: userData.role,
+              avatar: userData.avatar,
+            },
           },
-        },
-        { status: 200 }
-      );
+          { status: 200 }
+        );
 
-      response.cookies.set('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7,
-      });
+        response.cookies.set('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 7,
+        });
 
-      return response;
+        return response;
+      } catch (supabaseError) {
+        console.error('Supabase login error:', supabaseError);
+        return NextResponse.json(
+          { error: 'Login failed. Please try again.' },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json(
