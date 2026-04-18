@@ -12,7 +12,14 @@ dotenv.config({ path: '.env.local' });
 
 async function syncToSupabase() {
   try {
-    console.log('🚀 Connecting to MongoDB...');
+    console.log('� Syncing MongoDB to Supabase...');
+
+    if (!supabaseAdmin) {
+      console.error('❌ Supabase not configured. Please set environment variables.');
+      process.exit(1);
+    }
+
+    console.log('�� Connecting to MongoDB...');
     await connectDB();
     console.log('✅ Connected to MongoDB');
 
@@ -22,6 +29,7 @@ async function syncToSupabase() {
     console.log(`✅ Found ${users.length} users`);
     let userSuccess = 0;
     for (const user of users) {
+      if (!supabaseAdmin) break;
       const { error } = await supabaseAdmin.from('users').upsert({
         id: user._id.toString(),
         email: user.email,
@@ -43,6 +51,7 @@ async function syncToSupabase() {
     console.log(`✅ Found ${categories.length} categories`);
     let categorySuccess = 0;
     for (const category of categories) {
+      if (!supabaseAdmin) break;
       const { error } = await supabaseAdmin.from('categories').upsert({
         id: category._id.toString(),
         name: category.name,
@@ -61,6 +70,7 @@ async function syncToSupabase() {
     console.log(`✅ Found ${cities.length} cities`);
     let citySuccess = 0;
     for (const city of cities) {
+      if (!supabaseAdmin) break;
       const { error } = await supabaseAdmin.from('cities').upsert({
         id: city._id.toString(),
         name: city.name,
@@ -79,6 +89,7 @@ async function syncToSupabase() {
     console.log(`✅ Found ${packages.length} packages`);
     let packageSuccess = 0;
     for (const pkg of packages) {
+      if (!supabaseAdmin) break;
       const { error } = await supabaseAdmin.from('packages').upsert({
         id: pkg._id.toString(),
         name: pkg.name,
@@ -103,6 +114,7 @@ async function syncToSupabase() {
     console.log(`✅ Found ${ads.length} ads`);
     let adSuccess = 0;
     for (const ad of ads) {
+      if (!supabaseAdmin) break;
       const { error } = await supabaseAdmin.from('ads').upsert({
         id: ad._id.toString(),
         title: ad.title,

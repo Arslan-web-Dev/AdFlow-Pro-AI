@@ -8,6 +8,11 @@ async function createSupabaseUsers() {
   try {
     console.log('🚀 Creating demo users in Supabase Auth...');
 
+    if (!supabaseAdmin) {
+      console.error('❌ Supabase not configured. Please set environment variables.');
+      process.exit(1);
+    }
+
     const demoUsers = [
       { email: 'superadmin@adflow.com', password: 'SuperAdmin123', name: 'Super Admin', role: 'super_admin' },
       { email: 'admin@adflow.com', password: 'Admin123', name: 'Admin User', role: 'admin' },

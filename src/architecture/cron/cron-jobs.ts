@@ -180,6 +180,11 @@ export class CronJobSystem {
     try {
       console.log('🔄 Running sync to Supabase job...');
 
+      if (!supabaseAdmin) {
+        console.warn('⚠️ Supabase not configured, skipping sync');
+        return;
+      }
+
       // Check Supabase health
       const { error } = await supabaseAdmin.from('users').select('id').limit(1);
       if (error) {
@@ -213,8 +218,11 @@ export class CronJobSystem {
       const mongoHealthy = true; // In production, check actual connection
 
       // Check Supabase connection
-      const { error } = await supabaseAdmin.from('users').select('id').limit(1);
-      const supabaseHealthy = !error;
+      let supabaseHealthy = false;
+      if (supabaseAdmin) {
+        const { error } = await supabaseAdmin.from('users').select('id').limit(1);
+        supabaseHealthy = !error;
+      }
 
       const health = {
         mongodb: mongoHealthy ? 'healthy' : 'unhealthy',

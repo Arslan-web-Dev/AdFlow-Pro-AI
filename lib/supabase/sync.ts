@@ -10,6 +10,10 @@ export async function syncUserToSupabase(userId: string) {
     const user = await User.findById(userId);
     if (!user) return { success: false, error: 'User not found' };
 
+    if (!supabaseAdmin) {
+      return { success: false, error: 'Supabase not configured' };
+    }
+
     const { error } = await supabaseAdmin
       .from('users')
       .upsert({
@@ -39,6 +43,10 @@ export async function syncAdToSupabase(adId: string) {
   try {
     const ad = await Ad.findById(adId);
     if (!ad) return { success: false, error: 'Ad not found' };
+
+    if (!supabaseAdmin) {
+      return { success: false, error: 'Supabase not configured' };
+    }
 
     const { error } = await supabaseAdmin
       .from('ads')
@@ -82,6 +90,10 @@ export async function syncLogToSupabase(logId: string) {
     const log = await Log.findById(logId);
     if (!log) return { success: false, error: 'Log not found' };
 
+    if (!supabaseAdmin) {
+      return { success: false, error: 'Supabase not configured' };
+    }
+
     const { error } = await supabaseAdmin
       .from('logs')
       .upsert({
@@ -111,6 +123,10 @@ export async function syncAnalyticsToSupabase(analyticsId: string) {
   try {
     const analytics = await Analytics.findById(analyticsId);
     if (!analytics) return { success: false, error: 'Analytics not found' };
+
+    if (!supabaseAdmin) {
+      return { success: false, error: 'Supabase not configured' };
+    }
 
     const { error } = await supabaseAdmin
       .from('analytics')

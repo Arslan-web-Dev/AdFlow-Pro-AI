@@ -63,7 +63,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Fallback to Supabase (for production/Vercel)
-    const { data: ads, error: adsError } = await supabaseAdmin
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 500 }
+      );
+    }
+
+    const { data: ads, error: adsError } = await supabaseAdmin!
       .from('ads')
       .select('*')
       .eq('user_id', payload.userId)
@@ -92,9 +99,9 @@ export async function GET(request: NextRequest) {
     const recentAdsWithDetails = await Promise.all(
       ads.map(async (ad) => {
         const [{ data: category }, { data: city }, { data: pkg }] = await Promise.all([
-          supabaseAdmin.from('categories').select('name').eq('id', ad.category_id).single(),
-          supabaseAdmin.from('cities').select('name').eq('id', ad.city_id).single(),
-          supabaseAdmin.from('packages').select('name').eq('id', ad.package_id).single(),
+          supabaseAdmin!.from('categories').select('name').eq('id', ad.category_id).single(),
+          supabaseAdmin!.from('cities').select('name').eq('id', ad.city_id).single(),
+          supabaseAdmin!.from('packages').select('name').eq('id', ad.package_id).single(),
         ]);
 
         return {

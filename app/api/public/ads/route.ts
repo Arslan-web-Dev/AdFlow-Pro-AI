@@ -93,8 +93,8 @@ export async function GET(request: NextRequest) {
     // Fallback to Supabase (for production/Vercel)
     if (!supabaseAdmin) {
       return NextResponse.json(
-        { error: 'Database not configured' },
-        { status: 500 }
+        { ads: [], pagination: { page, limit, total: 0, pages: 0 } },
+        { status: 200 }
       );
     }
 
