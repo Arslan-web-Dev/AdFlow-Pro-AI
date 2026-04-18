@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { JWTService, JWTPayload } from '../config/jwt.config';
-import { UserRole } from '../../models/user.model';
 
 /**
  * Authentication Middleware for Next.js API Routes
@@ -26,12 +25,12 @@ export const authenticate = (req: NextRequest): JWTPayload | null => {
  * Role-based Access Control
  * Checks if user has required role
  */
-export const authorize = (user: JWTPayload | null, allowedRoles: UserRole[]): boolean => {
+export const authorize = (user: JWTPayload | null, allowedRoles: string[]): boolean => {
   if (!user) {
     return false;
   }
 
-  return allowedRoles.includes(user.role as UserRole);
+  return allowedRoles.includes(user.role);
 };
 
 /**
@@ -42,7 +41,7 @@ export const isOwner = (user: JWTPayload | null, resourceUserId: string): boolea
     return false;
   }
 
-  return user.userId === resourceUserId || user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN;
+  return user.userId === resourceUserId || user.role === 'admin' || user.role === 'super_admin';
 };
 
 /**
