@@ -83,14 +83,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists in Supabase
-    const { data: existingUser, error: checkError } = await supabaseAdmin
-      .from('users')
-      .select('email')
-      .eq('email', email)
-      .single();
-
-    if (existingUser) {
+    // Check if user already exists in Supabase Auth (this is the real check)
+    const { data: existingAuthUser } = await supabaseAdmin.auth.admin.listUsers();
+    const userExists = existingAuthUser?.users?.find(u => u.email === email);
+    
+    if (userExists) {
       return NextResponse.json(
         { error: 'User with this email already exists' },
         { status: 409 }
