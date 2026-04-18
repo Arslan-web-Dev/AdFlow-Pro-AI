@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import User from '@/lib/models/User';
 import { generateToken } from '@/lib/auth/jwt';
-import Log from '@/lib/models/Log';
+import { logActivity } from '@/lib/models/ActivityLog';
 import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function POST(request: NextRequest) {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate role (default to client if not specified or invalid)
-    const validRoles = ['client', 'moderator', 'admin', 'super_admin'];
+    const validRoles = ['client', 'moderator', 'admin'];
     const userRole = validRoles.includes(role) ? role : 'client';
 
     // Try MongoDB first (for local development)
@@ -51,11 +51,12 @@ export async function POST(request: NextRequest) {
       });
 
       // Log the registration
-      await Log.create({
-        level: 'info',
-        action: 'user_created',
+      await logActivity({
+        type: 'user_registered',
+        description: `New user registered: ${email}`,
         userId: user._id.toString(),
-        details: { email: user.email, role: user.role },
+        performedBy: user._id.toString(),
+        metadata: { email, role: user.role },
         ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown',
       });

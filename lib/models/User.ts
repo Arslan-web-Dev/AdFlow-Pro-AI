@@ -1,15 +1,20 @@
 import mongoose, { Schema, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+export type UserRole = 'client' | 'moderator' | 'admin';
+
 export interface IUser {
   _id: string;
   email: string;
   password: string;
   name: string;
-  role: 'client' | 'moderator' | 'admin' | 'super_admin';
+  role: UserRole;
   avatar?: string;
+  city?: string;
+  phone?: string;
   isActive: boolean;
   isVerified: boolean;
+  lastLoginAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,10 +40,16 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['client', 'moderator', 'admin', 'super_admin'],
+      enum: ['client', 'moderator', 'admin'],
       default: 'client',
     },
     avatar: {
+      type: String,
+    },
+    city: {
+      type: String,
+    },
+    phone: {
       type: String,
     },
     isActive: {
@@ -48,6 +59,9 @@ const UserSchema = new Schema<IUser>(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    lastLoginAt: {
+      type: Date,
     },
   },
   {

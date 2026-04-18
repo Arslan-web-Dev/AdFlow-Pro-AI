@@ -2,187 +2,392 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import AntigravityBackground from '@/components/animations/antigravity-bg';
-import BlobCursor from '@/components/animations/blob-cursor';
-import GlassCard from '@/components/ui/glass-card';
-import Button from '@/components/ui/button';
-import MagnetButton from '@/components/animations/magnet-button';
-import GlareHover from '@/components/animations/glare-hover';
-import FadeOnScroll from '@/components/animations/fade-on-scroll';
-import ElectricBorder from '@/components/animations/electric-border';
-import { Sparkles, Zap, Shield, TrendingUp, Users, Bot } from 'lucide-react';
+import AntigravityBackground from '@/components/animations/AntigravityBackground';
+import BlobCursor from '@/components/animations/BlobCursor';
+import GlareCard from '@/components/animations/GlareCard';
+import MagnetButton from '@/components/animations/MagnetButton';
+import ElectricBorder from '@/components/animations/ElectricBorder';
+import ThemeSwitcher from '@/components/theme/ThemeSwitcher';
+import ClickSpark from '@/components/animations/ClickSpark';
+import { 
+  Sparkles, 
+  Zap, 
+  Shield, 
+  TrendingUp, 
+  Users, 
+  Bot, 
+  ArrowRight,
+  Play,
+  Globe,
+  Star
+} from 'lucide-react';
+
+const features = [
+  {
+    icon: Bot,
+    title: 'AI Ad Generation',
+    description: 'Generate compelling ad titles, descriptions, and tags with AI in seconds.',
+    color: 'from-purple-500 to-pink-500',
+  },
+  {
+    icon: Zap,
+    title: 'Lightning Fast',
+    description: 'Deploy your ads instantly with our optimized global infrastructure.',
+    color: 'from-yellow-500 to-orange-500',
+  },
+  {
+    icon: Shield,
+    title: 'Secure & Trusted',
+    description: 'Enterprise-grade security with encrypted data and secure payments.',
+    color: 'from-green-500 to-emerald-500',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Advanced Analytics',
+    description: 'Track views, clicks, and engagement with detailed insights.',
+    color: 'from-blue-500 to-cyan-500',
+  },
+  {
+    icon: Users,
+    title: 'Role-Based System',
+    description: 'Client, Moderator, and Admin roles with granular permissions.',
+    color: 'from-indigo-500 to-purple-500',
+  },
+  {
+    icon: Globe,
+    title: 'Global Reach',
+    description: 'Post ads in any city worldwide. Reach local or international audiences.',
+    color: 'from-cyan-500 to-blue-500',
+  },
+];
+
+const packages = [
+  {
+    name: 'Basic',
+    price: 'Free',
+    features: ['30-day listing', 'Standard visibility', 'Up to 3 images', 'Email support'],
+    popular: false,
+  },
+  {
+    name: 'Standard',
+    price: '$9.99',
+    period: '/month',
+    features: ['30-day listing', 'Priority visibility', 'Up to 8 images', 'Priority support', 'Basic analytics'],
+    popular: true,
+  },
+  {
+    name: 'Premium',
+    price: '$29.99',
+    period: '/month',
+    features: ['60-day listing', 'Featured placement', 'Unlimited images', 'Priority support', 'Advanced analytics', 'Homepage highlight'],
+    popular: false,
+  },
+];
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
+    <div className="min-h-screen bg-[var(--background)] overflow-hidden">
       <BlobCursor />
       <AntigravityBackground />
       
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10">
+      <motion.nav 
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+        className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-[var(--border)] rounded-none"
+      >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+          <Link href="/" className="flex items-center gap-3">
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              className="w-10 h-10 rounded-xl bg-[var(--primary-gradient)] flex items-center justify-center shadow-lg shadow-[var(--primary-color)]/30"
+            >
               <span className="text-white font-bold text-xl">A</span>
-            </div>
-            <span className="text-white font-bold text-xl">AdFlow Pro</span>
-          </motion.div>
+            </motion.div>
+            <span className="text-[var(--text-primary)] font-bold text-xl hidden sm:block">AdFlow Pro</span>
+          </Link>
+          
+          {/* Theme Switcher */}
+          <div className="hidden md:block">
+            <ThemeSwitcher showLabels={false} />
+          </div>
           
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
             className="flex items-center gap-4"
           >
-            <Link href="/login">
-              <Button variant="ghost">Login</Button>
+            <Link 
+              href="/marketplace" 
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium transition-colors hidden sm:block"
+            >
+              Marketplace
             </Link>
-            <Link href="/register">
-              <Button variant="primary">Get Started</Button>
+            <Link 
+              href="/login"
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium transition-colors"
+            >
+              Login
             </Link>
+            <ClickSpark>
+              <MagnetButton strength={0.15}>
+                <Link 
+                  href="/register"
+                  className="btn-primary"
+                >
+                  Get Started
+                </Link>
+              </MagnetButton>
+            </ClickSpark>
           </motion.div>
         </div>
-      </nav>
+        
+        {/* Mobile Theme Switcher */}
+        <div className="md:hidden px-6 pb-3">
+          <ThemeSwitcher showLabels={false} />
+        </div>
+      </motion.nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
+      <section className="pt-40 pb-20 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
             className="text-center max-w-4xl mx-auto"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/20 border border-purple-500/30 mb-6"
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-[var(--primary-color)]/30 mb-8"
             >
-              <Sparkles className="w-4 h-4 text-purple-400" />
-              <span className="text-purple-300 text-sm font-medium">AI-Powered Advertising Platform</span>
+              <Sparkles className="w-4 h-4 text-[var(--primary-color)]" />
+              <span className="text-[var(--primary-light)] text-sm font-medium">AI-Powered Ads Marketplace</span>
             </motion.div>
             
-            <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Transform Your Ads
-              </span>
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+              <span className="gradient-text">Sell Smarter.</span>
               <br />
-              <span className="text-white">with AI Intelligence</span>
+              <span className="text-[var(--text-primary)]">Reach Further.</span>
             </h1>
             
-            <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-              The next-generation sponsored ads marketplace powered by artificial intelligence. 
-              Create, manage, and optimize your advertising campaigns with cutting-edge automation.
+            <p className="text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed">
+              The next-generation AI-powered advertising platform. Create compelling ads with AI, 
+              reach global audiences, and track your success in real-time.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <MagnetButton>
-                <Link href="/register">
-                  <Button variant="primary" size="lg" className="px-8">
-                    Start Free Trial
-                  </Button>
-                </Link>
-              </MagnetButton>
-              <MagnetButton>
-                <Link href="/marketplace">
-                  <Button variant="secondary" size="lg" className="px-8">
-                    View Marketplace
-                  </Button>
-                </Link>
-              </MagnetButton>
+              <ClickSpark>
+                <MagnetButton strength={0.2}>
+                  <Link href="/register" className="btn-primary inline-flex items-center gap-2 text-lg px-8 py-4">
+                    Start Free
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </MagnetButton>
+              </ClickSpark>
+              <ClickSpark>
+                <MagnetButton strength={0.2}>
+                  <Link href="/marketplace" className="btn-secondary inline-flex items-center gap-2 text-lg px-8 py-4">
+                    <Play className="w-5 h-5" />
+                    Explore Marketplace
+                  </Link>
+                </MagnetButton>
+              </ClickSpark>
             </div>
+
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-wrap justify-center gap-8 mt-16"
+            >
+              {[
+                { value: '10K+', label: 'Active Ads' },
+                { value: '50K+', label: 'Users' },
+                { value: '100+', label: 'Cities' },
+              ].map((stat, index) => (
+                <div key={index} className="text-center">
+                  <p className="text-3xl md:text-4xl font-bold gradient-text">{stat.value}</p>
+                  <p className="text-sm text-[var(--text-secondary)] mt-1">{stat.label}</p>
+                </div>
+              ))}
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6">
+      <section className="py-24 px-6 relative">
         <div className="max-w-7xl mx-auto">
-          <FadeOnScroll direction="up">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4">Powerful Features</h2>
-              <p className="text-gray-400 text-lg">Everything you need to succeed in advertising</p>
-            </div>
-          </FadeOnScroll>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
+              Powerful Features
+            </h2>
+            <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto">
+              Everything you need to create, manage, and optimize your advertising campaigns
+            </p>
+          </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                icon: <Bot className="w-8 h-8 text-purple-400" />,
-                title: 'AI Ad Generation',
-                description: 'Automatically generate compelling ad content using advanced AI technology.',
-              },
-              {
-                icon: <Zap className="w-8 h-8 text-blue-400" />,
-                title: 'Lightning Fast',
-                description: 'Deploy your ads in seconds with our optimized infrastructure.',
-              },
-              {
-                icon: <Shield className="w-8 h-8 text-green-400" />,
-                title: 'Secure & Reliable',
-                description: 'Enterprise-grade security with dual database redundancy.',
-              },
-              {
-                icon: <TrendingUp className="w-8 h-8 text-pink-400" />,
-                title: 'Advanced Analytics',
-                description: 'Track performance with real-time analytics and insights.',
-              },
-              {
-                icon: <Users className="w-8 h-8 text-orange-400" />,
-                title: 'Role-Based Access',
-                description: 'Multi-role system with granular permissions for teams.',
-              },
-              {
-                icon: <Sparkles className="w-8 h-8 text-yellow-400" />,
-                title: 'Smart Workflow',
-                description: 'Automated approval workflow from draft to publication.',
-              },
-            ].map((feature, index) => (
-              <FadeOnScroll key={index} delay={index * 0.1}>
-                <GlareHover>
-                  <GlassCard className="p-6 h-full">
-                    <div className="mb-4">{feature.icon}</div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-gray-400">{feature.description}</p>
-                  </GlassCard>
-                </GlareHover>
-              </FadeOnScroll>
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <GlareCard className="glass-card p-8 h-full group">
+                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                    <feature.icon className="w-7 h-7 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-3">{feature.title}</h3>
+                  <p className="text-[var(--text-secondary)] leading-relaxed">{feature.description}</p>
+                </GlareCard>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Packages Section */}
+      <section className="py-24 px-6 relative">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
+              Choose Your Plan
+            </h2>
+            <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto">
+              Flexible packages to suit every need, from casual sellers to professional marketers
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {packages.map((pkg, index) => (
+              <motion.div
+                key={pkg.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <ElectricBorder className={`h-full ${pkg.popular ? 'ring-2 ring-[var(--primary-color)]' : ''}`}>
+                  <div className="glass-card p-8 h-full flex flex-col relative overflow-hidden">
+                    {pkg.popular && (
+                      <div className="absolute top-0 right-0 bg-[var(--primary-gradient)] text-white text-xs font-semibold px-4 py-1 rounded-bl-lg">
+                        POPULAR
+                      </div>
+                    )}
+                    
+                    <h3 className="text-xl font-semibold text-[var(--text-primary)]">{pkg.name}</h3>
+                    <div className="mt-4 mb-6">
+                      <span className="text-4xl font-bold text-[var(--text-primary)]">{pkg.price}</span>
+                      {pkg.period && (
+                        <span className="text-[var(--text-secondary)]">{pkg.period}</span>
+                      )}
+                    </div>
+                    
+                    <ul className="space-y-3 mb-8 flex-1">
+                      {pkg.features.map((feature, i) => (
+                        <li key={i} className="flex items-center gap-3 text-[var(--text-secondary)]">
+                          <Star className="w-4 h-4 text-[var(--accent-success)] flex-shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    <ClickSpark>
+                      <Link 
+                        href="/register" 
+                        className={`w-full text-center py-3 rounded-lg font-semibold transition-all ${
+                          pkg.popular 
+                            ? 'btn-primary' 
+                            : 'bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] border border-[var(--border)]'
+                        }`}
+                      >
+                        Get Started
+                      </Link>
+                    </ClickSpark>
+                  </div>
+                </ElectricBorder>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6">
+      <section className="py-24 px-6">
         <div className="max-w-4xl mx-auto">
-          <FadeOnScroll>
-            <ElectricBorder>
-              <GlassCard glow className="p-12 text-center">
-                <h2 className="text-4xl font-bold mb-4">Ready to Get Started?</h2>
-                <p className="text-gray-400 text-lg mb-8">
-                  Join thousands of advertisers using AdFlow Pro to transform their campaigns.
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <ElectricBorder className="rounded-3xl">
+              <div className="glass-card p-12 md:p-16 text-center">
+                <h2 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-6">
+                  Ready to Transform Your Ads?
+                </h2>
+                <p className="text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto">
+                  Join thousands of successful advertisers using AdFlow Pro to reach their audience.
                 </p>
-                <MagnetButton>
-                  <Link href="/register">
-                    <Button variant="primary" size="lg" className="px-12">
-                      Create Free Account
-                    </Button>
-                  </Link>
-                </MagnetButton>
-              </GlassCard>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <ClickSpark>
+                    <MagnetButton strength={0.2}>
+                      <Link href="/register" className="btn-primary text-lg px-10 py-4 inline-flex items-center gap-2">
+                        Create Free Account
+                        <ArrowRight className="w-5 h-5" />
+                      </Link>
+                    </MagnetButton>
+                  </ClickSpark>
+                </div>
+              </div>
             </ElectricBorder>
-          </FadeOnScroll>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-white/10">
-        <div className="max-w-7xl mx-auto text-center text-gray-400">
-          <p>&copy; 2024 AdFlow Pro. All rights reserved.</p>
+      <footer className="py-12 px-6 border-t border-[var(--border)]">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[var(--primary-gradient)] flex items-center justify-center">
+                <span className="text-white font-bold">A</span>
+              </div>
+              <span className="font-bold text-[var(--text-primary)]">AdFlow Pro</span>
+            </div>
+            <p className="text-[var(--text-muted)] text-sm">
+              © 2024 AdFlow Pro. All rights reserved.
+            </p>
+            <div className="flex items-center gap-6">
+              <Link href="/marketplace" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm transition-colors">
+                Marketplace
+              </Link>
+              <Link href="/login" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm transition-colors">
+                Login
+              </Link>
+              <Link href="/register" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm transition-colors">
+                Sign Up
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

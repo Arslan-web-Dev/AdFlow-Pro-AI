@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
+import { verifyToken } from '@/lib/auth/jwt';
 import connectDB from '@/lib/db/mongodb';
 import Ad from '@/lib/models/Ad';
-import { canEditAd, canDeleteAd } from '@/lib/auth/rbac';
-import Log from '@/lib/models/Log';
-import { syncAdToSupabase } from '@/lib/supabase/sync';
+import { logActivity } from '@/lib/models/ActivityLog';
 
 // GET all ads (with filtering)
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: 'Database not available' }, { status: 500 });
+    }
 
-    const token = extractTokenFromHeader(request.headers.get('authorization'));
+    const token = request.cookies.get('token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     // Build query
     const query: any = {};
 
-    // Clients can only see their own ads unless viewing marketplace
+    // Clients can only see their own ads
     if (payload.role === 'client' && !userId) {
       query.userId = payload.userId;
     } else if (userId) {
@@ -49,9 +50,7 @@ export async function GET(request: NextRequest) {
     const ads = await Ad.find(query)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
-      .limit(limit)
-      .populate('userId', 'name email avatar')
-      .populate('moderatorId', 'name email');
+      .limit(limit);
 
     const total = await Ad.countDocuments(query);
 
@@ -73,9 +72,12 @@ export async function GET(request: NextRequest) {
 // POST create new ad
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: 'Database not available' }, { status: 500 });
+    }
 
-    const token = extractTokenFromHeader(request.headers.get('authorization'));
+    const token = request.cookies.get('token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -86,36 +88,77 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, packageId, categoryId, cityId, tags } = body;
+    const { 
+      title, 
+      description, 
+      category, 
+      city, 
+      price,
+      currency = 'USD',
+      tags,
+      media = [],
+      contactEmail,
+      contactPhone,
+      isAIGenerated = false,
+    } = body;
+
+    // Validation
+    if (!title || !description || !category || !city || !price) {
+      return NextResponse.json(
+        { error: 'Title, description, category, city, and price are required' },
+        { status: 400 }
+      );
+    }
 
     // Generate slug from title
-    const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
+    const slug = title.toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]/g, '') + '-' + Date.now();
 
     const ad = await Ad.create({
       title,
       description,
       slug,
       userId: payload.userId,
-      packageId: packageId,
-      categoryId: categoryId,
-      cityId: cityId,
-      status: 'draft',
+      category,
+      city,
+      price: Number(price),
+      currency,
+      status: 'pending', // New ads go directly to pending for moderation
+      priority: 'basic', // Default priority
       tags: tags || [],
+      media: media.map((url: string, index: number) => ({
+        url,
+        type: 'image',
+        order: index,
+      })),
+      contactInfo: {
+        email: contactEmail,
+        phone: contactPhone,
+      },
+      isAIGenerated,
+      views: 0,
+      clicks: 0,
     });
 
     // Log ad creation
-    await Log.create({
-      level: 'info',
-      action: 'ad_created',
+    await logActivity({
+      type: 'ad_created',
+      description: `Ad "${title}" created by ${payload.email}`,
       userId: payload.userId,
       adId: ad._id.toString(),
-      details: { title, categoryId },
+      performedBy: payload.userId,
+      metadata: { title, category, city, price },
     });
 
-    // Sync to Supabase
-    await syncAdToSupabase(ad._id.toString());
-
-    return NextResponse.json({ ad }, { status: 201 });
+    return NextResponse.json({ 
+      ad: {
+        _id: ad._id,
+        title: ad.title,
+        status: ad.status,
+        slug: ad.slug,
+      }
+    }, { status: 201 });
   } catch (error) {
     console.error('Create ad error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

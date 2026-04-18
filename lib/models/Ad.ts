@@ -1,40 +1,61 @@
 import mongoose, { Schema, Model } from 'mongoose';
 
-export type AdStatus = 
-  | 'draft'
-  | 'submitted'
-  | 'under_review'
-  | 'payment_pending'
-  | 'payment_submitted'
-  | 'payment_verified'
-  | 'scheduled'
-  | 'published'
-  | 'expired'
-  | 'rejected';
+export type AdStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'published' | 'expired';
+
+export type AdPriority = 'basic' | 'standard' | 'premium';
+
+export interface IAdMedia {
+  url: string;
+  type: 'image' | 'video';
+  order: number;
+}
 
 export interface IAd {
   _id: string;
   userId: string;
-  packageId: string;
-  categoryId: string;
-  cityId: string;
   title: string;
   slug: string;
   description: string;
+  category: string;
+  city: string;
+  price: number;
+  currency: string;
   status: AdStatus;
+  priority: AdPriority;
   tags: string[];
-  publishAt?: Date;
-  expireAt?: Date;
-  isFeatured: boolean;
-  rankScore: number;
-  adminBoost: number;
-  verifiedSellerPoints: number;
+  media: IAdMedia[];
+  contactInfo: {
+    email?: string;
+    phone?: string;
+    whatsapp?: string;
+  };
+  // Workflow tracking
+  publishedAt?: Date;
+  expiresAt?: Date;
   rejectionReason?: string;
-  moderatorId?: string;
+  // AI generated flag
+  isAIGenerated: boolean;
+  // Analytics
+  views: number;
+  clicks: number;
+  // Moderation
+  moderatedBy?: string;
+  moderatedAt?: Date;
   moderationNote?: string;
+  // Payment
+  paymentStatus: 'pending' | 'verified' | 'not_required';
+  paymentProofUrl?: string;
+  paymentVerifiedAt?: Date;
+  paymentVerifiedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const MediaSchema = new Schema<IAdMedia>({
+  url: { type: String, required: true },
+  type: { type: String, enum: ['image', 'video'], default: 'image' },
+  order: { type: Number, default: 0 },
+});
 
 const AdSchema = new Schema<IAd>(
   {
@@ -42,21 +63,7 @@ const AdSchema = new Schema<IAd>(
       type: String,
       required: true,
       ref: 'User',
-    },
-    packageId: {
-      type: String,
-      required: true,
-      ref: 'Package',
-    },
-    categoryId: {
-      type: String,
-      required: true,
-      ref: 'Category',
-    },
-    cityId: {
-      type: String,
-      required: true,
-      ref: 'City',
+      index: true,
     },
     title: {
       type: String,
@@ -67,57 +74,112 @@ const AdSchema = new Schema<IAd>(
       type: String,
       required: true,
       unique: true,
+      index: true,
     },
     description: {
       type: String,
       required: true,
     },
+    category: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    city: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    currency: {
+      type: String,
+      default: 'USD',
+    },
     status: {
       type: String,
-      enum: ['draft', 'submitted', 'under_review', 'payment_pending', 'payment_submitted', 'payment_verified', 'scheduled', 'published', 'expired', 'rejected'],
+      enum: ['draft', 'pending', 'approved', 'rejected', 'published', 'expired'],
       default: 'draft',
+      index: true,
+    },
+    priority: {
+      type: String,
+      enum: ['basic', 'standard', 'premium'],
+      default: 'basic',
     },
     tags: {
       type: [String],
       default: [],
     },
-    publishAt: {
+    media: {
+      type: [MediaSchema],
+      default: [],
+    },
+    contactInfo: {
+      email: String,
+      phone: String,
+      whatsapp: String,
+    },
+    publishedAt: {
       type: Date,
     },
-    expireAt: {
+    expiresAt: {
       type: Date,
-    },
-    isFeatured: {
-      type: Boolean,
-      default: false,
-    },
-    rankScore: {
-      type: Number,
-      default: 0,
-    },
-    adminBoost: {
-      type: Number,
-      default: 0,
-    },
-    verifiedSellerPoints: {
-      type: Number,
-      default: 0,
     },
     rejectionReason: {
       type: String,
     },
-    moderatorId: {
+    isAIGenerated: {
+      type: Boolean,
+      default: false,
+    },
+    views: {
+      type: Number,
+      default: 0,
+    },
+    clicks: {
+      type: Number,
+      default: 0,
+    },
+    moderatedBy: {
       type: String,
       ref: 'User',
     },
+    moderatedAt: {
+      type: Date,
+    },
     moderationNote: {
       type: String,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'verified', 'not_required'],
+      default: 'pending',
+    },
+    paymentProofUrl: {
+      type: String,
+    },
+    paymentVerifiedAt: {
+      type: Date,
+    },
+    paymentVerifiedBy: {
+      type: String,
+      ref: 'User',
     },
   },
   {
     timestamps: true,
   }
 );
+
+// Indexes for common queries
+AdSchema.index({ status: 1, createdAt: -1 });
+AdSchema.index({ category: 1, status: 1 });
+AdSchema.index({ city: 1, status: 1 });
+AdSchema.index({ priority: 1, createdAt: -1 });
 
 const Ad: Model<IAd> = mongoose.models.Ad || mongoose.model<IAd>('Ad', AdSchema);
 

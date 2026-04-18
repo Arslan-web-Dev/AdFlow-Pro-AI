@@ -1,0 +1,35 @@
+# Create Next App
+
+[Login](https://ad-flow-pro-ai.vercel.app/login)
+[Get Started](https://ad-flow-pro-ai.vercel.app/register)
+
+# Transform Your Adswith AI Intelligence
+The next-generation sponsored ads marketplace powered by artificial intelligence. Create, manage, and optimize your advertising campaigns with cutting-edge automation.
+[Start Free Trial](https://ad-flow-pro-ai.vercel.app/register)
+[View Marketplace](https://ad-flow-pro-ai.vercel.app/marketplace)
+
+## Powerful Features
+Everything you need to succeed in advertising
+
+### AI Ad Generation
+Automatically generate compelling ad content using advanced AI technology.
+
+### Lightning Fast
+Deploy your ads in seconds with our optimized infrastructure.
+
+### Secure & Reliable
+Enterprise-grade security with dual database redundancy.
+
+### Advanced Analytics
+Track performance with real-time analytics and insights.
+
+### Role-Based Access
+Multi-role system with granular permissions for teams.
+
+### Smart Workflow
+Automated approval workflow from draft to publication.
+
+## Ready to Get Started?
+Join thousands of advertisers using AdFlow Pro to transform their campaigns.
+[Create Free Account](https://ad-flow-pro-ai.vercel.app/register)
+© 2024 AdFlow Pro. All rights reserved.

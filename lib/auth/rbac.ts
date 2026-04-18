@@ -1,4 +1,4 @@
-export type UserRole = 'client' | 'moderator' | 'admin' | 'super_admin';
+export type UserRole = 'client' | 'moderator' | 'admin';
 
 export interface RolePermissions {
   canCreateAds: boolean;
@@ -29,7 +29,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canApproveAds: false,
     canRejectAds: false,
     canManageUsers: false,
-    canViewAnalytics: false,
+    canViewAnalytics: true,
     canManageSystem: false,
     canViewLogs: false,
     canSyncDatabase: false,
@@ -50,35 +50,16 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canManageUsers: false,
     canViewAnalytics: true,
     canManageSystem: false,
-    canViewLogs: false,
-    canSyncDatabase: false,
-    canManageFeatures: false,
-    canReviewAds: true,
-    canVerifyPayments: false,
-    canPublishAds: false,
-    canScheduleAds: false,
-    canFeatureAds: false,
-  },
-  admin: {
-    canCreateAds: true,
-    canEditOwnAds: true,
-    canDeleteOwnAds: true,
-    canViewAllAds: true,
-    canApproveAds: true,
-    canRejectAds: true,
-    canManageUsers: true,
-    canViewAnalytics: true,
-    canManageSystem: false,
     canViewLogs: true,
     canSyncDatabase: false,
     canManageFeatures: false,
     canReviewAds: true,
     canVerifyPayments: true,
     canPublishAds: true,
-    canScheduleAds: true,
-    canFeatureAds: true,
+    canScheduleAds: false,
+    canFeatureAds: false,
   },
-  super_admin: {
+  admin: {
     canCreateAds: true,
     canEditOwnAds: true,
     canDeleteOwnAds: true,
@@ -105,10 +86,12 @@ export function hasPermission(role: UserRole, permission: keyof RolePermissions)
 
 export function canAccessRoute(role: UserRole, route: string): boolean {
   const routeAccess: Record<string, UserRole[]> = {
-    '/client': ['client', 'moderator', 'admin', 'super_admin'],
-    '/moderator': ['moderator', 'admin', 'super_admin'],
-    '/admin': ['admin', 'super_admin'],
-    '/super-admin': ['super_admin'],
+    '/dashboard/client': ['client', 'moderator', 'admin'],
+    '/dashboard/moderator': ['moderator', 'admin'],
+    '/dashboard/admin': ['admin'],
+    '/client': ['client', 'moderator', 'admin'],
+    '/moderator': ['moderator', 'admin'],
+    '/admin': ['admin'],
   };
 
   for (const [routePattern, allowedRoles] of Object.entries(routeAccess)) {
@@ -122,21 +105,16 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
 
 export function getDashboardRoute(role: UserRole): string {
   const dashboardRoutes: Record<UserRole, string> = {
-    client: '/client',
-    moderator: '/moderator',
-    admin: '/admin',
-    super_admin: '/super-admin',
+    client: '/dashboard/client',
+    moderator: '/dashboard/moderator',
+    admin: '/dashboard/admin',
   };
 
   return dashboardRoutes[role];
 }
 
 export function canEditAd(userRole: UserRole, adUserId: string, currentUserId: string): boolean {
-  if (userRole === 'admin' || userRole === 'super_admin') {
-    return true;
-  }
-  
-  if (userRole === 'moderator') {
+  if (userRole === 'admin' || userRole === 'moderator') {
     return true;
   }
   
@@ -144,7 +122,7 @@ export function canEditAd(userRole: UserRole, adUserId: string, currentUserId: s
 }
 
 export function canDeleteAd(userRole: UserRole, adUserId: string, currentUserId: string): boolean {
-  if (userRole === 'admin' || userRole === 'super_admin') {
+  if (userRole === 'admin') {
     return true;
   }
   

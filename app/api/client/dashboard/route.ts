@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import connectDB from '@/lib/db/mongodb';
 import Ad from '@/lib/models/Ad';
-import Payment from '@/lib/models/Payment';
 import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function GET(request: NextRequest) {
@@ -21,44 +20,49 @@ export async function GET(request: NextRequest) {
     const db = await connectDB();
 
     if (db) {
-      // Get user's ads by status
-      const draftAds = await Ad.countDocuments({ userId: payload.userId, status: 'draft' });
-      const submittedAds = await Ad.countDocuments({ userId: payload.userId, status: 'submitted' });
-      const underReviewAds = await Ad.countDocuments({ userId: payload.userId, status: 'under_review' });
-      const paymentPendingAds = await Ad.countDocuments({ userId: payload.userId, status: 'payment_pending' });
-      const paymentSubmittedAds = await Ad.countDocuments({ userId: payload.userId, status: 'payment_submitted' });
-      const scheduledAds = await Ad.countDocuments({ userId: payload.userId, status: 'scheduled' });
-      const publishedAds = await Ad.countDocuments({ userId: payload.userId, status: 'published' });
-      const expiredAds = await Ad.countDocuments({ userId: payload.userId, status: 'expired' });
-      const rejectedAds = await Ad.countDocuments({ userId: payload.userId, status: 'rejected' });
+      // Get user's ads stats
+      const totalAds = await Ad.countDocuments({ userId: payload.userId });
+      const activeAds = await Ad.countDocuments({ userId: payload.userId, status: 'published' });
+      const pendingAds = await Ad.countDocuments({ userId: payload.userId, status: 'pending' });
+      
+      // Get total views and clicks
+      const statsResult = await Ad.aggregate([
+        { $match: { userId: payload.userId } },
+        {
+          $group: {
+            _id: null,
+            totalViews: { $sum: '$views' },
+            totalClicks: { $sum: '$clicks' },
+          },
+        },
+      ]);
+
+      const totalViews = statsResult[0]?.totalViews || 0;
+      const totalClicks = statsResult[0]?.totalClicks || 0;
+      const ctr = totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : '0.0';
 
       // Get recent ads
       const recentAds = await Ad.find({ userId: payload.userId })
         .sort({ createdAt: -1 })
-        .limit(10)
-        .populate('categoryId', 'name')
-        .populate('cityId', 'name')
-        .populate('packageId', 'name');
-
-      // Get payment history
-      const payments = await Payment.find({
-        adId: { $in: recentAds.map(a => a._id) },
-      }).sort({ createdAt: -1 });
+        .limit(5);
 
       return NextResponse.json({
         stats: {
-          draftAds,
-          submittedAds,
-          underReviewAds,
-          paymentPendingAds,
-          paymentSubmittedAds,
-          scheduledAds,
-          publishedAds,
-          expiredAds,
-          rejectedAds,
+          totalAds,
+          activeAds,
+          pendingAds,
+          totalViews,
+          totalClicks,
+          ctr: `${ctr}%`,
         },
-        recentAds,
-        payments,
+        recentAds: recentAds.map(ad => ({
+          _id: ad._id,
+          title: ad.title,
+          status: ad.status,
+          views: ad.views,
+          clicks: ad.clicks,
+          createdAt: ad.createdAt,
+        })),
       });
     }
 
@@ -82,44 +86,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch ads' }, { status: 500 });
     }
 
-    // Calculate stats
+    // Calculate stats with new status workflow
     const stats = {
-      draftAds: ads.filter(a => a.status === 'draft').length,
-      submittedAds: ads.filter(a => a.status === 'submitted').length,
-      underReviewAds: ads.filter(a => a.status === 'under_review').length,
-      paymentPendingAds: ads.filter(a => a.status === 'payment_pending').length,
-      paymentSubmittedAds: ads.filter(a => a.status === 'payment_submitted').length,
-      scheduledAds: ads.filter(a => a.status === 'scheduled').length,
-      publishedAds: ads.filter(a => a.status === 'published').length,
-      expiredAds: ads.filter(a => a.status === 'expired').length,
-      rejectedAds: ads.filter(a => a.status === 'rejected').length,
+      totalAds: ads.length,
+      activeAds: ads.filter(a => a.status === 'published').length,
+      pendingAds: ads.filter(a => a.status === 'pending').length,
+      totalViews: ads.reduce((sum, a) => sum + (a.views || 0), 0),
+      totalClicks: ads.reduce((sum, a) => sum + (a.clicks || 0), 0),
+      ctr: '0.0%',
     };
 
-    // Get categories, cities, and packages for recent ads
-    const recentAdsWithDetails = await Promise.all(
-      ads.map(async (ad) => {
-        const [{ data: category }, { data: city }, { data: pkg }] = await Promise.all([
-          supabaseAdmin!.from('categories').select('name').eq('id', ad.category_id).single(),
-          supabaseAdmin!.from('cities').select('name').eq('id', ad.city_id).single(),
-          supabaseAdmin!.from('packages').select('name').eq('id', ad.package_id).single(),
-        ]);
-
-        return {
-          _id: ad.id,
-          title: ad.title,
-          status: ad.status,
-          categoryId: { name: category?.name || 'Unknown' },
-          cityId: { name: city?.name || 'Unknown' },
-          packageId: { name: pkg?.name || 'Unknown' },
-          createdAt: ad.created_at,
-        };
-      })
-    );
+    // Calculate CTR
+    if (stats.totalViews > 0) {
+      stats.ctr = ((stats.totalClicks / stats.totalViews) * 100).toFixed(1) + '%';
+    }
 
     return NextResponse.json({
       stats,
-      recentAds: recentAdsWithDetails,
-      payments: [],
+      recentAds: ads.map(ad => ({
+        _id: ad.id,
+        title: ad.title,
+        status: ad.status,
+        views: ad.views || 0,
+        clicks: ad.clicks || 0,
+        createdAt: ad.created_at,
+      })),
     });
   } catch (error) {
     console.error('Get client dashboard error:', error);
