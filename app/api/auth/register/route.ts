@@ -7,6 +7,23 @@ import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if required environment variables are set
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not set in environment variables');
+      return NextResponse.json(
+        { error: 'Server configuration error: JWT_SECRET not set' },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Supabase environment variables are not set');
+      return NextResponse.json(
+        { error: 'Server configuration error: Supabase credentials not set' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const { email, password, name, role } = body;
 

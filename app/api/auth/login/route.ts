@@ -7,6 +7,23 @@ import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if required environment variables are set
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not set in environment variables');
+      return NextResponse.json(
+        { error: 'Server configuration error: JWT_SECRET not set' },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Supabase environment variables are not set');
+      return NextResponse.json(
+        { error: 'Server configuration error: Supabase credentials not set' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const { email, password } = body;
 
@@ -155,8 +172,9 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Login error:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: process.env.NODE_ENV === 'development' ? String(error) : undefined },
       { status: 500 }
     );
   }
