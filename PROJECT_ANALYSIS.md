@@ -36,58 +36,58 @@
 
 ### 1. Public Pages
 
-| Page | Path | Description | Status |
-|------|------|-------------|--------|
-| **Home** | `/` | Landing page with hero, features, CTA | ✅ Existing |
-| **Login** | `/login` | User authentication with email/password | ✅ Fixed |
-| **Register** | `/register` | User registration with role selection | ✅ Fixed |
-| **Marketplace** | `/marketplace` | Public ad browsing with filters | ✅ Public access |
-| **Explore** | `/explore` | Category/city exploration | ✅ Existing |
-| **Ad Detail** | `/ads/[slug]` | Individual ad view page | ✅ Existing |
-| **Category Page** | `/category/[slug]` | Ads by category | ✅ Existing |
-| **City Page** | `/city/[slug]` | Ads by city | ✅ Existing |
-| **Packages** | `/packages` | Pricing plans display | ✅ Existing |
+| Page | Path | Description | Live URL | Status |
+|------|------|-------------|----------|--------|
+| **Home** | `/` | Landing page with hero, features, CTA | [Open](https://ad-flow-pro-ai.vercel.app/) | ✅ Existing |
+| **Login** | `/login` | User authentication with email/password | [Open](https://ad-flow-pro-ai.vercel.app/login) | ✅ Fixed |
+| **Register** | `/register` | User registration with role selection | [Open](https://ad-flow-pro-ai.vercel.app/register) | ✅ Fixed |
+| **Marketplace** | `/marketplace` | Public ad browsing with filters | [Open](https://ad-flow-pro-ai.vercel.app/marketplace) | ✅ Public access |
+| **Explore** | `/explore` | Category/city exploration | [Open](https://ad-flow-pro-ai.vercel.app/explore) | ✅ Existing |
+| **Ad Detail** | `/ads/[slug]` | Individual ad view page | [Open](https://ad-flow-pro-ai.vercel.app/ads/sample-ad) | ✅ Existing |
+| **Category Page** | `/category/[slug]` | Ads by category | [Open](https://ad-flow-pro-ai.vercel.app/category/electronics) | ✅ Existing |
+| **City Page** | `/city/[slug]` | Ads by city | [Open](https://ad-flow-pro-ai.vercel.app/city/lahore) | ✅ Existing |
+| **Packages** | `/packages` | Pricing plans display | [Open](https://ad-flow-pro-ai.vercel.app/packages) | ✅ Existing |
 
 ### 2. Admin Control Panel (CRUD Pages)
 
-| Page | Path | Features | Status |
-|------|------|----------|--------|
-| **Control Panel Dashboard** | `/admin/control-panel` | Main admin dashboard with stats, links to all CRUD sections | ✅ Created |
-| **Users List** | `/admin/control-panel/users` | List all users with search, filter, delete | ✅ Created |
-| **Add User** | `/admin/control-panel/users/new` | Form to create new user | ✅ Created |
-| **Categories List** | `/admin/control-panel/categories` | List all categories with CRUD | ✅ Created |
-| **Add Category** | `/admin/control-panel/categories/new` | Form to create new category | ✅ Created |
-| **Cities List** | `/admin/control-panel/cities` | List all cities with CRUD | ✅ Created |
-| **Add City** | `/admin/control-panel/cities/new` | Form to create new city | ✅ Created |
-| **Packages List** | `/admin/control-panel/packages` | List all packages with CRUD | ✅ Created |
-| **Add Package** | `/admin/control-panel/packages/new` | Form to create new package | ✅ Created |
-| **Ads Management** | `/admin/control-panel/ads` | List all ads with approve/reject/delete | ✅ Created |
+| Page | Path | Features | Live URL | Status |
+|------|------|----------|----------|--------|
+| **Control Panel Dashboard** | `/admin/control-panel` | Main admin dashboard with stats, links to all CRUD sections | [Open](https://ad-flow-pro-ai.vercel.app/admin/control-panel) | ✅ Created |
+| **Users List** | `/admin/control-panel/users` | List all users with search, filter, delete | [Open](https://ad-flow-pro-ai.vercel.app/admin/control-panel/users) | ✅ Created |
+| **Add User** | `/admin/control-panel/users/new` | Form to create new user | [Open](https://ad-flow-pro-ai.vercel.app/admin/control-panel/users/new) | ✅ Created |
+| **Categories List** | `/admin/control-panel/categories` | List all categories with CRUD | [Open](https://ad-flow-pro-ai.vercel.app/admin/control-panel/categories) | ✅ Created |
+| **Add Category** | `/admin/control-panel/categories/new` | Form to create new category | [Open](https://ad-flow-pro-ai.vercel.app/admin/control-panel/categories/new) | ✅ Created |
+| **Cities List** | `/admin/control-panel/cities` | List all cities with CRUD | [Open](https://ad-flow-pro-ai.vercel.app/admin/control-panel/cities) | ✅ Created |
+| **Add City** | `/admin/control-panel/cities/new` | Form to create new city | [Open](https://ad-flow-pro-ai.vercel.app/admin/control-panel/cities/new) | ✅ Created |
+| **Packages List** | `/admin/control-panel/packages` | List all packages with CRUD | [Open](https://ad-flow-pro-ai.vercel.app/admin/control-panel/packages) | ✅ Created |
+| **Add Package** | `/admin/control-panel/packages/new` | Form to create new package | [Open](https://ad-flow-pro-ai.vercel.app/admin/control-panel/packages/new) | ✅ Created |
+| **Ads Management** | `/admin/control-panel/ads` | List all ads with approve/reject/delete | [Open](https://ad-flow-pro-ai.vercel.app/admin/control-panel/ads) | ✅ Created |
 
 ### 3. Client Dashboard
 
-| Page | Path | Features | Status |
-|------|------|----------|--------|
-| **Client Dashboard** | `/client` | User's dashboard | ✅ Existing |
-| **Create Ad** | `/client/create-ad` | AI-powered ad creation | ✅ Existing |
+| Page | Path | Features | Live URL | Status |
+|------|------|----------|----------|--------|
+| **Client Dashboard** | `/client` | User's dashboard | [Open](https://ad-flow-pro-ai.vercel.app/client) | ✅ Existing |
+| **Create Ad** | `/client/create-ad` | AI-powered ad creation | [Open](https://ad-flow-pro-ai.vercel.app/client/create-ad) | ✅ Existing |
 
 ### 4. Moderator Panel
 
-| Page | Path | Features | Status |
-|------|------|----------|--------|
-| **Moderator Dashboard** | `/moderator` | Review queue, approve/reject ads | ✅ Existing |
+| Page | Path | Features | Live URL | Status |
+|------|------|----------|----------|--------|
+| **Moderator Dashboard** | `/moderator` | Review queue, approve/reject ads | [Open](https://ad-flow-pro-ai.vercel.app/moderator) | ✅ Existing |
 
 ### 5. Super Admin Panel
 
-| Page | Path | Features | Status |
-|------|------|----------|--------|
-| **Super Admin** | `/super-admin` | System management, analytics | ✅ Existing |
+| Page | Path | Features | Live URL | Status |
+|------|------|----------|----------|--------|
+| **Super Admin** | `/super-admin` | System management, analytics | [Open](https://ad-flow-pro-ai.vercel.app/super-admin) | ✅ Existing |
 
 ### 6. Setup/Seed Pages
 
-| Page | Path | Features | Status |
-|------|------|----------|--------|
-| **Setup** | `/setup` | Create demo users in Supabase | ✅ Created |
-| **Seed** | `/seed` | Seed demo categories, cities, packages, 30 Pakistani ads | ✅ Created |
+| Page | Path | Features | Live URL | Status |
+|------|------|----------|----------|--------|
+| **Setup** | `/setup` | Create demo users in Supabase | [Open](https://ad-flow-pro-ai.vercel.app/setup) | ✅ Created |
+| **Seed** | `/seed` | Seed demo categories, cities, packages, 30 Pakistani ads | [Open](https://ad-flow-pro-ai.vercel.app/seed) | ✅ Created |
 
 ---
 
