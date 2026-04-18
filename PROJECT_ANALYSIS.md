@@ -96,8 +96,8 @@
 ### Authentication
 | Route | Method | Description | Status |
 |-------|--------|-------------|--------|
-| `/api/auth/login` | POST | Login with MongoDB + Supabase fallback | ✅ Fixed (auto-creates missing profiles" target="_blank">Open</a> |
-| `/api/auth/register` | POST | Register with Supabase check | ✅ Fixed (checks Supabase Auth users" target="_blank">Open</a> |
+| `/api/auth/login` | POST | Login with MongoDB + Supabase fallback | ✅ Fixed (auto-creates missing profiles) |
+| `/api/auth/register` | POST | Register with Supabase check | ✅ Fixed (checks Supabase Auth users) |
 | `/api/auth/logout` | POST | User logout | ✅ Existing |
 | `/api/auth/me` | GET | Get current user | ✅ Existing |
 
@@ -172,7 +172,7 @@
 
 | Model | File | Description |
 |-------|------|-------------|
-| **User** | `lib/models/User.ts` | Users with roles (client, moderator, admin, super_admin" target="_blank">Open</a> |
+| **User** | `lib/models/User.ts` | Users with roles (client, moderator, admin, super_admin) |
 | **Ad** | `lib/models/Ad.ts` | Advertisements with status, pricing, SEO |
 | **AdMedia** | `lib/models/AdMedia.ts` | Ad images/videos |
 | **AdStatusHistory** | `lib/models/AdStatusHistory.ts` | Ad status change log |
@@ -237,41 +237,41 @@
 ### Public Pages
 | Page | Path | Live Link |
 |------|------|-----------|
-| **Home** | `/` | [https://ad-flow-pro-ai.vercel.app/](https://ad-flow-pro-ai.vercel.app/" target="_blank">Open</a> |
-| **Marketplace** | `/marketplace` | [https://ad-flow-pro-ai.vercel.app/marketplace](https://ad-flow-pro-ai.vercel.app/marketplace" target="_blank">Open</a> |
-| **Login** | `/login` | [https://ad-flow-pro-ai.vercel.app/login](https://ad-flow-pro-ai.vercel.app/login" target="_blank">Open</a> |
-| **Register** | `/register` | [https://ad-flow-pro-ai.vercel.app/register](https://ad-flow-pro-ai.vercel.app/register" target="_blank">Open</a> |
-| **Explore** | `/explore` | [https://ad-flow-pro-ai.vercel.app/explore](https://ad-flow-pro-ai.vercel.app/explore" target="_blank">Open</a> |
-| **Packages** | `/packages` | [https://ad-flow-pro-ai.vercel.app/packages](https://ad-flow-pro-ai.vercel.app/packages" target="_blank">Open</a> |
+| **Home** | `/` | <a href="https://ad-flow-pro-ai.vercel.app/" target="_blank">Open</a> |
+| **Marketplace** | `/marketplace` | <a href="https://ad-flow-pro-ai.vercel.app/marketplace" target="_blank">Open</a> |
+| **Login** | `/login` | <a href="https://ad-flow-pro-ai.vercel.app/login" target="_blank">Open</a> |
+| **Register** | `/register` | <a href="https://ad-flow-pro-ai.vercel.app/register" target="_blank">Open</a> |
+| **Explore** | `/explore` | <a href="https://ad-flow-pro-ai.vercel.app/explore" target="_blank">Open</a> |
+| **Packages** | `/packages` | <a href="https://ad-flow-pro-ai.vercel.app/packages" target="_blank">Open</a> |
 
 ### Admin Panel
 | Page | Path | Live Link |
 |------|------|-----------|
-| **Admin Dashboard** | `/admin` | [https://ad-flow-pro-ai.vercel.app/admin](https://ad-flow-pro-ai.vercel.app/admin" target="_blank">Open</a> |
-| **Control Panel** | `/admin/control-panel` | [https://ad-flow-pro-ai.vercel.app/admin/control-panel](https://ad-flow-pro-ai.vercel.app/admin/control-panel" target="_blank">Open</a> |
-| **Users Management** | `/admin/control-panel/users` | [https://ad-flow-pro-ai.vercel.app/admin/control-panel/users](https://ad-flow-pro-ai.vercel.app/admin/control-panel/users" target="_blank">Open</a> |
-| **Add User** | `/admin/control-panel/users/new` | [https://ad-flow-pro-ai.vercel.app/admin/control-panel/users/new](https://ad-flow-pro-ai.vercel.app/admin/control-panel/users/new" target="_blank">Open</a> |
-| **Categories** | `/admin/control-panel/categories` | [https://ad-flow-pro-ai.vercel.app/admin/control-panel/categories](https://ad-flow-pro-ai.vercel.app/admin/control-panel/categories" target="_blank">Open</a> |
-| **Add Category** | `/admin/control-panel/categories/new` | [https://ad-flow-pro-ai.vercel.app/admin/control-panel/categories/new](https://ad-flow-pro-ai.vercel.app/admin/control-panel/categories/new" target="_blank">Open</a> |
-| **Cities** | `/admin/control-panel/cities` | [https://ad-flow-pro-ai.vercel.app/admin/control-panel/cities](https://ad-flow-pro-ai.vercel.app/admin/control-panel/cities" target="_blank">Open</a> |
-| **Add City** | `/admin/control-panel/cities/new` | [https://ad-flow-pro-ai.vercel.app/admin/control-panel/cities/new](https://ad-flow-pro-ai.vercel.app/admin/control-panel/cities/new" target="_blank">Open</a> |
-| **Packages** | `/admin/control-panel/packages` | [https://ad-flow-pro-ai.vercel.app/admin/control-panel/packages](https://ad-flow-pro-ai.vercel.app/admin/control-panel/packages" target="_blank">Open</a> |
-| **Add Package** | `/admin/control-panel/packages/new` | [https://ad-flow-pro-ai.vercel.app/admin/control-panel/packages/new](https://ad-flow-pro-ai.vercel.app/admin/control-panel/packages/new" target="_blank">Open</a> |
-| **Ads Management** | `/admin/control-panel/ads` | [https://ad-flow-pro-ai.vercel.app/admin/control-panel/ads](https://ad-flow-pro-ai.vercel.app/admin/control-panel/ads" target="_blank">Open</a> |
+| **Admin Dashboard** | `/admin` | <a href="https://ad-flow-pro-ai.vercel.app/admin" target="_blank">Open</a> |
+| **Control Panel** | `/admin/control-panel` | <a href="https://ad-flow-pro-ai.vercel.app/admin/control-panel" target="_blank">Open</a> |
+| **Users Management** | `/admin/control-panel/users` | <a href="https://ad-flow-pro-ai.vercel.app/admin/control-panel/users" target="_blank">Open</a> |
+| **Add User** | `/admin/control-panel/users/new` | <a href="https://ad-flow-pro-ai.vercel.app/admin/control-panel/users/new" target="_blank">Open</a> |
+| **Categories** | `/admin/control-panel/categories` | <a href="https://ad-flow-pro-ai.vercel.app/admin/control-panel/categories" target="_blank">Open</a> |
+| **Add Category** | `/admin/control-panel/categories/new` | <a href="https://ad-flow-pro-ai.vercel.app/admin/control-panel/categories/new" target="_blank">Open</a> |
+| **Cities** | `/admin/control-panel/cities` | <a href="https://ad-flow-pro-ai.vercel.app/admin/control-panel/cities" target="_blank">Open</a> |
+| **Add City** | `/admin/control-panel/cities/new` | <a href="https://ad-flow-pro-ai.vercel.app/admin/control-panel/cities/new" target="_blank">Open</a> |
+| **Packages** | `/admin/control-panel/packages` | <a href="https://ad-flow-pro-ai.vercel.app/admin/control-panel/packages" target="_blank">Open</a> |
+| **Add Package** | `/admin/control-panel/packages/new` | <a href="https://ad-flow-pro-ai.vercel.app/admin/control-panel/packages/new" target="_blank">Open</a> |
+| **Ads Management** | `/admin/control-panel/ads` | <a href="https://ad-flow-pro-ai.vercel.app/admin/control-panel/ads" target="_blank">Open</a> |
 
 ### Setup Pages
 | Page | Path | Live Link |
 |------|------|-----------|
-| **Setup Users** | `/setup` | [https://ad-flow-pro-ai.vercel.app/setup](https://ad-flow-pro-ai.vercel.app/setup" target="_blank">Open</a> |
-| **Seed Database** | `/seed` | [https://ad-flow-pro-ai.vercel.app/seed](https://ad-flow-pro-ai.vercel.app/seed" target="_blank">Open</a> |
+| **Setup Users** | `/setup` | <a href="https://ad-flow-pro-ai.vercel.app/setup" target="_blank">Open</a> |
+| **Seed Database** | `/seed` | <a href="https://ad-flow-pro-ai.vercel.app/seed" target="_blank">Open</a> |
 
 ### Other Panels
 | Page | Path | Live Link |
 |------|------|-----------|
-| **Client Dashboard** | `/client` | [https://ad-flow-pro-ai.vercel.app/client](https://ad-flow-pro-ai.vercel.app/client" target="_blank">Open</a> |
-| **Create Ad** | `/client/create-ad` | [https://ad-flow-pro-ai.vercel.app/client/create-ad](https://ad-flow-pro-ai.vercel.app/client/create-ad" target="_blank">Open</a> |
-| **Moderator Panel** | `/moderator` | [https://ad-flow-pro-ai.vercel.app/moderator](https://ad-flow-pro-ai.vercel.app/moderator" target="_blank">Open</a> |
-| **Super Admin** | `/super-admin` | [https://ad-flow-pro-ai.vercel.app/super-admin](https://ad-flow-pro-ai.vercel.app/super-admin" target="_blank">Open</a> |
+| **Client Dashboard** | `/client` | <a href="https://ad-flow-pro-ai.vercel.app/client" target="_blank">Open</a> |
+| **Create Ad** | `/client/create-ad` | <a href="https://ad-flow-pro-ai.vercel.app/client/create-ad" target="_blank">Open</a> |
+| **Moderator Panel** | `/moderator` | <a href="https://ad-flow-pro-ai.vercel.app/moderator" target="_blank">Open</a> |
+| **Super Admin** | `/super-admin` | <a href="https://ad-flow-pro-ai.vercel.app/super-admin" target="_blank">Open</a> |
 
 ---
 
