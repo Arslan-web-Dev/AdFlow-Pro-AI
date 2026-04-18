@@ -4,10 +4,10 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
  * User Role Enum
  */
 export enum UserRole {
-  USER = 'USER',
-  MANAGER = 'MANAGER',
-  ADMIN = 'ADMIN',
-  SUPER_ADMIN = 'SUPER_ADMIN',
+  CLIENT = 'client',
+  MODERATOR = 'moderator',
+  ADMIN = 'admin',
+  SUPER_ADMIN = 'super_admin',
 }
 
 /**
@@ -51,7 +51,7 @@ const UserSchema: Schema = new Schema(
     role: {
       type: String,
       enum: Object.values(UserRole),
-      default: UserRole.USER,
+      default: UserRole.CLIENT,
     },
     isActive: {
       type: Boolean,

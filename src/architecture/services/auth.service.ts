@@ -33,7 +33,7 @@ export class AuthService {
         email: data.email,
         password: hashedPassword,
         name: data.name,
-        role: UserRole.USER,
+        role: UserRole.CLIENT,
         isActive: true,
         isVerified: false,
       });
@@ -42,7 +42,7 @@ export class AuthService {
       const payload: JWTPayload = {
         userId: user._id.toString(),
         email: user.email,
-        role: user.role as UserRole,
+        role: user.role as any,
       };
       const token = JWTService.generateToken(payload);
 
@@ -102,7 +102,7 @@ export class AuthService {
       const payload: JWTPayload = {
         userId: user._id.toString(),
         email: user.email,
-        role: user.role as UserRole,
+        role: user.role as any,
       };
       const token = JWTService.generateToken(payload);
 
