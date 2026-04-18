@@ -2,31 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/client';
 
 const demoCategories = [
-  { name: 'Electronics', slug: 'electronics', description: 'Gadgets, devices, and tech products', icon: 'Smartphone' },
-  { name: 'Vehicles', slug: 'vehicles', description: 'Cars, bikes, and automobiles', icon: 'Car' },
-  { name: 'Furniture', slug: 'furniture', description: 'Home and office furniture', icon: 'Sofa' },
-  { name: 'Fashion', slug: 'fashion', description: 'Clothing, shoes, and accessories', icon: 'Shirt' },
-  { name: 'Sports', slug: 'sports', description: 'Sports equipment and gear', icon: 'Dumbbell' },
-  { name: 'Appliances', slug: 'appliances', description: 'Home appliances and machines', icon: 'Home' },
-  { name: 'Education', slug: 'education', description: 'Books and educational materials', icon: 'Book' },
-  { name: 'Music', slug: 'music', description: 'Musical instruments and equipment', icon: 'Music' },
-  { name: 'Kids', slug: 'kids', description: 'Baby and kids products', icon: 'Baby' },
-  { name: 'Home Decor', slug: 'home-decor', description: 'Home decoration items', icon: 'Lamp' },
+  { name: 'Electronics', slug: 'electronics', icon: 'Smartphone', is_active: true },
+  { name: 'Vehicles', slug: 'vehicles', icon: 'Car', is_active: true },
+  { name: 'Furniture', slug: 'furniture', icon: 'Sofa', is_active: true },
+  { name: 'Fashion', slug: 'fashion', icon: 'Shirt', is_active: true },
+  { name: 'Sports', slug: 'sports', icon: 'Dumbbell', is_active: true },
+  { name: 'Appliances', slug: 'appliances', icon: 'Home', is_active: true },
+  { name: 'Education', slug: 'education', icon: 'Book', is_active: true },
+  { name: 'Music', slug: 'music', icon: 'Music', is_active: true },
+  { name: 'Kids', slug: 'kids', icon: 'Baby', is_active: true },
+  { name: 'Home Decor', slug: 'home-decor', icon: 'Lamp', is_active: true },
 ];
 
 const demoCities = [
-  { name: 'Lahore', slug: 'lahore', country: 'Pakistan' },
-  { name: 'Karachi', slug: 'karachi', country: 'Pakistan' },
-  { name: 'Islamabad', slug: 'islamabad', country: 'Pakistan' },
-  { name: 'Faisalabad', slug: 'faisalabad', country: 'Pakistan' },
-  { name: 'Peshawar', slug: 'peshawar', country: 'Pakistan' },
-  { name: 'Multan', slug: 'multan', country: 'Pakistan' },
+  { name: 'Lahore', slug: 'lahore', is_active: true },
+  { name: 'Karachi', slug: 'karachi', is_active: true },
+  { name: 'Islamabad', slug: 'islamabad', is_active: true },
+  { name: 'Faisalabad', slug: 'faisalabad', is_active: true },
+  { name: 'Peshawar', slug: 'peshawar', is_active: true },
+  { name: 'Multan', slug: 'multan', is_active: true },
 ];
 
 const demoPackages = [
-  { name: 'Basic', duration_days: 30, weight: 1, price: 500, features: ['30 days visibility', 'Standard listing'] },
-  { name: 'Premium', duration_days: 60, weight: 5, price: 1500, features: ['60 days visibility', 'Featured badge', 'Priority ranking'] },
-  { name: 'Enterprise', duration_days: 90, weight: 10, price: 3000, features: ['90 days visibility', 'Featured badge', 'Homepage display', 'Auto-refresh'] },
+  { name: 'Basic', duration_days: 30, weight: 1, price: 500, is_active: true },
+  { name: 'Premium', duration_days: 60, weight: 5, price: 1500, is_active: true },
+  { name: 'Enterprise', duration_days: 90, weight: 10, price: 3000, is_active: true },
 ];
 
 // Pakistani Ads with Images
@@ -100,11 +100,17 @@ export async function POST(request: NextRequest) {
       else results.errors.push(`City ${city.name}: ${error.message}`);
     }
 
-    // Seed Packages
+    // Seed Packages - insert without onConflict since there's no unique constraint
     for (const pkg of demoPackages) {
-      const { error } = await supabaseAdmin.from('packages').upsert(pkg, { onConflict: 'name' });
-      if (!error) results.packages++;
-      else results.errors.push(`Package ${pkg.name}: ${error.message}`);
+      // Check if package already exists
+      const { data: existing } = await supabaseAdmin.from('packages').select('id').eq('name', pkg.name).limit(1).single();
+      if (!existing) {
+        const { error } = await supabaseAdmin.from('packages').insert(pkg);
+        if (!error) results.packages++;
+        else results.errors.push(`Package ${pkg.name}: ${error.message}`);
+      } else {
+        results.packages++; // Already exists, count as success
+      }
     }
 
     // Get first user for ads
