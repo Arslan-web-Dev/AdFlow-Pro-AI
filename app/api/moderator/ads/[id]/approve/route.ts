@@ -1,3 +1,4 @@
+// Fixed for Next.js 16 - params is now a Promise
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import connectDB from '@/lib/db/mongodb';
