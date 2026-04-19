@@ -9,9 +9,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, password, name, role } = body;
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
     // Validation
-    if (!email || !password || !name) {
+    if (!normalizedEmail || !password || !name) {
       return NextResponse.json(
         { error: 'Email, password, and name are required' },
         { status: 400 }
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     if (db) {
       // Check if user already exists
-      const existingUser = await User.findOne({ email });
+      const existingUser = await User.findOne({ email: normalizedEmail });
       if (existingUser) {
         return NextResponse.json(
           { error: 'User with this email already exists' },
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
 
       // Create new user
       const user = await User.create({
-        email,
+        email: normalizedEmail,
         password,
         name,
         role: userRole,
@@ -86,7 +87,9 @@ export async function POST(request: NextRequest) {
 
     // Check if user already exists in Supabase Auth (this is the real check)
     const { data: existingAuthUser } = await supabaseAdmin.auth.admin.listUsers();
-    const userExists = existingAuthUser?.users?.find(u => u.email === email);
+    const userExists = existingAuthUser?.users?.find(
+      u => typeof u.email === 'string' && u.email.toLowerCase() === normalizedEmail
+    );
     
     if (userExists) {
       return NextResponse.json(
@@ -97,7 +100,7 @@ export async function POST(request: NextRequest) {
 
     // Create user in Supabase Auth
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
+      email: normalizedEmail,
       password,
       email_confirm: true,
       user_metadata: {
@@ -119,7 +122,7 @@ export async function POST(request: NextRequest) {
       .from('users')
       .insert({
         id: authData.user.id,
-        email,
+        email: normalizedEmail,
         name,
         role: userRole,
         is_active: true,
@@ -137,7 +140,7 @@ export async function POST(request: NextRequest) {
     // Generate JWT token
     const token = generateToken({
       userId: authData.user.id,
-      email: authData.user.email || email,
+      email: authData.user.email || normalizedEmail,
       role: userRole,
     });
 
@@ -147,7 +150,7 @@ export async function POST(request: NextRequest) {
         token,
         user: {
           id: authData.user.id,
-          email: authData.user.email || email,
+          email: authData.user.email || normalizedEmail,
           name,
           role: userRole,
         },

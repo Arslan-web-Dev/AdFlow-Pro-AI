@@ -11,10 +11,11 @@ export async function POST(request: NextRequest) {
     
     const body = await request.json();
     const { email, password } = body;
-    console.log('[LOGIN] Received request for email:', email);
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    console.log('[LOGIN] Received request for email:', normalizedEmail);
 
     // Validation
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       console.log('[LOGIN] Validation failed - missing email or password');
       return NextResponse.json(
         { error: 'Email and password are required' },
@@ -155,7 +156,7 @@ export async function POST(request: NextRequest) {
       console.log('[LOGIN] Attempting Supabase authentication...');
       try {
         const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
-          email,
+          email: normalizedEmail,
           password,
         });
 
@@ -176,16 +177,18 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('[LOGIN] Supabase auth successful, fetching user profile...');
-        // Get user profile from Supabase users table
-        let { data: userData, error: userError } = await supabaseAdmin
+
+        const { data: existingUsers, error: userError } = await supabaseAdmin
           .from('users')
           .select('*')
-          .eq('email', email)
-          .maybeSingle();
+          .eq('email', normalizedEmail)
+          .limit(1);
 
         if (userError) {
           console.warn('[LOGIN] Supabase users table lookup error:', userError);
         }
+
+        let userData = Array.isArray(existingUsers) && existingUsers.length > 0 ? existingUsers[0] : null;
 
         // If user not found in users table, create or sync it from auth data
         if (!userData) {
@@ -195,8 +198,8 @@ export async function POST(request: NextRequest) {
           const metadata = authUser.user_metadata || {};
           const userPayload = {
             id: authUser.id,
-            email: authUser.email || email,
-            name: metadata.name || authUser.email?.split('@')[0] || email.split('@')[0] || 'User',
+            email: authUser.email ? authUser.email.toLowerCase() : normalizedEmail,
+            name: metadata.name || authUser.email?.split('@')[0] || normalizedEmail.split('@')[0] || 'User',
             role: metadata.role || 'client',
             is_active: true,
             is_verified: true,
@@ -208,35 +211,52 @@ export async function POST(request: NextRequest) {
             .select()
             .maybeSingle();
 
-          if (createError) {
+          if (!createError && newUser) {
+            userData = newUser;
+          } else {
             console.error('[LOGIN] Failed to create or sync user profile:', createError);
 
-            const { data: existingUserByEmail, error: fetchEmailError } = await supabaseAdmin
+            const { data: existingByEmail, error: fetchEmailError } = await supabaseAdmin
               .from('users')
               .select('*')
-              .eq('email', email)
-              .maybeSingle();
+              .eq('email', normalizedEmail)
+              .limit(1);
 
             if (fetchEmailError) {
               console.warn('[LOGIN] Failed to fetch user by email after profile create error:', fetchEmailError);
             }
 
-            if (existingUserByEmail) {
-              userData = existingUserByEmail;
+            if (Array.isArray(existingByEmail) && existingByEmail.length > 0) {
+              userData = existingByEmail[0];
             } else {
               console.log('[LOGIN] Trying to fetch user profile by Supabase auth user id...');
-              const { data: existingUserById, error: fetchIdError } = await supabaseAdmin
+              const { data: existingById, error: fetchIdError } = await supabaseAdmin
                 .from('users')
                 .select('*')
                 .eq('id', authUser.id)
-                .maybeSingle();
+                .limit(1);
 
               if (fetchIdError) {
                 console.warn('[LOGIN] Failed to fetch user by id after profile create error:', fetchIdError);
               }
 
-              if (existingUserById) {
-                userData = existingUserById;
+              if (Array.isArray(existingById) && existingById.length > 0) {
+                userData = existingById[0];
+              }
+            }
+
+            if (userData) {
+              const { data: updatedUser, error: updateError } = await supabaseAdmin
+                .from('users')
+                .update(userPayload)
+                .eq('id', userData.id)
+                .select()
+                .maybeSingle();
+
+              if (updateError) {
+                console.error('[LOGIN] Failed to update existing user profile:', updateError);
+              } else if (updatedUser) {
+                userData = updatedUser;
               }
             }
 
@@ -247,8 +267,6 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
               );
             }
-          } else {
-            userData = newUser;
           }
 
           console.log('[LOGIN] User profile synced successfully');
