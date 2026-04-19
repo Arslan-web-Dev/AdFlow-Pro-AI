@@ -1,3 +1,4 @@
+/* cspell:disable */
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Ad from '@/lib/models/Ad';
@@ -83,57 +84,80 @@ export async function GET(request: NextRequest) {
     }
 
     // Fallback to Supabase (for production/Vercel)
-    console.log('Supabase fallback, supabaseAdmin:', supabaseAdmin ? 'Exists' : 'NULL');
+    console.log('Supabase fallback - checking environment variables...');
+    console.log('  NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'MISSING');
+    console.log('  SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'MISSING');
+    console.log('  supabaseAdmin client:', supabaseAdmin ? 'Initialized' : 'NULL');
+
     if (!supabaseAdmin) {
-      console.log('SupabaseAdmin is null, returning empty');
+      const errorMsg = 'Supabase not configured. Missing environment variables: ' + 
+        (!process.env.NEXT_PUBLIC_SUPABASE_URL ? 'NEXT_PUBLIC_SUPABASE_URL ' : '') +
+        (!process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SUPABASE_SERVICE_ROLE_KEY' : '');
+      console.error(errorMsg);
       return NextResponse.json(
-        { ads: [], pagination: { page, limit, total: 0, pages: 0 } },
-        { status: 200 }
+        { 
+          error: 'Database not available',
+          details: errorMsg,
+          source: 'supabase_not_initialized'
+        },
+        { status: 503 }
       );
     }
 
-    let supabaseQuery = supabaseAdmin
-      .from('ads')
-      .select('*')
-      .eq('status', status);
+    try {
+      let supabaseQuery = supabaseAdmin
+        .from('ads')
+        .select('*')
+        .eq('status', status);
 
-    if (category && category !== 'all') {
-      supabaseQuery = supabaseQuery.ilike('category', `%${category}%`);
+      if (category && category !== 'all') {
+        supabaseQuery = supabaseQuery.ilike('category', `%${category}%`);
+      }
+
+      if (city && city !== 'all') {
+        supabaseQuery = supabaseQuery.ilike('city', `%${city}%`);
+      }
+
+      if (search) {
+        supabaseQuery = supabaseQuery.or(`title.ilike.%${search}%,description.ilike.%${search}%,city.ilike.%${search}%`);
+      }
+
+      supabaseQuery = supabaseQuery
+        .order('priority', { ascending: false })
+        .order('created_at', { ascending: false })
+        .range((page - 1) * limit, page * limit - 1);
+
+      console.log('Executing Supabase query...', { category, city, search, page, limit });
+      const { data: ads, error, count } = await supabaseQuery;
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error(`Supabase query failed: ${error.message}`);
+      }
+
+      console.log('Supabase result - ads found:', ads?.length || 0, 'total count:', count);
+
+      const total = count || ads?.length || 0;
+
+      return NextResponse.json({
+        ads: ads || [],
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      });
+    } catch (supabaseError) {
+      console.error('Supabase fallback error:', supabaseError);
+      return NextResponse.json(
+        { 
+          error: 'Failed to fetch ads from Supabase',
+          details: supabaseError instanceof Error ? supabaseError.message : String(supabaseError)
+        },
+        { status: 500 }
+      );
     }
-
-    if (city && city !== 'all') {
-      supabaseQuery = supabaseQuery.ilike('city', `%${city}%`);
-    }
-
-    if (search) {
-      supabaseQuery = supabaseQuery.or(`title.ilike.%${search}%,description.ilike.%${search}%,city.ilike.%${search}%`);
-    }
-
-    supabaseQuery = supabaseQuery
-      .order('priority', { ascending: false })
-      .order('created_at', { ascending: false })
-      .range((page - 1) * limit, page * limit - 1);
-
-    console.log('Executing Supabase query...');
-    const { data: ads, error, count } = await supabaseQuery;
-    console.log('Supabase result - ads:', ads?.length || 0, 'error:', error, 'count:', count);
-
-    if (error) {
-      console.error('Supabase ads error:', error);
-      return NextResponse.json({ error: 'Failed to fetch ads' }, { status: 500 });
-    }
-
-    const total = count || ads?.length || 0;
-
-    return NextResponse.json({
-      ads: ads || [],
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    });
   } catch (error) {
     console.error('Get public ads error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -47,6 +47,7 @@ export default function MarketplacePage() {
   const [ads, setAds] = useState<Ad[]>([]);
   const [filteredAds, setFilteredAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState<'all' | 'low' | 'mid' | 'high'>('all');
@@ -61,17 +62,25 @@ export default function MarketplacePage() {
 
   const fetchAds = async () => {
     try {
+      setError(null);
       const response = await fetch('/api/public/ads?status=published&limit=50');
-      if (response.ok) {
-        const data = await response.json();
-        console.log('API Response:', data);
-        console.log('Ads count:', data.ads?.length);
-        setAds(data.ads || []);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        const errorMsg = data.error || `API Error: ${response.status}`;
+        console.error('API Error:', errorMsg, data.details);
+        setError(errorMsg);
+        setAds([]);
       } else {
-        console.error('API Error:', response.status);
+        console.log('✓ API Response successful:', data);
+        console.log('✓ Ads count:', data.ads?.length);
+        setAds(data.ads || []);
       }
     } catch (error) {
-      console.error('Error fetching ads:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Failed to fetch ads';
+      console.error('Error fetching ads:', errorMsg);
+      setError(`Connection error: ${errorMsg}`);
+      setAds([]);
     } finally {
       setLoading(false);
     }
@@ -229,8 +238,34 @@ export default function MarketplacePage() {
           </div>
         )}
 
+        {/* Error State */}
+        {!loading && error && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-20"
+          >
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
+              <Search className="w-10 h-10 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-semibold text-[var(--text-primary)] mb-2">Unable to Load Ads</h2>
+            <p className="text-[var(--text-secondary)] mb-2">
+              {error}
+            </p>
+            <p className="text-sm text-[var(--text-muted)] mb-6">
+              If this persists, the database may not be configured. Check the deployment settings.
+            </p>
+            <button
+              onClick={fetchAds}
+              className="btn-primary mt-6"
+            >
+              Try Again
+            </button>
+          </motion.div>
+        )}
+
         {/* Empty State */}
-        {!loading && filteredAds.length === 0 && (
+        {!loading && !error && filteredAds.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -257,7 +292,7 @@ export default function MarketplacePage() {
         )}
 
         {/* Ads Grid */}
-        {!loading && filteredAds.length > 0 && (
+        {!loading && !error && filteredAds.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredAds.map((ad, index) => (
               <motion.div
