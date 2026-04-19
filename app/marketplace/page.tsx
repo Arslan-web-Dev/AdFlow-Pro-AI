@@ -64,7 +64,11 @@ export default function MarketplacePage() {
       const response = await fetch('/api/public/ads?status=published&limit=50');
       if (response.ok) {
         const data = await response.json();
+        console.log('API Response:', data);
+        console.log('Ads count:', data.ads?.length);
         setAds(data.ads || []);
+      } else {
+        console.error('API Error:', response.status);
       }
     } catch (error) {
       console.error('Error fetching ads:', error);
@@ -75,6 +79,7 @@ export default function MarketplacePage() {
 
   const filterAds = () => {
     let filtered = [...ads];
+    console.log('filterAds called, ads count:', ads.length);
 
     // Category filter
     if (selectedCategory !== 'All') {
@@ -103,6 +108,7 @@ export default function MarketplacePage() {
     }
 
     setFilteredAds(filtered);
+    console.log('Filtered ads count:', filtered.length);
   };
 
   return (
