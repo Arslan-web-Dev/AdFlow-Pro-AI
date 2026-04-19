@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import {
   Search,
   Filter,
@@ -18,7 +19,9 @@ import {
 import GlareCard from '@/components/animations/GlareCard';
 import MagnetButton from '@/components/animations/MagnetButton';
 import ClickSpark from '@/components/animations/ClickSpark';
-import ThemeSwitcher from '@/components/theme/ThemeSwitcher';
+
+// ThemeSwitcher removed temporarily for build fix
+// const ThemeSwitcher = dynamic(() => import('@/components/theme/ThemeSwitcher'), { ssr: false });
 
 interface Ad {
   _id: string;
@@ -122,9 +125,7 @@ export default function MarketplacePage() {
 
             <div className="flex items-center gap-4">
               <div className="hidden md:block">
-                <Suspense fallback={null}>
-                  <ThemeSwitcher showLabels={false} />
-                </Suspense>
+                {/* ThemeSwitcher removed temporarily */}
               </div>
               <Link href="/login" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                 Login
