@@ -211,21 +211,42 @@ export async function POST(request: NextRequest) {
           if (createError) {
             console.error('[LOGIN] Failed to create or sync user profile:', createError);
 
-            const { data: existingUser, error: fetchError } = await supabaseAdmin
+            const { data: existingUserByEmail, error: fetchEmailError } = await supabaseAdmin
               .from('users')
               .select('*')
               .eq('email', email)
               .maybeSingle();
 
-            if (fetchError || !existingUser) {
-              console.error('[LOGIN] Failed to recover existing user profile:', fetchError);
+            if (fetchEmailError) {
+              console.warn('[LOGIN] Failed to fetch user by email after profile create error:', fetchEmailError);
+            }
+
+            if (existingUserByEmail) {
+              userData = existingUserByEmail;
+            } else {
+              console.log('[LOGIN] Trying to fetch user profile by Supabase auth user id...');
+              const { data: existingUserById, error: fetchIdError } = await supabaseAdmin
+                .from('users')
+                .select('*')
+                .eq('id', authUser.id)
+                .maybeSingle();
+
+              if (fetchIdError) {
+                console.warn('[LOGIN] Failed to fetch user by id after profile create error:', fetchIdError);
+              }
+
+              if (existingUserById) {
+                userData = existingUserById;
+              }
+            }
+
+            if (!userData) {
+              console.error('[LOGIN] Failed to recover existing user profile after create error');
               return NextResponse.json(
                 { error: 'Failed to create user profile' },
                 { status: 500 }
               );
             }
-
-            userData = existingUser;
           } else {
             userData = newUser;
           }
