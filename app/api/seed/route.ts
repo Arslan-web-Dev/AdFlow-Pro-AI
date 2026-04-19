@@ -1,17 +1,7 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import connectDB from '../lib/db/mongodb';
-import Ad from '../lib/models/Ad';
-import Category from '../lib/models/Category';
-import City from '../lib/models/City';
-import User from '../lib/models/User';
-import Package from '../lib/models/Package';
-
-// Load environment variables from .env.local
-dotenv.config({ path: '.env.local' });
-
-// Check if Supabase credentials are available
-const hasSupabaseCreds = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '@/lib/db/mongodb';
+import Ad from '@/lib/models/Ad';
+import User from '@/lib/models/User';
 
 const ADS_DATA = [
   {
@@ -40,7 +30,7 @@ const ADS_DATA = [
   },
   {
     title: "Wooden Study Table",
-    category: "Furniture",
+    category: "Home & Garden",
     city: "Faisalabad",
     price: 120,
     description: "Strong wood, modern design",
@@ -72,7 +62,7 @@ const ADS_DATA = [
   },
   {
     title: "Office Chair",
-    category: "Furniture",
+    category: "Home & Garden",
     city: "Islamabad",
     price: 75,
     description: "Comfortable ergonomic chair",
@@ -96,7 +86,7 @@ const ADS_DATA = [
   },
   {
     title: "Sofa Set 5 Seater",
-    category: "Furniture",
+    category: "Home & Garden",
     city: "Multan",
     price: 400,
     description: "Clean and stylish",
@@ -128,7 +118,7 @@ const ADS_DATA = [
   },
   {
     title: "Study Books Set",
-    category: "Education",
+    category: "Books",
     city: "Faisalabad",
     price: 30,
     description: "Complete semester books",
@@ -136,7 +126,7 @@ const ADS_DATA = [
   },
   {
     title: "Refrigerator Haier",
-    category: "Appliances",
+    category: "Home & Garden",
     city: "Lahore",
     price: 300,
     description: "Good cooling",
@@ -152,7 +142,7 @@ const ADS_DATA = [
   },
   {
     title: "Dining Table Set",
-    category: "Furniture",
+    category: "Home & Garden",
     city: "Islamabad",
     price: 250,
     description: "6 chairs included",
@@ -176,7 +166,7 @@ const ADS_DATA = [
   },
   {
     title: "Bed with Mattress",
-    category: "Furniture",
+    category: "Home & Garden",
     city: "Karachi",
     price: 300,
     description: "King size bed",
@@ -184,7 +174,7 @@ const ADS_DATA = [
   },
   {
     title: "Guitar Acoustic",
-    category: "Music",
+    category: "Other",
     city: "Islamabad",
     price: 100,
     description: "Beginner friendly",
@@ -192,7 +182,7 @@ const ADS_DATA = [
   },
   {
     title: "Washing Machine",
-    category: "Appliances",
+    category: "Home & Garden",
     city: "Lahore",
     price: 250,
     description: "Fully automatic",
@@ -200,7 +190,7 @@ const ADS_DATA = [
   },
   {
     title: "Office Desk",
-    category: "Furniture",
+    category: "Home & Garden",
     city: "Faisalabad",
     price: 110,
     description: "Modern design",
@@ -208,7 +198,7 @@ const ADS_DATA = [
   },
   {
     title: "LED Lights Set",
-    category: "Home Decor",
+    category: "Home & Garden",
     city: "Karachi",
     price: 20,
     description: "Decorative lights",
@@ -216,7 +206,7 @@ const ADS_DATA = [
   },
   {
     title: "Baby Stroller",
-    category: "Kids",
+    category: "Other",
     city: "Lahore",
     price: 95,
     description: "Safe and comfortable",
@@ -224,7 +214,7 @@ const ADS_DATA = [
   },
   {
     title: "Microwave Oven",
-    category: "Appliances",
+    category: "Home & Garden",
     city: "Islamabad",
     price: 120,
     description: "Compact size",
@@ -256,172 +246,92 @@ const ADS_DATA = [
   }
 ];
 
-const CATEGORIES = [
-  "Electronics", "Vehicles", "Furniture", "Fashion", "Sports", 
-  "Appliances", "Education", "Music", "Home Decor", "Kids"
-];
-
-const CITIES = [
-  "Lahore", "Karachi", "Islamabad", "Faisalabad", "Peshawar", "Multan"
-];
-
-async function seedDatabase() {
+export async function POST(request: NextRequest) {
   try {
-    console.log('🚀 Starting database seed...');
-    
-    // Connect to MongoDB
     await connectDB();
-    console.log('✅ Connected to MongoDB');
 
-    // Create categories
-    console.log('\n📁 Creating categories...');
-    const categoryMap: Record<string, string> = {};
-    for (const categoryName of CATEGORIES) {
-      let category = await Category.findOne({ name: categoryName });
-      if (!category) {
-        category = await Category.create({
-          name: categoryName,
-          slug: categoryName.toLowerCase().replace(/\s+/g, '-'),
-          isActive: true
-        });
-        console.log(`  ✓ Created category: ${categoryName}`);
-      } else {
-        console.log(`  ✓ Category exists: ${categoryName}`);
-      }
-      categoryMap[categoryName] = category._id.toString();
-    }
-
-    // Create cities
-    console.log('\n🏙️  Creating cities...');
-    const cityMap: Record<string, string> = {};
-    for (const cityName of CITIES) {
-      let city = await City.findOne({ name: cityName });
-      if (!city) {
-        city = await City.create({
-          name: cityName,
-          slug: cityName.toLowerCase().replace(/\s+/g, '-'),
-          isActive: true
-        });
-        console.log(`  ✓ Created city: ${cityName}`);
-      } else {
-        console.log(`  ✓ City exists: ${cityName}`);
-      }
-      cityMap[cityName] = city._id.toString();
-    }
-
-    // Get or create a default package
-    console.log('\n📦 Getting default package...');
-    let adPackage = await Package.findOne({ name: 'Standard' });
-    if (!adPackage) {
-      adPackage = await Package.create({
-        type: 'basic',
-        name: 'Standard',
-        description: 'Basic package for seeding',
-        durationDays: 30,
-        priorityWeight: 1,
-        price: 0,
-        features: ['Basic listing', '30 days visibility', 'Standard support'],
-        isActive: true
+    // Get or create a demo user
+    let user = await User.findOne({ email: 'demo@adflow.com' });
+    if (!user) {
+      user = await User.create({
+        email: 'demo@adflow.com',
+        name: 'Demo User',
+        password: 'Demo123!',
+        role: 'client',
+        isActive: true,
+        isVerified: true
       });
-      console.log('  ✓ Created default package');
     }
 
-    // Get or create demo users for different roles
-    console.log('\n👤 Creating demo users...');
-    const demoUsers = [
-      { email: 'superadmin@adflow.com', name: 'Super Admin', password: 'SuperAdmin123', role: 'super_admin' },
-      { email: 'admin@adflow.com', name: 'Admin User', password: 'Admin123', role: 'admin' },
-      { email: 'moderator@adflow.com', name: 'Moderator User', password: 'Moderator123', role: 'moderator' },
-      { email: 'client@adflow.com', name: 'Client User', password: 'Client123', role: 'client' },
-    ];
-
-    for (const demoUser of demoUsers) {
-      let user = await User.findOne({ email: demoUser.email });
-      if (!user) {
-        user = await User.create({
-          email: demoUser.email,
-          name: demoUser.name,
-          password: demoUser.password,
-          role: demoUser.role,
-          isActive: true,
-          isVerified: true
-        });
-        console.log(`  ✓ Created ${demoUser.role}: ${demoUser.email}`);
-      } else {
-        console.log(`  ✓ User exists: ${demoUser.email}`);
-      }
-    }
-
-    // Use client user for ads
-    const clientUser = await User.findOne({ email: 'client@adflow.com' });
-    if (!clientUser) {
-      throw new Error('Client user not found');
-    }
-
-    // Create ads
-    console.log('\n📝 Creating ads...');
-    let createdCount = 0;
-    let skippedCount = 0;
+    const results = {
+      created: 0,
+      skipped: 0,
+      errors: [] as string[]
+    };
 
     for (const adData of ADS_DATA) {
-      // Check if ad already exists
-      const existingAd = await Ad.findOne({ title: adData.title });
-      if (existingAd) {
-        console.log(`  ⊘ Ad already exists: ${adData.title}`);
-        skippedCount++;
-        continue;
-      }
+      try {
+        // Check if ad already exists
+        const existing = await Ad.findOne({ title: adData.title });
+        if (existing) {
+          results.skipped++;
+          continue;
+        }
 
-      const categoryId = categoryMap[adData.category];
-      const cityId = cityMap[adData.city];
+        const slug = adData.title.toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^\w-]/g, '') + '-' + Date.now();
 
-      if (!categoryId || !cityId) {
-        console.log(`  ✗ Missing category or city for: ${adData.title}`);
-        continue;
-      }
+        await Ad.create({
+          title: adData.title,
+          description: adData.description,
+          slug,
+          userId: user._id.toString(),
+          category: adData.category,
+          city: adData.city,
+          price: adData.price,
+          currency: 'USD',
+          status: 'published',
+          priority: 'basic',
+          tags: [adData.category.toLowerCase()],
+          media: [{ url: adData.imageUrl, type: 'image', order: 0 }],
+          publishedAt: new Date(),
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          isAIGenerated: false,
+          views: Math.floor(Math.random() * 100),
+          clicks: Math.floor(Math.random() * 20),
+          paymentStatus: 'not_required'
+        });
 
-      const slug = adData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
-
-      const ad = await Ad.create({
-        title: adData.title,
-        description: adData.description,
-        slug,
-        userId: clientUser._id.toString(),
-        category: adData.category,
-        city: adData.city,
-        price: adData.price,
-        currency: 'USD',
-        status: 'published',
-        priority: 'basic',
-        tags: [adData.category.toLowerCase()],
-        media: [{ url: adData.imageUrl, type: 'image', order: 0 }],
-        publishedAt: new Date(),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-        isAIGenerated: false,
-        views: 0,
-        clicks: 0,
-        paymentStatus: 'not_required'
-      }) as any;
-
-      console.log(`  ✓ Created ad: ${adData.title}`);
-      createdCount++;
-
-      // Note: Supabase sync will be done separately after configuring credentials
-      if (!hasSupabaseCreds) {
-        console.log(`    ⊘ Supabase sync skipped (credentials not configured)`);
+        results.created++;
+      } catch (err: any) {
+        results.errors.push(`${adData.title}: ${err.message}`);
       }
     }
 
-    console.log('\n✅ Database seed completed!');
-    console.log(`   Created: ${createdCount} ads`);
-    console.log(`   Skipped: ${skippedCount} ads`);
-    console.log(`   Total: ${ADS_DATA.length} ads`);
-
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ Seed error:', error);
-    process.exit(1);
+    return NextResponse.json({
+      success: true,
+      message: `Seeded ${results.created} ads, skipped ${results.skipped}`,
+      results
+    });
+  } catch (error: any) {
+    console.error('Seed error:', error);
+    return NextResponse.json(
+      { error: 'Seed failed', message: error.message },
+      { status: 500 }
+    );
   }
 }
 
-seedDatabase();
+export async function GET(request: NextRequest) {
+  try {
+    await connectDB();
+    const count = await Ad.countDocuments({ status: 'published' });
+    return NextResponse.json({ count, message: `Database has ${count} published ads` });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: 'Check failed', message: error.message },
+      { status: 500 }
+    );
+  }
+}
