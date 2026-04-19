@@ -329,6 +329,7 @@ async function seedDatabase() {
     // Get or create demo users for different roles
     console.log('\n👤 Creating demo users...');
     const demoUsers = [
+      { email: 'demo@adflow.com', name: 'Demo User', password: 'Cui@59191', role: 'client' },
       { email: 'superadmin@adflow.com', name: 'Super Admin', password: 'SuperAdmin123', role: 'super_admin' },
       { email: 'admin@adflow.com', name: 'Admin User', password: 'Admin123', role: 'admin' },
       { email: 'moderator@adflow.com', name: 'Moderator User', password: 'Moderator123', role: 'moderator' },
@@ -352,10 +353,10 @@ async function seedDatabase() {
       }
     }
 
-    // Use client user for ads
-    const clientUser = await User.findOne({ email: 'client@adflow.com' });
-    if (!clientUser) {
-      throw new Error('Client user not found');
+    // Use demo user for ads
+    const demoUserForAds = await User.findOne({ email: 'demo@adflow.com' });
+    if (!demoUserForAds) {
+      throw new Error('Demo user not found');
     }
 
     // Create ads
@@ -386,7 +387,7 @@ async function seedDatabase() {
         title: adData.title,
         description: adData.description,
         slug,
-        userId: clientUser._id.toString(),
+        userId: demoUserForAds._id.toString(),
         category: adData.category,
         city: adData.city,
         price: adData.price,

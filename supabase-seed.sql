@@ -1,6 +1,11 @@
 -- Seed data for Supabase (30 ads)
 -- Run this in Supabase SQL Editor after creating tables
 
+-- Demo User Credentials
+-- Email: demo@adflow.com
+-- Password: Cui@59191
+-- Role: client
+
 -- Insert demo user first
 INSERT INTO users (id, email, name, role, is_active, is_verified, created_at)
 VALUES ('demo-user-001', 'demo@adflow.com', 'Demo User', 'client', true, true, NOW())

@@ -118,6 +118,13 @@ After redeployment, test these URLs:
    ```
    Should show ads or "No ads found" message (but NOT error)
 
+4. **Login with Demo Account**
+   ```
+   Email: demo@adflow.com
+   Password: Cui@59191
+   ```
+   Go to: `https://your-app.vercel.app/auth/login`
+
 ## Step 7: Seed Sample Data (Optional)
 
 If Supabase tables are empty, add test ads:

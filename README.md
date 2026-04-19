@@ -24,6 +24,7 @@ Use these demo accounts to test different roles:
 
 | Role | Email | Password |
 |------|-------|----------|
+| **Demo Account** | demo@adflow.com | Cui@59191 |
 | **Super Admin** | superadmin@adflow.com | SuperAdmin123 |
 | **Admin** | admin@adflow.com | Admin123 |
 | **Moderator** | moderator@adflow.com | Moderator123 |
@@ -33,6 +34,12 @@ Use these demo accounts to test different roles:
 ```bash
 npx tsx scripts/seed-ads.ts
 ```
+
+**Demo Account Info:**
+- Email: `demo@adflow.com`
+- Password: `Cui@59191`
+- Role: Client (Seller)
+- Status: Active & Verified
 
 ---
 
