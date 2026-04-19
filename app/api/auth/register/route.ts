@@ -86,12 +86,42 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists in Supabase Auth (this is the real check)
-    const { data: existingAuthUser } = await supabaseAdmin.auth.admin.listUsers();
-    const userExists = existingAuthUser?.users?.find(
-      u => typeof u.email === 'string' && u.email.toLowerCase() === normalizedEmail
-    );
-    
+    let userExists = false;
+    if (typeof supabaseAdmin.auth.admin.getUserByEmail === 'function') {
+      const { data: existingAuthUser, error: existingAuthUserError } = await supabaseAdmin.auth.admin.getUserByEmail(normalizedEmail);
+      if (existingAuthUserError) {
+        console.warn('Supabase auth getUserByEmail error:', existingAuthUserError);
+      }
+      userExists = !!existingAuthUser?.user;
+    } else {
+      const { data: existingAuthUsers, error: existingAuthUsersError } = await supabaseAdmin.auth.admin.listUsers();
+      if (existingAuthUsersError) {
+        console.warn('Supabase auth listUsers error:', existingAuthUsersError);
+      }
+      userExists = !!existingAuthUsers?.users?.find(
+        u => typeof u.email === 'string' && u.email.toLowerCase() === normalizedEmail
+      );
+    }
+
     if (userExists) {
+      return NextResponse.json(
+        { error: 'User with this email already exists' },
+        { status: 409 }
+      );
+    }
+
+    // Also ensure the email is not already present in the Supabase users table
+    const { data: existingUserRows, error: existingUserRowsError } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .ilike('email', normalizedEmail)
+      .limit(1);
+
+    if (existingUserRowsError) {
+      console.warn('Supabase users table lookup error:', existingUserRowsError);
+    }
+
+    if (Array.isArray(existingUserRows) && existingUserRows.length > 0) {
       return NextResponse.json(
         { error: 'User with this email already exists' },
         { status: 409 }
@@ -117,20 +147,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create user in users table
-    const { error: userError } = await supabaseAdmin
+    if (!authData?.user?.id) {
+      console.error('Supabase Auth returned invalid user id:', authData);
+      return NextResponse.json(
+        { error: 'Failed to create user profile' },
+        { status: 500 }
+      );
+    }
+
+    const userPayload = {
+      id: authData.user.id,
+      email: normalizedEmail,
+      name,
+      role: userRole,
+      is_active: true,
+      is_verified: true,
+    };
+
+    const { data: insertedUser, error: userError } = await supabaseAdmin
       .from('users')
-      .insert({
-        id: authData.user.id,
-        email: normalizedEmail,
-        name,
-        role: userRole,
-        is_active: true,
-        is_verified: true,
-      });
+      .upsert(userPayload, { onConflict: ['email'] })
+      .select()
+      .maybeSingle();
 
     if (userError) {
       console.error('Supabase users table error:', userError);
+      if (userError.message?.toLowerCase().includes('duplicate') || userError.code === '23505') {
+        return NextResponse.json(
+          { error: 'User with this email already exists' },
+          { status: 409 }
+        );
+      }
+      return NextResponse.json(
+        { error: 'Failed to create user profile' },
+        { status: 500 }
+      );
+    }
+
+    if (!insertedUser) {
+      console.error('Supabase users table returned no profile row after upsert for:', normalizedEmail);
       return NextResponse.json(
         { error: 'Failed to create user profile' },
         { status: 500 }
