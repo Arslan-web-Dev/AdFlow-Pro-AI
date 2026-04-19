@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       console.log('[LOGIN] Using MongoDB for authentication');
       // Use MongoDB
       try {
-        user = await User.findOne({ email });
+        user = await User.findOne({ email: normalizedEmail });
         console.log('[LOGIN] MongoDB user lookup result:', user ? 'user found' : 'user not found');
       } catch (userLookupError) {
         console.error('[LOGIN] Error looking up user in MongoDB:', userLookupError);
@@ -178,98 +178,122 @@ export async function POST(request: NextRequest) {
 
         console.log('[LOGIN] Supabase auth successful, fetching user profile...');
 
-        const { data: existingUsers, error: userError } = await supabaseAdmin
+        const authUser = authData.user;
+        const authEmail = authUser.email ? authUser.email.toString().trim().toLowerCase() : normalizedEmail;
+        const metadata = authUser.user_metadata || {};
+
+        const { data: existingByEmail, error: emailLookupError } = await supabaseAdmin
           .from('users')
           .select('*')
-          .eq('email', normalizedEmail)
+          .ilike('email', authEmail)
           .limit(1);
 
-        if (userError) {
-          console.warn('[LOGIN] Supabase users table lookup error:', userError);
+        if (emailLookupError) {
+          console.warn('[LOGIN] Supabase users table lookup by email error:', emailLookupError);
         }
 
-        let userData = Array.isArray(existingUsers) && existingUsers.length > 0 ? existingUsers[0] : null;
+        let userData = Array.isArray(existingByEmail) && existingByEmail.length > 0 ? existingByEmail[0] : null;
 
-        // If user not found in users table, create or sync it from auth data
         if (!userData) {
-          console.log('[LOGIN] User not found in users table, creating or syncing from auth data...');
+          const { data: existingById, error: idLookupError } = await supabaseAdmin
+            .from('users')
+            .select('*')
+            .eq('id', authUser.id)
+            .limit(1);
 
-          const authUser = authData.user;
-          const metadata = authUser.user_metadata || {};
+          if (idLookupError) {
+            console.warn('[LOGIN] Supabase users table lookup by id error:', idLookupError);
+          }
+
+          if (Array.isArray(existingById) && existingById.length > 0) {
+            userData = existingById[0];
+          }
+        }
+
+        if (userData) {
+          console.log('[LOGIN] Existing Supabase user profile found, syncing profile fields');
+          const updatePayload = {
+            email: authEmail,
+            name: metadata.name || userData.name || authEmail.split('@')[0] || 'User',
+            role: metadata.role || userData.role || 'client',
+            is_active: true,
+            is_verified: true,
+          };
+
+          const { data: updatedUser, error: updateError } = await supabaseAdmin
+            .from('users')
+            .update(updatePayload)
+            .eq('id', userData.id)
+            .select()
+            .maybeSingle();
+
+          if (updateError) {
+            console.warn('[LOGIN] Failed to update existing user profile:', updateError);
+          } else if (updatedUser) {
+            userData = updatedUser;
+          }
+
+          console.log('[LOGIN] User profile synced successfully');
+        } else {
+          console.log('[LOGIN] No existing Supabase profile found, inserting new row');
           const userPayload = {
             id: authUser.id,
-            email: authUser.email ? authUser.email.toLowerCase() : normalizedEmail,
-            name: metadata.name || authUser.email?.split('@')[0] || normalizedEmail.split('@')[0] || 'User',
+            email: authEmail,
+            name: metadata.name || authEmail.split('@')[0] || 'User',
             role: metadata.role || 'client',
             is_active: true,
             is_verified: true,
           };
 
-          const { data: newUser, error: createError } = await supabaseAdmin
+          const { data: newUser, error: insertError } = await supabaseAdmin
             .from('users')
-            .upsert(userPayload, { onConflict: 'email' })
+            .insert(userPayload)
             .select()
             .maybeSingle();
 
-          if (!createError && newUser) {
-            userData = newUser;
-          } else {
-            console.error('[LOGIN] Failed to create or sync user profile:', createError);
+          if (insertError) {
+            console.error('[LOGIN] Failed to insert new user profile:', insertError);
 
-            const { data: existingByEmail, error: fetchEmailError } = await supabaseAdmin
+            const { data: recoveryByEmail, error: recoveryEmailError } = await supabaseAdmin
               .from('users')
               .select('*')
-              .eq('email', normalizedEmail)
+              .ilike('email', authEmail)
               .limit(1);
 
-            if (fetchEmailError) {
-              console.warn('[LOGIN] Failed to fetch user by email after profile create error:', fetchEmailError);
+            if (recoveryEmailError) {
+              console.warn('[LOGIN] Failed to recover profile by email:', recoveryEmailError);
             }
 
-            if (Array.isArray(existingByEmail) && existingByEmail.length > 0) {
-              userData = existingByEmail[0];
+            if (Array.isArray(recoveryByEmail) && recoveryByEmail.length > 0) {
+              userData = recoveryByEmail[0];
             } else {
-              console.log('[LOGIN] Trying to fetch user profile by Supabase auth user id...');
-              const { data: existingById, error: fetchIdError } = await supabaseAdmin
+              const { data: recoveryById, error: recoveryIdError } = await supabaseAdmin
                 .from('users')
                 .select('*')
                 .eq('id', authUser.id)
                 .limit(1);
 
-              if (fetchIdError) {
-                console.warn('[LOGIN] Failed to fetch user by id after profile create error:', fetchIdError);
+              if (recoveryIdError) {
+                console.warn('[LOGIN] Failed to recover profile by id:', recoveryIdError);
               }
 
-              if (Array.isArray(existingById) && existingById.length > 0) {
-                userData = existingById[0];
-              }
-            }
-
-            if (userData) {
-              const { data: updatedUser, error: updateError } = await supabaseAdmin
-                .from('users')
-                .update(userPayload)
-                .eq('id', userData.id)
-                .select()
-                .maybeSingle();
-
-              if (updateError) {
-                console.error('[LOGIN] Failed to update existing user profile:', updateError);
-              } else if (updatedUser) {
-                userData = updatedUser;
+              if (Array.isArray(recoveryById) && recoveryById.length > 0) {
+                userData = recoveryById[0];
               }
             }
 
             if (!userData) {
-              console.error('[LOGIN] Failed to recover existing user profile after create error');
+              console.error('[LOGIN] Failed to recover existing user profile after insert error');
               return NextResponse.json(
                 { error: 'Failed to create user profile' },
                 { status: 500 }
               );
             }
+          } else {
+            userData = newUser;
           }
 
-          console.log('[LOGIN] User profile synced successfully');
+          console.log('[LOGIN] New user profile inserted successfully');
         }
 
         console.log('[LOGIN] Generating token from Supabase user data...');
