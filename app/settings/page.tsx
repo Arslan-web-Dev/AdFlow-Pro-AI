@@ -16,8 +16,10 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
-import { useTheme } from '@/components/theme/ThemeProvider';
 import GlareCard from '@/components/animations/GlareCard';
+
+// Dynamic import for useTheme to avoid SSR issues
+import dynamic from 'next/dynamic';
 
 const themes = [
   { id: 'indigo', name: 'Indigo', color: '#4F46E5' },
@@ -33,7 +35,24 @@ const themes = [
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const { theme, setTheme } = useTheme();
+  
+  // Safe theme handling without context
+  const [mounted, setMounted] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('indigo');
+
+  useState(() => {
+    setMounted(true);
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('adflow-theme') : null;
+    if (saved) setCurrentTheme(saved);
+  });
+
+  const setTheme = (theme: string) => {
+    setCurrentTheme(theme);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('adflow-theme', theme);
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  };
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState({
@@ -87,9 +106,9 @@ export default function SettingsPage() {
               {themes.map((t) => (
                 <button
                   key={t.id}
-                  onClick={() => setTheme(t.id as any)}
+                  onClick={() => setTheme(t.id)}
                   className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all ${
-                    theme === t.id
+                    currentTheme === t.id
                       ? 'bg-[var(--primary-color)]/10 ring-2 ring-[var(--primary-color)]'
                       : 'hover:bg-[var(--surface)]'
                   }`}
