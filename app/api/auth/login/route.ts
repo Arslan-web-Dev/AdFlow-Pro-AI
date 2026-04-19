@@ -235,7 +235,7 @@ export async function POST(request: NextRequest) {
 
           console.log('[LOGIN] User profile synced successfully');
         } else {
-          console.log('[LOGIN] No existing Supabase profile found, inserting new row');
+          console.log('[LOGIN] No existing Supabase profile found, upserting row');
           const userPayload = {
             id: authUser.id,
             email: authEmail,
@@ -245,14 +245,14 @@ export async function POST(request: NextRequest) {
             is_verified: true,
           };
 
-          const { data: newUser, error: insertError } = await supabaseAdmin
+          const { data: newUser, error: upsertError } = await supabaseAdmin
             .from('users')
-            .insert(userPayload)
+            .upsert(userPayload, { onConflict: 'email' })
             .select()
             .maybeSingle();
 
-          if (insertError) {
-            console.error('[LOGIN] Failed to insert new user profile:', insertError);
+          if (upsertError) {
+            console.error('[LOGIN] Failed to upsert user profile:', upsertError);
 
             const { data: recoveryByEmail, error: recoveryEmailError } = await supabaseAdmin
               .from('users')
@@ -283,17 +283,37 @@ export async function POST(request: NextRequest) {
             }
 
             if (!userData) {
-              console.error('[LOGIN] Failed to recover existing user profile after insert error');
+              console.error('[LOGIN] Failed to recover existing user profile after upsert error');
               return NextResponse.json(
                 { error: 'Failed to create user profile' },
                 { status: 500 }
               );
             }
-          } else {
+          } else if (newUser) {
             userData = newUser;
+          } else {
+            // If newUser is null but no error, try to find existing profile
+            console.warn('[LOGIN] Upsert returned null user, attempting recovery lookup');
+            const { data: recoveryByEmail, error: recoveryEmailError } = await supabaseAdmin
+              .from('users')
+              .select('*')
+              .ilike('email', authEmail)
+              .limit(1);
+
+            if (!recoveryEmailError && Array.isArray(recoveryByEmail) && recoveryByEmail.length > 0) {
+              userData = recoveryByEmail[0];
+            }
+
+            if (!userData) {
+              console.error('[LOGIN] Failed to recover user profile after null return');
+              return NextResponse.json(
+                { error: 'Failed to create user profile' },
+                { status: 500 }
+              );
+            }
           }
 
-          console.log('[LOGIN] New user profile inserted successfully');
+          console.log('[LOGIN] New user profile upserted successfully');
         }
 
         console.log('[LOGIN] Generating token from Supabase user data...');

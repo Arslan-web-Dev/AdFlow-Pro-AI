@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
 
     const { data: insertedUser, error: userError } = await supabaseAdmin
       .from('users')
-      .upsert(userPayload, { onConflict: ['email'] })
+      .upsert(userPayload, { onConflict: 'email' })
       .select()
       .maybeSingle();
 
