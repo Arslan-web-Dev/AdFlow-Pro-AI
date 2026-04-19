@@ -1,76 +1,114 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken, extractTokenFromHeader } from './lib/auth/jwt';
+import { verifyToken } from './lib/auth/jwt';
 
-// Role-based route protection
-const roleRoutes = {
-  '/client': ['client', 'moderator', 'admin', 'super_admin'],
-  '/moderator': ['moderator', 'admin', 'super_admin'],
-  '/admin': ['admin', 'super_admin'],
-  '/super-admin': ['super_admin'],
+// Role-based route protection - matches new dashboard structure
+const roleRoutes: Record<string, string[]> = {
+  '/dashboard/client': ['client', 'moderator', 'admin'],
+  '/client': ['client', 'moderator', 'admin'],
+  '/dashboard/moderator': ['moderator', 'admin'],
+  '/moderator': ['moderator', 'admin'],
+  '/dashboard/admin': ['admin'],
+  '/admin': ['admin'],
 };
+
+// Public routes that don't require auth
+const publicRoutes = [
+  '/',
+  '/login',
+  '/register',
+  '/marketplace',
+  '/ads',
+  '/category',
+  '/city',
+  '/api/public',
+  '/api/auth',
+];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public routes
-  const publicRoutes = ['/', '/login', '/register', '/marketplace'];
-  if (publicRoutes.some(route => pathname === route || pathname.startsWith(route))) {
+  // Allow API routes, static files, and public assets
+  if (
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/static/') ||
+    pathname.startsWith('/images/') ||
+    pathname.includes('.') // Static files with extensions
+  ) {
     return NextResponse.next();
   }
 
-  // Check for token in cookies or Authorization header
-  const token = request.cookies.get('token')?.value || 
-               extractTokenFromHeader(request.headers.get('authorization'));
+  // Check if route is public
+  const isPublicRoute = publicRoutes.some(route =>
+    pathname === route || pathname.startsWith(`${route}/`)
+  );
 
-  if (!token) {
-    // Redirect to login if no token
-    if (pathname.startsWith('/client') || 
-        pathname.startsWith('/moderator') || 
-        pathname.startsWith('/admin') || 
-        pathname.startsWith('/super-admin')) {
-      return NextResponse.redirect(new URL('/login', request.url));
+  // Get token from cookies
+  const token = request.cookies.get('token')?.value;
+
+  // Handle authenticated users accessing auth pages
+  if (token) {
+    const payload = verifyToken(token);
+    if (payload && (pathname === '/login' || pathname === '/register')) {
+      const dashboardRoutes: Record<string, string> = {
+        client: '/dashboard/client',
+        moderator: '/dashboard/moderator',
+        admin: '/dashboard/admin',
+      };
+      return NextResponse.redirect(new URL(dashboardRoutes[payload.role] || '/marketplace', request.url));
     }
+  }
+
+  // Public routes don't require authentication
+  if (isPublicRoute) {
     return NextResponse.next();
+  }
+
+  // All other routes require authentication
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Verify token
   const payload = verifyToken(token);
   if (!payload) {
-    // Invalid token - redirect to login
-    if (pathname.startsWith('/client') || 
-        pathname.startsWith('/moderator') || 
-        pathname.startsWith('/admin') || 
-        pathname.startsWith('/super-admin')) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    return NextResponse.next();
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Role-based access control
-  for (const [route, allowedRoles] of Object.entries(roleRoutes)) {
-    if (pathname.startsWith(route)) {
-      if (!allowedRoles.includes(payload.role)) {
-        // User doesn't have permission - redirect to their dashboard
-        const userDashboard = `/${payload.role}`;
-        return NextResponse.redirect(new URL(userDashboard, request.url));
-      }
+  // Check role-based access
+  const matchedRoute = Object.entries(roleRoutes).find(([route]) =>
+    pathname === route || pathname.startsWith(`${route}/`)
+  );
+
+  if (matchedRoute) {
+    const [, allowedRoles] = matchedRoute;
+    if (!allowedRoles.includes(payload.role)) {
+      // Redirect to their appropriate dashboard
+      const dashboardRoutes: Record<string, string> = {
+        client: '/dashboard/client',
+        moderator: '/dashboard/moderator',
+        admin: '/dashboard/admin',
+      };
+      return NextResponse.redirect(new URL(dashboardRoutes[payload.role] || '/marketplace', request.url));
     }
   }
 
-  return NextResponse.next();
+  // Add user info to request headers for downstream use
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-user-id', payload.userId);
+  requestHeaders.set('x-user-role', payload.role);
+  requestHeaders.set('x-user-email', payload.email);
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
