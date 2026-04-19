@@ -6,9 +6,11 @@ import { logActivity } from '@/lib/models/ActivityLog';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     const db = await connectDB();
     if (!db) {
       return NextResponse.json({ error: 'Database not available' }, { status: 500 });
@@ -31,7 +33,7 @@ export async function POST(
 
     const { reason } = await request.json();
 
-    const ad = await Ad.findById(params.id);
+    const ad = await Ad.findById(id);
     if (!ad) {
       return NextResponse.json({ error: 'Ad not found' }, { status: 404 });
     }
