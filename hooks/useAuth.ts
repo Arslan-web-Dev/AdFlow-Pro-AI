@@ -18,7 +18,7 @@ export function useAuth() {
 
   const checkAuth = useCallback(async () => {
     try {
-      const response = await fetch('/api/auth/verify');
+      const response = await fetch('/api/auth/me');
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
