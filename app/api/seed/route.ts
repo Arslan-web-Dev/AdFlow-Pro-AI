@@ -335,3 +335,16 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    await connectDB();
+    await Ad.deleteMany({});
+    return NextResponse.json({ success: true, message: 'All ads deleted' });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: 'Delete failed', message: error.message },
+      { status: 500 }
+    );
+  }
+}
