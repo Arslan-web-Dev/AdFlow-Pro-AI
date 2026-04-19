@@ -85,15 +85,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists in Supabase Auth (this is the real check)
+    // Check if user already exists in Supabase Auth
     let userExists = false;
-    if (typeof supabaseAdmin.auth.admin.getUserByEmail === 'function') {
-      const { data: existingAuthUser, error: existingAuthUserError } = await supabaseAdmin.auth.admin.getUserByEmail(normalizedEmail);
-      if (existingAuthUserError) {
-        console.warn('Supabase auth getUserByEmail error:', existingAuthUserError);
-      }
-      userExists = !!existingAuthUser?.user;
-    } else {
+    try {
       const { data: existingAuthUsers, error: existingAuthUsersError } = await supabaseAdmin.auth.admin.listUsers();
       if (existingAuthUsersError) {
         console.warn('Supabase auth listUsers error:', existingAuthUsersError);
@@ -101,6 +95,8 @@ export async function POST(request: NextRequest) {
       userExists = !!existingAuthUsers?.users?.find(
         u => typeof u.email === 'string' && u.email.toLowerCase() === normalizedEmail
       );
+    } catch (err) {
+      console.warn('Error checking existing users:', err);
     }
 
     if (userExists) {
@@ -164,32 +160,66 @@ export async function POST(request: NextRequest) {
       is_verified: true,
     };
 
+    console.error('[REGISTER] Attempting to insert/upsert user profile:', normalizedEmail);
+
+    // Try insert first, then handle conflict by updating
     const { data: insertedUser, error: userError } = await supabaseAdmin
       .from('users')
-      .upsert(userPayload, { onConflict: 'email' })
+      .insert(userPayload)
       .select()
       .maybeSingle();
 
     if (userError) {
-      console.error('Supabase users table error:', userError);
-      if (userError.message?.toLowerCase().includes('duplicate') || userError.code === '23505') {
+      console.error('[REGISTER] Insert error:', userError);
+      console.error('[REGISTER] Error message:', userError.message);
+      console.error('[REGISTER] Error code:', userError.code);
+      console.error('[REGISTER] Insert error details:', JSON.stringify(userError, null, 2));
+      
+      // Check if it's a duplicate key error (23505)
+      if (userError.code === '23505' || userError.message?.includes('duplicate') || userError.message?.includes('Duplicate')) {
+        console.log('[REGISTER] Duplicate key detected, attempting to update existing profile');
+        
+        // Try to update the existing record
+        const { data: updatedUser, error: updateError } = await supabaseAdmin
+          .from('users')
+          .update({
+            name,
+            role: userRole,
+            is_active: true,
+            is_verified: true,
+          })
+          .eq('email', normalizedEmail)
+          .select()
+          .maybeSingle();
+
+        if (updateError) {
+          console.error('[REGISTER] Update error after duplicate:', updateError);
+          return NextResponse.json(
+            { error: 'Failed to create user profile' },
+            { status: 500 }
+          );
+        }
+
+        if (updatedUser) {
+          console.log('[REGISTER] User profile updated successfully');
+          // Continue with token generation
+        } else {
+          console.error('[REGISTER] Update returned no user');
+          return NextResponse.json(
+            { error: 'Failed to create user profile' },
+            { status: 500 }
+          );
+        }
+      } else {
+        console.error('[REGISTER] Unexpected insert error:', userError);
+        console.error('[REGISTER] Full error:', JSON.stringify(userError, null, 2));
         return NextResponse.json(
-          { error: 'User with this email already exists' },
-          { status: 409 }
+          { error: 'Failed to create user profile' },
+          { status: 500 }
         );
       }
-      return NextResponse.json(
-        { error: 'Failed to create user profile' },
-        { status: 500 }
-      );
-    }
-
-    if (!insertedUser) {
-      console.error('Supabase users table returned no profile row after upsert for:', normalizedEmail);
-      return NextResponse.json(
-        { error: 'Failed to create user profile' },
-        { status: 500 }
-      );
+    } else {
+      console.log('[REGISTER] User profile inserted successfully');
     }
 
     // Generate JWT token

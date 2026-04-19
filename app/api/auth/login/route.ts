@@ -235,7 +235,7 @@ export async function POST(request: NextRequest) {
 
           console.log('[LOGIN] User profile synced successfully');
         } else {
-          console.log('[LOGIN] No existing Supabase profile found, upserting row');
+          console.log('[LOGIN] No existing Supabase profile found, inserting new row');
           const userPayload = {
             id: authUser.id,
             email: authEmail,
@@ -245,45 +245,63 @@ export async function POST(request: NextRequest) {
             is_verified: true,
           };
 
-          const { data: newUser, error: upsertError } = await supabaseAdmin
+          console.log('[LOGIN] Insert payload:', userPayload);
+          const { data: newUser, error: insertError } = await supabaseAdmin
             .from('users')
-            .upsert(userPayload, { onConflict: 'email' })
+            .insert(userPayload)
             .select()
             .maybeSingle();
 
-          if (upsertError) {
-            console.error('[LOGIN] Failed to upsert user profile:', upsertError);
+          if (insertError) {
+            console.error('[LOGIN] Insert error:', insertError);
+            console.error('[LOGIN] Error message:', insertError.message);
+            console.error('[LOGIN] Error code:', insertError.code);
+            console.error('[LOGIN] Insert error details:', JSON.stringify(insertError, null, 2));
 
-            const { data: recoveryByEmail, error: recoveryEmailError } = await supabaseAdmin
-              .from('users')
-              .select('*')
-              .ilike('email', authEmail)
-              .limit(1);
-
-            if (recoveryEmailError) {
-              console.warn('[LOGIN] Failed to recover profile by email:', recoveryEmailError);
-            }
-
-            if (Array.isArray(recoveryByEmail) && recoveryByEmail.length > 0) {
-              userData = recoveryByEmail[0];
-            } else {
-              const { data: recoveryById, error: recoveryIdError } = await supabaseAdmin
+            // If it's a duplicate email error, try to recover the profile
+            if (insertError.code === '23505' || insertError.message?.includes('duplicate') || insertError.message?.includes('Duplicate')) {
+              console.log('[LOGIN] Duplicate key detected, attempting recovery');
+              
+              const { data: recoveryByEmail, error: recoveryEmailError } = await supabaseAdmin
                 .from('users')
                 .select('*')
-                .eq('id', authUser.id)
+                .ilike('email', authEmail)
                 .limit(1);
 
-              if (recoveryIdError) {
-                console.warn('[LOGIN] Failed to recover profile by id:', recoveryIdError);
+              if (recoveryEmailError) {
+                console.warn('[LOGIN] Failed to recover profile by email:', recoveryEmailError);
               }
 
-              if (Array.isArray(recoveryById) && recoveryById.length > 0) {
-                userData = recoveryById[0];
-              }
-            }
+              if (Array.isArray(recoveryByEmail) && recoveryByEmail.length > 0) {
+                userData = recoveryByEmail[0];
+                console.log('[LOGIN] Recovered existing profile by email');
+              } else {
+                const { data: recoveryById, error: recoveryIdError } = await supabaseAdmin
+                  .from('users')
+                  .select('*')
+                  .eq('id', authUser.id)
+                  .limit(1);
 
-            if (!userData) {
-              console.error('[LOGIN] Failed to recover existing user profile after upsert error');
+                if (recoveryIdError) {
+                  console.warn('[LOGIN] Failed to recover profile by id:', recoveryIdError);
+                }
+
+                if (Array.isArray(recoveryById) && recoveryById.length > 0) {
+                  userData = recoveryById[0];
+                  console.log('[LOGIN] Recovered existing profile by id');
+                }
+              }
+
+              if (!userData) {
+                console.error('[LOGIN] Failed to recover existing user profile after insert error');
+                return NextResponse.json(
+                  { error: 'Failed to create user profile' },
+                  { status: 500 }
+                );
+              }
+            } else {
+              console.error('[LOGIN] Unexpected insert error:', insertError);
+              console.error('[LOGIN] Full error:', JSON.stringify(insertError, null, 2));
               return NextResponse.json(
                 { error: 'Failed to create user profile' },
                 { status: 500 }
@@ -291,29 +309,14 @@ export async function POST(request: NextRequest) {
             }
           } else if (newUser) {
             userData = newUser;
+            console.log('[LOGIN] New user profile inserted successfully');
           } else {
-            // If newUser is null but no error, try to find existing profile
-            console.warn('[LOGIN] Upsert returned null user, attempting recovery lookup');
-            const { data: recoveryByEmail, error: recoveryEmailError } = await supabaseAdmin
-              .from('users')
-              .select('*')
-              .ilike('email', authEmail)
-              .limit(1);
-
-            if (!recoveryEmailError && Array.isArray(recoveryByEmail) && recoveryByEmail.length > 0) {
-              userData = recoveryByEmail[0];
-            }
-
-            if (!userData) {
-              console.error('[LOGIN] Failed to recover user profile after null return');
-              return NextResponse.json(
-                { error: 'Failed to create user profile' },
-                { status: 500 }
-              );
-            }
+            console.error('[LOGIN] Insert succeeded but returned no user');
+            return NextResponse.json(
+              { error: 'Failed to create user profile' },
+              { status: 500 }
+            );
           }
-
-          console.log('[LOGIN] New user profile upserted successfully');
         }
 
         console.log('[LOGIN] Generating token from Supabase user data...');
