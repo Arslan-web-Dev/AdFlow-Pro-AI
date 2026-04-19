@@ -176,147 +176,87 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        console.log('[LOGIN] Supabase auth successful, fetching user profile...');
+        console.log('[LOGIN] Supabase auth successful, checking user profile...');
 
         const authUser = authData.user;
         const authEmail = authUser.email ? authUser.email.toString().trim().toLowerCase() : normalizedEmail;
         const metadata = authUser.user_metadata || {};
 
-        const { data: existingByEmail, error: emailLookupError } = await supabaseAdmin
-          .from('users')
+        // Check if profile exists
+        const { data: existingProfile, error: profileLookupError } = await supabaseAdmin
+          .from('profiles')
           .select('*')
-          .ilike('email', authEmail)
-          .limit(1);
+          .eq('id', authUser.id)
+          .maybeSingle();
 
-        if (emailLookupError) {
-          console.warn('[LOGIN] Supabase users table lookup by email error:', emailLookupError);
+        if (profileLookupError) {
+          console.warn('[LOGIN] Profile lookup error:', profileLookupError);
         }
 
-        let userData = Array.isArray(existingByEmail) && existingByEmail.length > 0 ? existingByEmail[0] : null;
+        let userData = existingProfile;
 
         if (!userData) {
-          const { data: existingById, error: idLookupError } = await supabaseAdmin
-            .from('users')
-            .select('*')
-            .eq('id', authUser.id)
-            .limit(1);
-
-          if (idLookupError) {
-            console.warn('[LOGIN] Supabase users table lookup by id error:', idLookupError);
-          }
-
-          if (Array.isArray(existingById) && existingById.length > 0) {
-            userData = existingById[0];
-          }
-        }
-
-        if (userData) {
-          console.log('[LOGIN] Existing Supabase user profile found, syncing profile fields');
-          const updatePayload = {
-            email: authEmail,
-            name: metadata.name || userData.name || authEmail.split('@')[0] || 'User',
-            role: metadata.role || userData.role || 'client',
-            is_active: true,
-            is_verified: true,
-          };
-
-          const { data: updatedUser, error: updateError } = await supabaseAdmin
-            .from('users')
-            .update(updatePayload)
-            .eq('id', userData.id)
-            .select()
-            .maybeSingle();
-
-          if (updateError) {
-            console.warn('[LOGIN] Failed to update existing user profile:', updateError);
-          } else if (updatedUser) {
-            userData = updatedUser;
-          }
-
-          console.log('[LOGIN] User profile synced successfully');
-        } else {
-          console.log('[LOGIN] No existing Supabase profile found, inserting new row');
-          const userPayload = {
+          console.log('[LOGIN] Profile not found, creating new profile...');
+          const profilePayload = {
             id: authUser.id,
             email: authEmail,
-            name: metadata.name || authEmail.split('@')[0] || 'User',
+            full_name: metadata.full_name || metadata.name || authEmail.split('@')[0] || 'User',
             role: metadata.role || 'client',
             is_active: true,
             is_verified: true,
           };
 
-          console.log('[LOGIN] Insert payload:', userPayload);
-          const { data: newUser, error: insertError } = await supabaseAdmin
-            .from('users')
-            .insert(userPayload)
+          console.log('[LOGIN] Creating profile:', profilePayload);
+
+          const { data: newProfile, error: createError } = await supabaseAdmin
+            .from('profiles')
+            .insert(profilePayload)
             .select()
             .maybeSingle();
 
-          if (insertError) {
-            console.error('[LOGIN] Insert error:', insertError);
-            console.error('[LOGIN] Error message:', insertError.message);
-            console.error('[LOGIN] Error code:', insertError.code);
-            console.error('[LOGIN] Insert error details:', JSON.stringify(insertError, null, 2));
+          if (createError) {
+            console.error('[LOGIN] Profile creation error:', createError);
+            console.error('[LOGIN] Create error code:', createError.code);
+            console.error('[LOGIN] Create error message:', createError.message);
+            console.error('[LOGIN] Create error details:', JSON.stringify(createError, null, 2));
 
-            // If it's a duplicate email error, try to recover the profile
-            if (insertError.code === '23505' || insertError.message?.includes('duplicate') || insertError.message?.includes('Duplicate')) {
-              console.log('[LOGIN] Duplicate key detected, attempting recovery');
-              
-              const { data: recoveryByEmail, error: recoveryEmailError } = await supabaseAdmin
-                .from('users')
-                .select('*')
-                .ilike('email', authEmail)
-                .limit(1);
+            // Try to recover existing profile by email
+            const { data: recoveryProfile, error: recoveryError } = await supabaseAdmin
+              .from('profiles')
+              .select('*')
+              .ilike('email', authEmail)
+              .limit(1);
 
-              if (recoveryEmailError) {
-                console.warn('[LOGIN] Failed to recover profile by email:', recoveryEmailError);
-              }
+            if (recoveryError) {
+              console.warn('[LOGIN] Recovery lookup error:', recoveryError);
+            }
 
-              if (Array.isArray(recoveryByEmail) && recoveryByEmail.length > 0) {
-                userData = recoveryByEmail[0];
-                console.log('[LOGIN] Recovered existing profile by email');
-              } else {
-                const { data: recoveryById, error: recoveryIdError } = await supabaseAdmin
-                  .from('users')
-                  .select('*')
-                  .eq('id', authUser.id)
-                  .limit(1);
-
-                if (recoveryIdError) {
-                  console.warn('[LOGIN] Failed to recover profile by id:', recoveryIdError);
-                }
-
-                if (Array.isArray(recoveryById) && recoveryById.length > 0) {
-                  userData = recoveryById[0];
-                  console.log('[LOGIN] Recovered existing profile by id');
-                }
-              }
-
-              if (!userData) {
-                console.error('[LOGIN] Failed to recover existing user profile after insert error');
-                return NextResponse.json(
-                  { error: 'Failed to create user profile' },
-                  { status: 500 }
-                );
-              }
+            if (Array.isArray(recoveryProfile) && recoveryProfile.length > 0) {
+              userData = recoveryProfile[0];
+              console.log('[LOGIN] Recovered existing profile by email');
             } else {
-              console.error('[LOGIN] Unexpected insert error:', insertError);
-              console.error('[LOGIN] Full error:', JSON.stringify(insertError, null, 2));
               return NextResponse.json(
-                { error: 'Failed to create user profile' },
+                {
+                  error: 'Failed to create user profile',
+                  code: createError.code,
+                  message: createError.message,
+                  details: createError.details
+                },
                 { status: 500 }
               );
             }
-          } else if (newUser) {
-            userData = newUser;
-            console.log('[LOGIN] New user profile inserted successfully');
+          } else if (newProfile) {
+            userData = newProfile;
+            console.log('[LOGIN] Profile created successfully');
           } else {
-            console.error('[LOGIN] Insert succeeded but returned no user');
+            console.error('[LOGIN] Profile creation returned null');
             return NextResponse.json(
               { error: 'Failed to create user profile' },
               { status: 500 }
             );
           }
+        } else {
+          console.log('[LOGIN] Existing profile found');
         }
 
         console.log('[LOGIN] Generating token from Supabase user data...');
@@ -345,9 +285,8 @@ export async function POST(request: NextRequest) {
             user: {
               id: userData.id,
               email: userData.email,
-              name: userData.name,
+              name: userData.full_name,
               role: userData.role,
-              avatar: userData.avatar,
             },
           },
           { status: 200 }

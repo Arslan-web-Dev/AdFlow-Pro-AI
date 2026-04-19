@@ -106,9 +106,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Also ensure the email is not already present in the Supabase users table
+    // Also ensure the email is not already present in the Supabase profiles table
     const { data: existingUserRows, error: existingUserRowsError } = await supabaseAdmin
-      .from('users')
+      .from('profiles')
       .select('id')
       .ilike('email', normalizedEmail)
       .limit(1);
@@ -125,65 +125,72 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user in Supabase Auth
+    console.log('[REGISTER] Creating user in Supabase Auth...');
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: normalizedEmail,
       password,
       email_confirm: true,
       user_metadata: {
-        name,
+        full_name: name,
         role: userRole,
       },
     });
 
     if (authError) {
-      console.error('Supabase Auth error:', authError);
+      console.error('[REGISTER] Supabase Auth error:', authError);
+      console.error('[REGISTER] Auth error code:', authError.code);
+      console.error('[REGISTER] Auth error message:', authError.message);
       return NextResponse.json(
-        { error: 'Failed to create user' },
+        {
+          error: 'Failed to create user',
+          code: authError.code,
+          message: authError.message
+        },
         { status: 500 }
       );
     }
 
     if (!authData?.user?.id) {
-      console.error('Supabase Auth returned invalid user id:', authData);
+      console.error('[REGISTER] Supabase Auth returned invalid user id:', authData);
       return NextResponse.json(
         { error: 'Failed to create user profile' },
         { status: 500 }
       );
     }
 
-    const userPayload = {
+    console.log('[REGISTER] Auth user created successfully, ID:', authData.user.id);
+
+    // Insert profile using the auth user id
+    const profilePayload = {
       id: authData.user.id,
       email: normalizedEmail,
-      name,
+      full_name: name,
       role: userRole,
       is_active: true,
       is_verified: true,
     };
 
-    console.error('[REGISTER] Attempting to insert/upsert user profile:', normalizedEmail);
+    console.log('[REGISTER] Inserting profile:', profilePayload);
 
-    // Try insert first, then handle conflict by updating
-    const { data: insertedUser, error: userError } = await supabaseAdmin
-      .from('users')
-      .insert(userPayload)
+    const { data: insertedProfile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .upsert(profilePayload, { onConflict: 'id' })
       .select()
       .maybeSingle();
 
-    if (userError) {
-      console.error('[REGISTER] Insert error:', userError);
-      console.error('[REGISTER] Error message:', userError.message);
-      console.error('[REGISTER] Error code:', userError.code);
-      console.error('[REGISTER] Insert error details:', JSON.stringify(userError, null, 2));
-      
-      // Check if it's a duplicate key error (23505)
-      if (userError.code === '23505' || userError.message?.includes('duplicate') || userError.message?.includes('Duplicate')) {
-        console.log('[REGISTER] Duplicate key detected, attempting to update existing profile');
-        
-        // Try to update the existing record
-        const { data: updatedUser, error: updateError } = await supabaseAdmin
-          .from('users')
+    if (profileError) {
+      console.error('[REGISTER] Profile insert error:', profileError);
+      console.error('[REGISTER] Profile error code:', profileError.code);
+      console.error('[REGISTER] Profile error message:', profileError.message);
+      console.error('[REGISTER] Profile error details:', JSON.stringify(profileError, null, 2));
+
+      // If duplicate email, try to update existing profile
+      if (profileError.code === '23505' || profileError.message?.toLowerCase().includes('duplicate')) {
+        console.log('[REGISTER] Duplicate detected, updating existing profile');
+        const { data: updatedProfile, error: updateError } = await supabaseAdmin
+          .from('profiles')
           .update({
-            name,
+            full_name: name,
             role: userRole,
             is_active: true,
             is_verified: true,
@@ -195,31 +202,38 @@ export async function POST(request: NextRequest) {
         if (updateError) {
           console.error('[REGISTER] Update error after duplicate:', updateError);
           return NextResponse.json(
-            { error: 'Failed to create user profile' },
+            {
+              error: 'Failed to create user profile',
+              code: updateError.code,
+              message: updateError.message,
+              details: updateError.details
+            },
             { status: 500 }
           );
         }
 
-        if (updatedUser) {
-          console.log('[REGISTER] User profile updated successfully');
-          // Continue with token generation
-        } else {
-          console.error('[REGISTER] Update returned no user');
+        if (!updatedProfile) {
+          console.error('[REGISTER] Update returned no profile');
           return NextResponse.json(
             { error: 'Failed to create user profile' },
             { status: 500 }
           );
         }
+
+        console.log('[REGISTER] Profile updated successfully');
       } else {
-        console.error('[REGISTER] Unexpected insert error:', userError);
-        console.error('[REGISTER] Full error:', JSON.stringify(userError, null, 2));
         return NextResponse.json(
-          { error: 'Failed to create user profile' },
+          {
+            error: 'Failed to create user profile',
+            code: profileError.code,
+            message: profileError.message,
+            details: profileError.details
+          },
           { status: 500 }
         );
       }
     } else {
-      console.log('[REGISTER] User profile inserted successfully');
+      console.log('[REGISTER] Profile inserted successfully');
     }
 
     // Generate JWT token
