@@ -1,13 +1,9 @@
--- Complete Ads Table Creation + 30 Ads Data
--- Run this in Supabase SQL Editor
+-- Drop and recreate ads table with ALL columns
+DROP TABLE IF EXISTS ads;
 
--- Drop old table if exists
-DROP TABLE IF EXISTS ads CASCADE;
-
--- Create fresh ads table with all columns
 CREATE TABLE ads (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
     description TEXT NOT NULL,
@@ -25,13 +21,33 @@ CREATE TABLE ads (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create indexes for better performance
+-- Create all indexes
 CREATE INDEX idx_ads_status ON ads(status);
 CREATE INDEX idx_ads_category ON ads(category);
 CREATE INDEX idx_ads_city ON ads(city);
+CREATE INDEX idx_ads_priority ON ads(priority);
 CREATE INDEX idx_ads_created_at ON ads(created_at);
 
--- Insert demo user first (if not exists)
+-- Enable RLS
+ALTER TABLE ads ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies
+DROP POLICY IF EXISTS "Ads are viewable by everyone" ON ads;
+DROP POLICY IF EXISTS "Users can insert their own ads" ON ads;
+DROP POLICY IF EXISTS "Users can update their own ads" ON ads;
+DROP POLICY IF EXISTS "Users can delete their own ads" ON ads;
+
+-- Create RLS policies
+CREATE POLICY "Ads are viewable by everyone" ON ads FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own ads" ON ads FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+CREATE POLICY "Users can update their own ads" ON ads FOR UPDATE USING (auth.uid()::text = user_id);
+CREATE POLICY "Users can delete their own ads" ON ads FOR DELETE USING (auth.uid()::text = user_id);
+
+-- Grant permissions
+GRANT ALL ON ads TO authenticated;
+GRANT SELECT ON ads TO anon;
+
+-- Insert demo user
 INSERT INTO users (id, email, name, role, is_active, is_verified, created_at)
 VALUES ('demo-user-001', 'demo@adflow.com', 'Demo User', 'client', true, true, NOW())
 ON CONFLICT (id) DO NOTHING;

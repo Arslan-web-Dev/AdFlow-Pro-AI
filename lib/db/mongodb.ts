@@ -36,13 +36,23 @@ async function connectDB() {
     return cached.conn;
   }
 
+  // In production without MONGODB_URI, skip MongoDB entirely
+  if (process.env.NODE_ENV === 'production' && !MONGODB_URI) {
+    return null;
+  }
+
   if (!cached.promise && MONGODB_URI) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 5000, // 5 second timeout
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose;
+    }).catch((err) => {
+      console.error('MongoDB connection failed:', err.message);
+      cached.promise = null;
+      return null;
     });
   }
 
@@ -52,7 +62,8 @@ async function connectDB() {
     }
   } catch (e) {
     cached.promise = null;
-    throw e;
+    console.error('MongoDB connection error:', e);
+    return null;
   }
 
   return cached.conn;

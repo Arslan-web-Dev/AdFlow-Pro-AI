@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
 
     // Try MongoDB first (for local development)
+    console.log('Connecting to MongoDB...');
     const db = await connectDB();
+    console.log('MongoDB connection result:', db ? 'Connected' : 'Failed/Skipped');
 
     if (db) {
       // Build query
@@ -81,7 +83,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Fallback to Supabase (for production/Vercel)
+    console.log('Supabase fallback, supabaseAdmin:', supabaseAdmin ? 'Exists' : 'NULL');
     if (!supabaseAdmin) {
+      console.log('SupabaseAdmin is null, returning empty');
       return NextResponse.json(
         { ads: [], pagination: { page, limit, total: 0, pages: 0 } },
         { status: 200 }
@@ -110,7 +114,9 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
 
+    console.log('Executing Supabase query...');
     const { data: ads, error, count } = await supabaseQuery;
+    console.log('Supabase result - ads:', ads?.length || 0, 'error:', error, 'count:', count);
 
     if (error) {
       console.error('Supabase ads error:', error);
