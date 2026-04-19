@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -122,7 +122,9 @@ export default function MarketplacePage() {
 
             <div className="flex items-center gap-4">
               <div className="hidden md:block">
-                <ThemeSwitcher showLabels={false} />
+                <Suspense fallback={null}>
+                  <ThemeSwitcher showLabels={false} />
+                </Suspense>
               </div>
               <Link href="/login" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                 Login
