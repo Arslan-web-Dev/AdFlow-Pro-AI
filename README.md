@@ -101,7 +101,13 @@ npx tsx scripts/seed-ads.ts
 | **Moderators** | Review pending content from a dedicated queue. |
 | **Admins** | View analytics, verify payments, and adjust user roles. |
 
-**Production note:** Sign-in on the [live demo](https://ad-flow-pro-ai.vercel.app) requires valid **Supabase** environment variables on Vercel (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) and matching Auth/DB setup. Without them, the UI still loads but auth requests can fail (e.g. “Failed to fetch”).
+**Production note:** Sign-in on the [live demo](https://ad-flow-pro-ai.vercel.app) requires valid **Supabase** environment variables on Vercel (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) and matching Auth/DB setup. 
+
+**Troubleshooting:** Use the **debug endpoint** to verify your configuration:
+- Development: `http://localhost:3000/api/debug/connection`
+- Production: `https://your-app.vercel.app/api/debug/connection`
+
+See [`VERCEL_FIX_CHECKLIST.md`](VERCEL_FIX_CHECKLIST.md) for detailed troubleshooting steps.
 
 ---
 
@@ -310,10 +316,12 @@ AdFlow-Pro-AI/
 
 ### API (representative)
 
-| Prefix | Purpose |
-|--------|---------|
-| `/api/ai/*` | Optional AI helpers |
-| `/api/cron/*` | Scheduled jobs (e.g. expiry) |
+| Prefix | Purpose | Notes |
+|--------|---------|-------|
+| `/api/ai/*` | Optional AI helpers | Requires `OPENAI_API_KEY` |
+| `/api/cron/*` | Scheduled jobs (e.g. expiry) | Server-side automation |
+| `/api/public/ads` | **NEW** — Fetch published ads | Fallback from MongoDB to Supabase |
+| `/api/debug/connection` | **NEW** — Debug database status | Check env vars and connectivity |
 
 ---
 
@@ -340,6 +348,21 @@ Role capability (high → low): `super_admin`, `admin`, `moderator`, `client`.
 
 **File:** `lib/ranking-system.ts` — combines featured status, package weight, seller verification, admin boost, and time-based freshness. Higher scores sort earlier when the browse API uses this field.
 
+### Database Connectivity & Fallback
+
+**File:** `app/api/public/ads/route.ts` — Smart fallback system:
+1. **Primary:** MongoDB (local development)
+2. **Fallback:** Supabase PostgreSQL (Vercel production)
+3. **Error Handling:** Detailed error messages with HTTP status codes
+
+**File:** `app/api/debug/connection.ts` — Diagnostic endpoint to verify:
+- MongoDB URI configuration
+- Supabase credentials (URL, Anon Key, Service Role Key)
+- Database connectivity status
+- Recommendations for fixing issues
+
+Test with: `curl https://your-app.vercel.app/api/debug/connection`
+
 ### Supabase clients
 
 | File | Context |
@@ -350,6 +373,8 @@ Role capability (high → low): `super_admin`, `admin`, `moderator`, `client`.
 ### UI kit
 
 Shared primitives live in `components/ui/` and follow the same design tokens as the rest of the app.
+
+---
 
 ---
 
@@ -467,17 +492,57 @@ npm run dev
 
 Application: [http://localhost:3000](http://localhost:3000).
 
+### 7. Test the Setup
+
+**Check database connectivity:**
+```bash
+curl http://localhost:3000/api/debug/connection
+```
+
+**Fetch ads (should return published ads):**
+```bash
+curl http://localhost:3000/api/public/ads?status=published&limit=10
+```
+
+**Visit marketplace:**
+```
+http://localhost:3000/marketplace
+```
+
 ---
 
 ## Deploy (go live)
 
 Use the [Vercel dashboard](https://vercel.com/muhammad-arslans-projects-6abbf6f8) (GitHub login) and import **[Arslan-web-Dev/AdFlow-Pro-AI](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI)**.
 
+### Quick Deployment Guide
+
 1. Push the repo to GitHub.
 2. **Add New → Project** → import the repository.
 3. **Root Directory:** leave default **`.`** when this repo is only the Next.js app. If the app lives inside a **parent monorepo folder**, set Root Directory to that subfolder (see screenshot in [Screenshots](#screenshots)).
-4. **Environment variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (required for real sign-in on production).
+4. **Environment variables** (CRITICAL FOR VERCEL):
+   - `NEXT_PUBLIC_SUPABASE_URL` — Your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Your Supabase Anon Key  
+   - `SUPABASE_SERVICE_ROLE_KEY` — Your Supabase Service Role Key
+   - `JWT_SECRET` — Your JWT secret for authentication
+   - `NEXT_PUBLIC_APP_URL` — Your Vercel app URL
 5. **Deploy** → example URL: [ad-flow-pro-ai.vercel.app](https://ad-flow-pro-ai.vercel.app).
+
+### Important: Fixing "Ads Not Showing" on Vercel
+
+**New in this version:**
+- ✅ Enhanced error handling in `/api/public/ads` endpoint
+- ✅ Debug endpoint at `/api/debug/connection` to verify configuration
+- ✅ Improved error messages in marketplace UI
+- ✅ Comprehensive deployment guides
+
+**Troubleshooting:**
+1. Visit `https://your-app.vercel.app/api/debug/connection` to check configuration status
+2. Verify all Supabase environment variables are set correctly on Vercel
+3. Ensure Supabase tables (`ads`, `users`) exist in your database
+4. Check Vercel logs for detailed error messages
+
+See [`VERCEL_DEPLOYMENT_GUIDE.md`](VERCEL_DEPLOYMENT_GUIDE.md) and [`VERCEL_FIX_CHECKLIST.md`](VERCEL_FIX_CHECKLIST.md) for detailed steps.
 
 Full steps: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
@@ -509,6 +574,10 @@ Full steps: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 | `app/dashboard/profile/page.tsx` | Profile & control panel |
 | `components/layouts/dashboard-top-bar.tsx` | Live user header |
 | `components/layouts/dashboard-sidebar.tsx` | Nav + mobile drawer |
+| `app/api/public/ads/route.ts` | Public ads API (with enhanced error handling) |
+| `app/api/debug/connection.ts` | **NEW** — Debug endpoint to verify DB configuration |
+| `VERCEL_DEPLOYMENT_GUIDE.md` | **NEW** — Complete Vercel deployment guide |
+| `VERCEL_FIX_CHECKLIST.md` | **NEW** — Quick checklist for fixing ads on Vercel |
 
 ---
 
@@ -521,6 +590,47 @@ Full steps: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 - [ ] Admin payment review flow
 - [ ] Row Level Security on all tables
 - [x] Deploy to Vercel (set Supabase env vars for working auth)
+- [x] Fix ads not showing on Vercel (enhanced error handling + debug endpoint)
+- [x] Improved error messages in marketplace UI
+
+---
+
+## Recent Updates (v2.0)
+
+### Bug Fixes
+
+✅ **Fixed ads not showing on Vercel**
+- Enhanced error handling in `/api/public/ads` endpoint
+- Added proper fallback from MongoDB to Supabase
+- Improved error messages with HTTP status codes (503/500)
+- Added detailed logging for debugging
+
+### New Features
+
+✅ **Debug Endpoint**
+- Visit `/api/debug/connection` to verify database configuration
+- Shows status of all environment variables
+- Indicates MongoDB and Supabase connectivity
+- Provides recommendations for fixing issues
+
+✅ **Improved Marketplace UI**
+- Error state with retry functionality
+- Better loading states
+- Detailed error messages for "ads not found" scenarios
+- Console logging for debugging
+
+✅ **New Documentation**
+- [`VERCEL_DEPLOYMENT_GUIDE.md`](VERCEL_DEPLOYMENT_GUIDE.md) — Complete deployment guide
+- [`VERCEL_FIX_CHECKLIST.md`](VERCEL_FIX_CHECKLIST.md) — Quick reference checklist
+
+### Code Changes
+
+| File | Changes |
+|------|---------|
+| `app/api/public/ads/route.ts` | Enhanced error handling, better logging, proper HTTP status codes |
+| `app/api/debug/connection.ts` | New debug endpoint to verify configuration |
+| `app/marketplace/page.tsx` | Improved error/loading UI, better state management |
+| `lib/db/mongodb.ts` | Improved connection error handling |
 
 ---
 

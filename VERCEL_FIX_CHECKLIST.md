@@ -7,10 +7,7 @@ Visit this URL on your Vercel deployment to check if everything is properly conf
 https://your-app.vercel.app/api/debug/connection
 ```
 
-This will show you:
-- ✓ or ✗ for each environment variable
-- Connection status to MongoDB and Supabase
-- Recommendations for fixes
+This will show: ✓ SET or ✗ MISSING for each environment variable
 
 ## Step 2: Add Supabase Environment Variables to Vercel
 

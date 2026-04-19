@@ -86,7 +86,17 @@ Your Supabase database needs these tables:
 
 ## Troubleshooting Steps
 
-### Step 1: Check Logs on Vercel
+### Step 1: Check Configuration with Debug Endpoint
+```
+https://your-app.vercel.app/api/debug/connection
+```
+
+This will show:
+- ✓ or ✗ for each environment variable
+- Connection status to MongoDB and Supabase
+- Recommendations for fixes
+
+### Step 2: Check Logs on Vercel
 1. Go to your Vercel project → **Deployments**
 2. Click on the latest deployment
 3. Go to **Logs** and search for "Supabase"
@@ -94,7 +104,7 @@ Your Supabase database needs these tables:
    - "NEXT_PUBLIC_SUPABASE_URL: MISSING"
    - "SUPABASE_SERVICE_ROLE_KEY: MISSING"
 
-### Step 2: Testing Locally with Supabase
+### Step 3: Testing Locally with Supabase
 Create a `.env.local` file with Supabase variables:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
@@ -108,7 +118,7 @@ npm run dev
 # Try accessing /api/public/ads in browser or Postman
 ```
 
-### Step 3: Verify Database Connection
+### Step 4: Verify Database Connection
 Add this temporary debugging endpoint to check connectivity:
 
 ```typescript
@@ -126,9 +136,9 @@ export async function GET() {
 }
 ```
 
-Visit: `https://your-app.vercel.app/api/debug/supabase` to verify configuration.
+Visit: `https://your-app.vercel.app/api/debug/connection` to verify configuration.
 
-### Step 4: Check Supabase Table Permissions
+### Step 5: Check Supabase Table Permissions
 1. Go to Supabase Dashboard → **SQL Editor**
 2. Run:
 ```sql
@@ -137,7 +147,7 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 3. Verify `ads` table exists
 4. Check row-level security (RLS) policies - should allow service role to access data
 
-### Step 5: Rebuild and Redeploy
+### Step 6: Rebuild and Redeploy
 ```bash
 # In your project
 git add .
@@ -211,4 +221,4 @@ CREATE INDEX idx_ads_user_id ON ads(user_id);
 
 ---
 
-**Need help?** Check the Vercel logs and share the error messages from `/api/public/ads` endpoint.
+**Need help?** Check the Vercel logs and share the error messages from `/api/debug/connection` endpoint.
