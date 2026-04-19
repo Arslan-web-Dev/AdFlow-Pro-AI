@@ -7,7 +7,7 @@ import BlobCursor from '@/components/animations/BlobCursor';
 import GlareCard from '@/components/animations/GlareCard';
 import MagnetButton from '@/components/animations/MagnetButton';
 import ElectricBorder from '@/components/animations/ElectricBorder';
-import ThemeSwitcher from '@/components/theme/ThemeSwitcher';
+// import ThemeSwitcher from '@/components/theme/ThemeSwitcher';
 import ClickSpark from '@/components/animations/ClickSpark';
 import { 
   Sparkles, 
@@ -110,7 +110,7 @@ export default function Home() {
           
           {/* Theme Switcher */}
           <div className="hidden md:block">
-            <ThemeSwitcher showLabels={false} />
+            {/* ThemeSwitcher removed temporarily */}
           </div>
           
           <motion.div
@@ -146,7 +146,7 @@ export default function Home() {
         
         {/* Mobile Theme Switcher */}
         <div className="md:hidden px-6 pb-3">
-          <ThemeSwitcher showLabels={false} />
+          {/* ThemeSwitcher removed temporarily */}
         </div>
       </motion.nav>
 
