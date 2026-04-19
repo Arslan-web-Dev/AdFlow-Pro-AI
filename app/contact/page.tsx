@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Clock, Send, MessageSquare } from 'lucide-react';
 import TopNavbar from '@/components/layout/TopNavbar';
 import GlareCard from '@/components/animations/GlareCard';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import Button from '@/components/ui/button';
+import Input from '@/components/ui/input';
 
 const contactInfo = [
   {
