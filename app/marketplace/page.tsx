@@ -25,6 +25,7 @@ import ClickSpark from '@/components/animations/ClickSpark';
 
 interface Ad {
   _id: string;
+  slug: string;
   title: string;
   description: string;
   status: string;
@@ -301,7 +302,7 @@ export default function MarketplacePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Link href={`/ads/${ad._id}`}>
+                <Link href={`/ads/${ad.slug}`}>
                   <GlareCard className="glass-card overflow-hidden group cursor-pointer h-full flex flex-col">
                     {/* Image */}
                     <div className="relative h-48 overflow-hidden">

@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
       // Transform ads to match the expected format
       const transformedAds = ads.map(ad => ({
         _id: ad._id,
+        slug: ad.slug,
         title: ad.title,
         description: ad.description,
         status: ad.status,
