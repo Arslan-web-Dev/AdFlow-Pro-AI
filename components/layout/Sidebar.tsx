@@ -94,7 +94,7 @@ const navigation: Record<string, NavSection[]> = {
     {
       title: 'System',
       items: [
-        { label: 'Activity Log', href: '/dashboard/admin/activity', icon: <CheckSquare className="w-5 h-5" /> },
+        { label: 'Activity Log', href: '/dashboard/admin/activity-log', icon: <CheckSquare className="w-5 h-5" /> },
         { label: 'Settings', href: '/dashboard/admin/settings', icon: <Settings className="w-5 h-5" /> },
       ],
     },

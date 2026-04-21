@@ -14,7 +14,7 @@ import {
   Settings,
   ChevronDown,
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, useOptionalAuth } from '@/hooks/useAuth';
 
 interface TopNavbarProps {
   onMenuClick?: () => void;
@@ -22,7 +22,7 @@ interface TopNavbarProps {
 }
 
 export default function TopNavbar({ onMenuClick, showSearch = true }: TopNavbarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout } = useOptionalAuth();
   const [showProfileMenu, setShowProfileMenu] = React.useState(false);
   const [showMobileMenu, setShowMobileMenu] = React.useState(false);
   const [notifications] = React.useState(3);
