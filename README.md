@@ -19,24 +19,33 @@
 ## 📱 Download Android App
 
 <p align="center">
-  <a href="https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/releases/download/v1.0.0/ad-flow-pro-ai.apk?download=1">
+  <a href="https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/releases/download/v1.0.0/ad-flow-pro-ai.apk">
     <img src="https://img.shields.io/badge/⬇️%20Download%20APK-v1.0.0-brightgreen?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
   </a>
 </p>
 
 <p align="center">
-  <strong>🔗 Direct Download:</strong> <a href="https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/releases/download/v1.0.0/ad-flow-pro-ai.apk?download=1">ad-flow-pro-ai.apk</a>
+  <strong>⚠️ Download karne ka tareeqa:</strong><br/>
+  <code>Right Click</code> → <code>Save link as...</code> ya <br/>
+  <code>Long Press</code> (mobile) → <code>Download link</code>
 </p>
 
 <details>
 <summary><b>📲 Android Installation Instructions (Click to Expand)</b></summary>
 
-1. **Download APK** — Click the green button above
-2. **Enable Unknown Sources**:
-   - Go to `Settings` → `Security` → Enable `Install from unknown sources`
-   - Ya: `Settings` → `Apps` → `Special access` → `Install unknown apps` → Browser ko enable karein
-3. **Install** — Downloaded file open karein aur `Install` par click karein
-4. **Launch AdFlow Pro** 🎉
+### ✅ Step 1: Download APK
+- **Desktop:** Button par **Right Click** → **"Save link as..."** select karein
+- **Mobile:** Button par **Long Press** → **"Download link"** select karein
+
+### ✅ Step 2: Enable Unknown Sources
+- `Settings` → `Security` → `Install from unknown sources` ON karein
+- Ya: `Settings` → `Apps` → `Special access` → `Install unknown apps` → Browser enable karein
+
+### ✅ Step 3: Install APK
+- Downloads folder se APK file open karein
+- `Install` button click karein
+
+### ✅ Step 4: Launch AdFlow Pro 🎉
 
 </details>
 
@@ -72,7 +81,7 @@ npx tsx scripts/seed-ads.ts
 | Resource | URL |
 |----------|-----|
 | **Live application** | [https://ad-flow-pro-ai.vercel.app](https://ad-flow-pro-ai.vercel.app) |
-| **📱 Android APK** | [Download v1.0.0](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/releases/download/v1.0.0/ad-flow-pro-ai.apk?download=1) |
+| **📱 Android APK** | [Download v1.0.0](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/releases/download/v1.0.0/ad-flow-pro-ai.apk) <br><small>(Right Click → Save link as...)</small> |
 | **Source code** | [https://github.com/Arslan-web-Dev/AdFlow-Pro-AI](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI) |
 | **Deploy guide** | [docs/DEPLOY.md](docs/DEPLOY.md) |
 | **Screenshots** | [Screenshots/](Screenshots/) (portfolio images in-repo) |
