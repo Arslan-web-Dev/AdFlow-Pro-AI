@@ -257,6 +257,150 @@ Dark, **Material-inspired** palette: deep navy surfaces, indigo primary (`#4f46e
 
 ---
 
+## 🎬 Project Workflow
+
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#4f46e5', 'edgeLabelBackground':'#1e293b', 'tertiaryColor': '#06b6d4'}}}%%
+graph TB
+    subgraph "👤 User Layer"
+        A[Visitor] -->|Browse| B[Client/Seller]
+        B -->|Upgrade| C[Moderator]
+        C -->|Promote| D[Admin]
+        D -->|Super| E[Super Admin]
+    end
+
+    subgraph "🌐 Frontend - Next.js 16"
+        F[Home Page] -->|Explore| G[Marketplace]
+        G -->|Click| H[Ad Details]
+        B -->|Login| I[Dashboard]
+        I -->|Create| J[Post Ad]
+        I -->|View| K[My Ads]
+        I -->|Edit| L[Profile]
+    end
+
+    subgraph "⚙️ Backend API"
+        M[Auth API<br/>/api/auth/*]
+        N[Public Ads API<br/>/api/public/ads]
+        O[Dashboard API<br/>/api/client/*]
+        P[Admin API<br/>/api/admin/*]
+        Q[AI API<br/>/api/ai/*]
+    end
+
+    subgraph "🗄️ Database Layer"
+        R[(MongoDB<br/>Primary)]
+        S[(Supabase<br/>Backup/Sync)]
+    end
+
+    subgraph "🔐 Security"
+        T[JWT Middleware]
+        U[RBAC Checks]
+        V[Role Validation]
+    end
+
+    A --> F
+    B --> I
+    J --> O
+    K --> O
+    M --> T
+    T --> U
+    U --> V
+    O --> R
+    N --> R
+    R -->|Sync| S
+
+    style A fill:#6366f1,color:#fff
+    style B fill:#8b5cf6,color:#fff
+    style E fill:#ef4444,color:#fff
+    style R fill:#10b981,color:#fff
+    style S fill:#3b82f6,color:#fff
+```
+
+---
+
+## 🏗️ Architecture Diagram
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#312e81', 'edgeLabelBackground':'#1e1b4b', 'tertiaryColor': '#4338ca', 'primaryTextColor':'#fff', 'primaryBorderColor':'#6366f1'}}}%%
+flowchart LR
+    Browser -->|Request| Middleware
+    Middleware -->|JWT Auth| Router
+    
+    subgraph Next.js_App["🚀 Next.js App Router"]
+        Router -->|Public| PublicRoutes["/explore<br/>/ad/[slug]<br/>/auth/*"]
+        Router -->|Protected| Dashboard["/dashboard/*"]
+        Router -->|Moderator| Moderator["/moderator/*"]
+        Router -->|Admin| AdminRoutes["/admin/*"]
+        Router -->|API| APIRoutes["/api/*"]
+    end
+    
+    APIRoutes --> MongoDB[("🍃 MongoDB")]
+    APIRoutes --> Supabase[("⚡ Supabase")]
+    
+    style Middleware fill:#4f46e5,color:#fff,stroke:#6366f1,stroke-width:2px
+    style Router fill:#4f46e5,color:#fff,stroke:#6366f1,stroke-width:2px
+    style MongoDB fill:#10b981,color:#fff,stroke:#34d399,stroke-width:2px
+    style Supabase fill:#3ecf8e,color:#fff,stroke:#4ade80,stroke-width:2px
+```
+
+---
+
+## 📊 User Flow Animation
+
+```mermaid
+%%{init: {'theme': 'dark', 'flowchart': {'curve': 'basis'}}}%%
+sequenceDiagram
+    actor User
+    participant Browser
+    participant Middleware
+    participant API
+    participant Database
+    
+    User->>Browser: Visit AdFlow Pro
+    Browser->>Middleware: Request Page
+    Middleware->>Middleware: Check JWT Token
+    
+    alt Public Page
+        Middleware->>Browser: Allow Access
+        Browser->>User: Show Content
+    else Protected Route
+        Middleware->>Middleware: Validate Role
+        Middleware->>API: Forward Request
+        API->>Database: Fetch Data
+        Database->>API: Return Data
+        API->>Browser: JSON Response
+        Browser->>User: Render Dashboard
+    end
+    
+    User->>Browser: Click "Post Ad"
+    Browser->>API: POST /api/ads
+    API->>Database: Save Ad
+    Database->>API: Confirm
+    API->>Browser: Success Response
+    Browser->>User: Show Success Message
+```
+
+---
+
+## 🔄 Data Sync Flow
+
+```mermaid
+%%{init: {'theme': 'forest', 'themeVariables': { 'primaryColor': '#1e40af'}}}%%
+graph LR
+    A[Client Creates Ad] -->|POST| B[MongoDB]
+    B -->|Primary Storage| C[Ad Data]
+    C -->|Cron Job| D[Sync Service]
+    D -->|Backup| E[Supabase]
+    
+    F[Vercel Server] -->|Fallback| G[Supabase]
+    G -->|Read| H[Public API]
+    
+    style B fill:#10b981,color:#fff
+    style E fill:#3b82f6,color:#fff
+    style D fill:#f59e0b,color:#fff
+```
+
+---
+
 ## Architecture
 
 ```
