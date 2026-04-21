@@ -19,19 +19,23 @@
 ## 📱 Download Android App
 
 <p align="center">
-  <a href="https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/releases/download/v1.0.0/ad-flow-pro-ai.apk">
+  <a href="https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/releases/download/v1.0.0/ad-flow-pro-ai.apk?download=1">
     <img src="https://img.shields.io/badge/⬇️%20Download%20APK-v1.0.0-brightgreen?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
   </a>
 </p>
 
-<details>
-<summary><b>📲 Android Installation Instructions</b></summary>
+<p align="center">
+  <strong>🔗 Direct Download:</strong> <a href="https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/releases/download/v1.0.0/ad-flow-pro-ai.apk?download=1">ad-flow-pro-ai.apk</a>
+</p>
 
-1. **Download APK** from the button above
+<details>
+<summary><b>📲 Android Installation Instructions (Click to Expand)</b></summary>
+
+1. **Download APK** — Click the green button above
 2. **Enable Unknown Sources**:
    - Go to `Settings` → `Security` → Enable `Install from unknown sources`
-   - Or: `Settings` → `Apps` → `Special access` → `Install unknown apps` → Enable for your browser
-3. **Install** → Open the downloaded file and tap `Install`
+   - Ya: `Settings` → `Apps` → `Special access` → `Install unknown apps` → Browser ko enable karein
+3. **Install** — Downloaded file open karein aur `Install` par click karein
 4. **Launch AdFlow Pro** 🎉
 
 </details>
@@ -68,7 +72,7 @@ npx tsx scripts/seed-ads.ts
 | Resource | URL |
 |----------|-----|
 | **Live application** | [https://ad-flow-pro-ai.vercel.app](https://ad-flow-pro-ai.vercel.app) |
-| **📱 Android APK** | [Download v1.0.0](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/releases/download/v1.0.0/ad-flow-pro-ai.apk) |
+| **📱 Android APK** | [Download v1.0.0](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/releases/download/v1.0.0/ad-flow-pro-ai.apk?download=1) |
 | **Source code** | [https://github.com/Arslan-web-Dev/AdFlow-Pro-AI](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI) |
 | **Deploy guide** | [docs/DEPLOY.md](docs/DEPLOY.md) |
 | **Screenshots** | [Screenshots/](Screenshots/) (portfolio images in-repo) |
