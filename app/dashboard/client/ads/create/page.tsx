@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -39,6 +40,7 @@ const steps = ['Basic Info', 'Media', 'AI Generate', 'Review'];
 
 export default function CreateAdPage() {
   const router = useRouter();
+  const { refresh } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -121,6 +123,8 @@ export default function CreateAdPage() {
         throw new Error(data.error || 'Failed to create ad');
       }
 
+      // Refresh auth/session state before redirecting
+      await refresh();
       router.push('/dashboard/client/ads');
     } catch (err: any) {
       setError(err.message);
