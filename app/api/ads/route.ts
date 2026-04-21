@@ -12,40 +12,45 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Database not available' }, { status: 500 });
     }
 
-    const token = request.cookies.get('token')?.value;
-    if (!token) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const category = searchParams.get('category');
     const userId = searchParams.get('userId');
+    const role = searchParams.get('role');
     const limit = parseInt(searchParams.get('limit') || '50');
     const page = parseInt(searchParams.get('page') || '1');
+
+    // Try to get token for authenticated requests
+    const token = request.cookies.get('token')?.value;
+    let payload = null;
+    if (token) {
+      payload = verifyToken(token);
+    }
 
     // Build query
     const query: any = {};
 
-    // Clients can only see their own ads
-    if (payload.role === 'client' && !userId) {
-      query.userId = payload.userId;
-    } else if (userId) {
-      query.userId = userId;
+    // 1. Admin: all ads
+    // 2. User: only their ads
+    // 3. Public/marketplace: only approved/published
+    if (payload && (payload.role === 'admin' || role === 'admin')) {
+      // Admin: no filter needed (can filter by status/category/userId if provided)
+      if (userId) query.userId = userId;
+      if (status) query.status = status;
+      if (category) query.category = category;
+    } else if (payload && (payload.role === 'client' || role === 'user')) {
+      // User: only their ads
+      query.userId = userId || payload.userId;
+      if (status) query.status = status;
+      if (category) query.category = category;
+    } else {
+      // Public/marketplace: only approved or published
+      query.status = status || { $in: ['approved', 'published'] };
+      if (category) query.category = category;
     }
 
-    if (status) {
-      query.status = status;
-    }
-
-    if (category) {
-      query.category = category;
-    }
+    // Debug logging
+    console.log('[API] /api/ads query:', query);
 
     const ads = await Ad.find(query)
       .sort({ createdAt: -1 })
@@ -53,6 +58,9 @@ export async function GET(request: NextRequest) {
       .limit(limit);
 
     const total = await Ad.countDocuments(query);
+
+    // Debug logging
+    console.log(`[API] /api/ads returned ${ads.length} ads (total: ${total})`);
 
     return NextResponse.json({
       ads,
