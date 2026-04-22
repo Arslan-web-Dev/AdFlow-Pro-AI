@@ -90,7 +90,7 @@ export default function SettingsPage() {
 
         <div className="space-y-6">
           {/* Theme Settings */}
-          <GlareCard className="glass-card p-6">
+          <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-lg bg-[var(--primary-color)]/10">
                 <Moon className="w-5 h-5 text-[var(--primary-color)]" />
@@ -120,10 +120,10 @@ export default function SettingsPage() {
                 </button>
               ))}
             </div>
-          </GlareCard>
+          </div>
 
           {/* Notifications */}
-          <GlareCard className="glass-card p-6">
+          <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-lg bg-[var(--accent-info)]/10">
                 <Bell className="w-5 h-5 text-[var(--accent-info)]" />
@@ -162,10 +162,10 @@ export default function SettingsPage() {
                 </div>
               ))}
             </div>
-          </GlareCard>
+          </div>
 
           {/* Security */}
-          <GlareCard className="glass-card p-6">
+          <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-lg bg-[var(--accent-success)]/10">
                 <Shield className="w-5 h-5 text-[var(--accent-success)]" />
@@ -200,10 +200,10 @@ export default function SettingsPage() {
                 Change Password
               </button>
             </div>
-          </GlareCard>
+          </div>
 
           {/* Danger Zone */}
-          <GlareCard className="glass-card p-6 border-red-500/20">
+          <div className="glass-card p-6 border-red-500/20">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-lg bg-red-500/10">
                 <Trash2 className="w-5 h-5 text-red-400" />
@@ -217,7 +217,7 @@ export default function SettingsPage() {
             <button className="w-full py-3 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors">
               Delete Account
             </button>
-          </GlareCard>
+          </div>
 
           {/* Save Button */}
           <div className="flex justify-end">
