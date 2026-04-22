@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Lock, Eye, Database, Share2, Cookie, UserCheck } from 'lucide-react';
 import TopNavbar from '@/components/layout/TopNavbar';
 
@@ -61,10 +60,8 @@ export default function PrivacyPage() {
       <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+          <div
+            className="text-center mb-12 animate-in slide-in-from-bottom-4 duration-300"
           >
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--primary-color)] to-purple-600 mb-6">
               <Lock className="w-8 h-8 text-white" />
@@ -75,29 +72,26 @@ export default function PrivacyPage() {
             <p className="text-lg text-[var(--muted-foreground)]">
               Your privacy is our priority. Learn how we protect your data.
             </p>
-          </motion.div>
+          </div>
 
           {/* Trust Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8 p-4 rounded-xl bg-gradient-to-r from-[var(--primary-color)]/10 to-purple-500/10 border border-[var(--primary-color)]/20"
+          <div
+            className="mb-8 p-4 rounded-xl bg-gradient-to-r from-[var(--primary-color)]/10 to-purple-500/10 border border-[var(--primary-color)]/20 animate-in slide-in-from-bottom-4 duration-300"
+            style={{ animationDelay: '100ms' }}
           >
             <p className="text-sm text-[var(--foreground)] text-center">
               <strong>Our Commitment:</strong> We never sell your personal data. 
               Your information is used solely to provide and improve our services.
             </p>
-          </motion.div>
+          </div>
 
           {/* Sections */}
           <div className="space-y-6">
             {sections.map((section, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + index * 0.1 }}
+                className="animate-in slide-in-from-bottom-4 duration-300"
+                style={{ animationDelay: `${100 + index * 100}ms` }}
               >
                 <div className="glass-card p-6">
                   <div className="flex items-start gap-4">
@@ -114,16 +108,14 @@ export default function PrivacyPage() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {/* Data Retention */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="mt-8"
+          <div
+            className="mt-8 animate-in slide-in-from-bottom-4 duration-300"
+            style={{ animationDelay: '700ms' }}
           >
             <div className="glass-card p-6">
               <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4">
@@ -148,14 +140,12 @@ export default function PrivacyPage() {
                 </li>
               </ul>
             </div>
-          </motion.div>
+          </div>
 
           {/* Contact */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="mt-12 text-center"
+          <div
+            className="mt-12 text-center animate-in slide-in-from-bottom-4 duration-300"
+            style={{ animationDelay: '800ms' }}
           >
             <p className="text-[var(--muted-foreground)] mb-4">
               Privacy concerns? Contact our Data Protection Officer
@@ -166,7 +156,7 @@ export default function PrivacyPage() {
             >
               privacy@adflowpro.com
             </a>
-          </motion.div>
+          </div>
         </div>
       </main>
     </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { useTheme } from './ThemeProvider';
 
 type ThemeOption = {
@@ -67,16 +66,14 @@ export default function ThemeSwitcher({
                 {t.name}
               </span>
               {theme === t.id && (
-                <motion.svg 
-                  initial={{ scale: 0 }} 
-                  animate={{ scale: 1 }}
-                  className="w-4 h-4 ml-auto text-[var(--primary-color)]" 
+                <svg 
+                  className="w-4 h-4 ml-auto text-[var(--primary-color)] animate-in zoom-in duration-200" 
                   fill="none" 
                   viewBox="0 0 24 24" 
                   stroke="currentColor"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </motion.svg>
+                </svg>
               )}
             </button>
           ))}
@@ -92,40 +89,25 @@ export default function ThemeSwitcher({
       )}
       <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-[var(--surface)]/50 border border-[var(--border)]">
         {themes.map((t, index) => (
-          <motion.button
+          <button
             key={t.id}
             onClick={() => setTheme(t.id as any)}
-            className={`relative w-8 h-8 rounded-lg transition-all duration-300 ${
+            className={`relative w-8 h-8 rounded-lg transition-all duration-300 hover:scale-110 active:scale-95 animate-in fade-in slide-in-from-top-2 duration-300 ${
               theme === t.id 
                 ? 'ring-2 ring-white ring-offset-2 ring-offset-[var(--surface)]' 
-                : 'hover:scale-110'
+                : ''
             }`}
-            style={{ background: t.color }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.03 }}
+            style={{ 
+              background: t.color,
+              animationDelay: `${index * 30}ms`,
+              boxShadow: theme === t.id ? `0 0 20px ${t.color}80, 0 0 40px ${t.color}40` : 'none'
+            }}
             title={t.name}
           >
             {theme === t.id && (
-              <motion.div
-                layoutId="activeTheme"
-                className="absolute inset-0 rounded-lg ring-2 ring-white"
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              />
+              <div className="absolute inset-0 rounded-lg ring-2 ring-white" />
             )}
-            <motion.div
-              className="absolute inset-0 rounded-lg"
-              initial={false}
-              animate={theme === t.id ? { 
-                boxShadow: `0 0 20px ${t.color}80, 0 0 40px ${t.color}40`
-              } : {
-                boxShadow: 'none'
-              }}
-              transition={{ duration: 0.3 }}
-            />
-          </motion.button>
+          </button>
         ))}
       </div>
     </div>

@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
-import connectDB from '@/lib/db/mongodb';
-import Payment from '@/lib/models/Payment';
-import Ad from '@/lib/models/Ad';
-import { submitPaymentProof } from '@/lib/utils/ad-workflow';
+import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
-
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -20,27 +15,45 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { adId, amount, method, transactionRef, senderName, screenshotUrl } = body;
+    const { ad_id, amount, method, transaction_ref, sender_name, screenshot_url } = body;
 
     // Check if transaction reference already exists
-    const existingPayment = await Payment.findOne({ transactionRef });
+    const { data: existingPayment } = await supabaseAdmin
+      .from('payments')
+      .select('id')
+      .eq('transaction_ref', transaction_ref)
+      .single();
+    
     if (existingPayment) {
       return NextResponse.json({ error: 'Transaction reference already exists' }, { status: 400 });
     }
 
     // Create payment record
-    const payment = await Payment.create({
-      adId,
-      amount,
-      method,
-      transactionRef,
-      senderName,
-      screenshotUrl,
-      status: 'pending',
-    });
+    const { data: payment, error } = await supabaseAdmin
+      .from('payments')
+      .insert({
+        ad_id,
+        amount,
+        method,
+        transaction_ref,
+        sender_name,
+        screenshot_url,
+        status: 'pending',
+        user_id: payload.userId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Create payment error:', error);
+      return NextResponse.json({ error: 'Failed to create payment' }, { status: 500 });
+    }
 
     // Update ad status to payment_submitted
-    await submitPaymentProof(adId, payload.userId, payload.role);
+    await supabaseAdmin
+      .from('ads')
+      .update({ status: 'payment_submitted' })
+      .eq('id', ad_id);
 
     return NextResponse.json({ success: true, payment });
   } catch (error) {
@@ -51,8 +64,6 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
-
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -65,28 +76,33 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
-    const adId = searchParams.get('adId');
+    const ad_id = searchParams.get('adId');
 
-    const query: any = {};
+    // Build query
+    let query = supabaseAdmin
+      .from('payments')
+      .select('*, ads(title, status)')
+      .order('created_at', { ascending: false });
     
     // Clients can only see their own payments
-    if (payload.role === 'client') {
-      const ads = await Ad.find({ userId: payload.userId });
-      const adIds = ads.map(ad => ad._id.toString());
-      query.adId = { $in: adIds };
-    } else if (adId) {
-      query.adId = adId;
+    if (payload.role === 'user') {
+      query = query.eq('user_id', payload.userId);
+    } else if (ad_id) {
+      query = query.eq('ad_id', ad_id);
     }
     
     if (status) {
-      query.status = status;
+      query = query.eq('status', status);
     }
 
-    const payments = await Payment.find(query)
-      .sort({ createdAt: -1 })
-      .populate('adId', 'title status');
+    const { data: payments, error } = await query;
 
-    return NextResponse.json({ payments });
+    if (error) {
+      console.error('Get payments error:', error);
+      return NextResponse.json({ error: 'Failed to fetch payments' }, { status: 500 });
+    }
+
+    return NextResponse.json({ payments: payments || [] });
   } catch (error) {
     console.error('Get payments error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

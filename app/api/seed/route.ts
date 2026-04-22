@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/db/mongodb';
-import Ad from '@/lib/models/Ad';
-import User from '@/lib/models/User';
+import { supabaseAdmin } from '@/lib/supabase/client';
 
 const ADS_DATA = [
   {
@@ -248,19 +246,33 @@ const ADS_DATA = [
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    // Get or create a demo user in Supabase
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', 'demo@adflow.com')
+      .single();
 
-    // Get or create a demo user
-    let user = await User.findOne({ email: 'demo@adflow.com' });
+    let userId = user?.id;
+
     if (!user) {
-      user = await User.create({
-        email: 'demo@adflow.com',
-        name: 'Demo User',
-        password: 'Demo123!',
-        role: 'client',
-        isActive: true,
-        isVerified: true
-      });
+      // Create demo user
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          email: 'demo@adflow.com',
+          name: 'Demo User',
+          role: 'user',
+          is_active: true,
+          is_verified: true,
+        })
+        .select()
+        .single();
+      
+      if (createError) {
+        return NextResponse.json({ error: 'Failed to create demo user' }, { status: 500 });
+      }
+      userId = newUser?.id;
     }
 
     const results = {
@@ -272,7 +284,12 @@ export async function POST(request: NextRequest) {
     for (const adData of ADS_DATA) {
       try {
         // Check if ad already exists
-        const existing = await Ad.findOne({ title: adData.title });
+        const { data: existing } = await supabaseAdmin
+          .from('ads')
+          .select('id')
+          .eq('title', adData.title)
+          .single();
+
         if (existing) {
           results.skipped++;
           continue;
@@ -282,26 +299,28 @@ export async function POST(request: NextRequest) {
           .replace(/\s+/g, '-')
           .replace(/[^\w-]/g, '') + '-' + Date.now();
 
-        await Ad.create({
-          title: adData.title,
-          description: adData.description,
-          slug,
-          userId: user._id.toString(),
-          category: adData.category,
-          city: adData.city,
-          price: adData.price,
-          currency: 'USD',
-          status: 'published',
-          priority: 'basic',
-          tags: [adData.category.toLowerCase()],
-          media: [{ url: adData.imageUrl, type: 'image', order: 0 }],
-          publishedAt: new Date(),
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          isAIGenerated: false,
-          views: Math.floor(Math.random() * 100),
-          clicks: Math.floor(Math.random() * 20),
-          paymentStatus: 'not_required'
-        });
+        await supabaseAdmin
+          .from('ads')
+          .insert({
+            title: adData.title,
+            description: adData.description,
+            slug,
+            user_id: userId,
+            category: adData.category,
+            city: adData.city,
+            price: adData.price,
+            currency: 'USD',
+            status: 'published',
+            priority: 'basic',
+            tags: [adData.category.toLowerCase()],
+            media: [{ url: adData.imageUrl, type: 'image', order: 0 }],
+            published_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            is_ai_generated: false,
+            views: Math.floor(Math.random() * 100),
+            clicks: Math.floor(Math.random() * 20),
+            payment_status: 'not_required'
+          });
 
         results.created++;
       } catch (err: any) {
@@ -325,9 +344,16 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
-    const count = await Ad.countDocuments({ status: 'published' });
-    return NextResponse.json({ count, message: `Database has ${count} published ads` });
+    const { count, error } = await supabaseAdmin
+      .from('ads')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published');
+    
+    if (error) {
+      return NextResponse.json({ error: 'Check failed', message: error.message }, { status: 500 });
+    }
+    
+    return NextResponse.json({ count: count || 0, message: `Database has ${count || 0} published ads` });
   } catch (error: any) {
     return NextResponse.json(
       { error: 'Check failed', message: error.message },
@@ -338,8 +364,15 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    await connectDB();
-    await Ad.deleteMany({});
+    const { error } = await supabaseAdmin
+      .from('ads')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+    
+    if (error) {
+      return NextResponse.json({ error: 'Delete failed', message: error.message }, { status: 500 });
+    }
+    
     return NextResponse.json({ success: true, message: 'All ads deleted' });
   } catch (error: any) {
     return NextResponse.json(

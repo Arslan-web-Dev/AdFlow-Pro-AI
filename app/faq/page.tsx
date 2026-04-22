@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, HelpCircle } from 'lucide-react';
 import TopNavbar from '@/components/layout/TopNavbar';
 
@@ -61,21 +60,13 @@ function FAQItem({ question, answer, isOpen, onClick }: {
           }`} 
         />
       </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <p className="pb-5 text-[var(--muted-foreground)] leading-relaxed">
-              {answer}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div
+        className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+      >
+        <p className="pb-5 text-[var(--muted-foreground)] leading-relaxed">
+          {answer}
+        </p>
+      </div>
     </div>
   );
 }
@@ -90,10 +81,8 @@ export default function FAQPage() {
       <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+          <div
+            className="text-center mb-12 animate-in slide-in-from-bottom-4 duration-300"
           >
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--primary-color)] to-purple-600 mb-6">
               <HelpCircle className="w-8 h-8 text-white" />
@@ -104,13 +93,12 @@ export default function FAQPage() {
             <p className="text-lg text-[var(--muted-foreground)]">
               Everything you need to know about AdFlow Pro
             </p>
-          </motion.div>
+          </div>
 
           {/* FAQ List */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+          <div
+            className="animate-in slide-in-from-bottom-4 duration-300"
+            style={{ animationDelay: '100ms' }}
           >
             <div className="glass-card p-6 sm:p-8">
               {faqs.map((faq, index) => (
@@ -123,14 +111,12 @@ export default function FAQPage() {
                 />
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Contact CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mt-12 text-center"
+          <div
+            className="mt-12 text-center animate-in slide-in-from-bottom-4 duration-300"
+            style={{ animationDelay: '200ms' }}
           >
             <p className="text-[var(--muted-foreground)] mb-4">
               Still have questions?
@@ -141,7 +127,7 @@ export default function FAQPage() {
             >
               Contact Support
             </a>
-          </motion.div>
+          </div>
         </div>
       </main>
     </div>

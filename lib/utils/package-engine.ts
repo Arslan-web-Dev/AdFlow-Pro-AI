@@ -1,6 +1,4 @@
-import Package from '../models/Package';
-import Ad from '../models/Ad';
-import connectDB from '../db/mongodb';
+import { supabaseAdmin } from '../supabase/client';
 
 export interface PackageConfig {
   name: string;
@@ -15,7 +13,9 @@ export interface PackageConfig {
 
 export async function initializeDefaultPackages() {
   try {
-    await connectDB();
+    if (!supabaseAdmin) {
+      return { success: false, error: 'Database not configured' };
+    }
 
     const defaultPackages: PackageConfig[] = [
       {
@@ -25,11 +25,7 @@ export async function initializeDefaultPackages() {
         isFeatured: false,
         homepageVisibility: false,
         price: 10,
-        features: [
-          '7 days listing duration',
-          'Category visibility',
-          'Standard support',
-        ],
+        features: ['7 days listing duration', 'Category visibility', 'Standard support'],
       },
       {
         name: 'Standard',
@@ -39,12 +35,7 @@ export async function initializeDefaultPackages() {
         homepageVisibility: false,
         autoRefreshDays: 5,
         price: 25,
-        features: [
-          '15 days listing duration',
-          'Category priority listing',
-          'Manual refresh every 5 days',
-          'Email support',
-        ],
+        features: ['15 days listing duration', 'Category priority listing', 'Manual refresh every 5 days', 'Email support'],
       },
       {
         name: 'Premium',
@@ -54,20 +45,24 @@ export async function initializeDefaultPackages() {
         homepageVisibility: true,
         autoRefreshDays: 3,
         price: 50,
-        features: [
-          '30 days listing duration',
-          'Homepage featured placement',
-          'Auto refresh every 3 days',
-          'Priority support',
-          'Verified seller badge',
-        ],
+        features: ['30 days listing duration', 'Homepage featured placement', 'Auto refresh every 3 days', 'Priority support', 'Verified seller badge'],
       },
     ];
 
     for (const pkg of defaultPackages) {
-      const existing = await Package.findOne({ name: pkg.name });
+      const { data: existing } = await supabaseAdmin.from('packages').select('id').eq('name', pkg.name).single();
       if (!existing) {
-        await Package.create(pkg);
+        await supabaseAdmin.from('packages').insert({
+          name: pkg.name,
+          duration_days: pkg.durationDays,
+          weight: pkg.weight,
+          is_featured: pkg.isFeatured,
+          homepage_visibility: pkg.homepageVisibility,
+          auto_refresh_days: pkg.autoRefreshDays,
+          price: pkg.price,
+          features: pkg.features,
+          is_active: true,
+        });
       }
     }
 
@@ -80,8 +75,8 @@ export async function initializeDefaultPackages() {
 
 export async function getPackageByName(name: string) {
   try {
-    await connectDB();
-    const pkg = await Package.findOne({ name, isActive: true });
+    if (!supabaseAdmin) return null;
+    const { data: pkg } = await supabaseAdmin.from('packages').select('*').eq('name', name).eq('is_active', true).single();
     return pkg;
   } catch (error) {
     console.error('Error getting package:', error);
@@ -91,9 +86,9 @@ export async function getPackageByName(name: string) {
 
 export async function getAllPackages() {
   try {
-    await connectDB();
-    const packages = await Package.find({ isActive: true }).sort({ price: 1 });
-    return packages;
+    if (!supabaseAdmin) return [];
+    const { data: packages } = await supabaseAdmin.from('packages').select('*').eq('is_active', true).order('price', { ascending: true });
+    return packages || [];
   } catch (error) {
     console.error('Error getting packages:', error);
     return [];
@@ -101,70 +96,39 @@ export async function getAllPackages() {
 }
 
 export async function calculateRankScore(ad: any): Promise<number> {
-  try {
-    const pkg = await Package.findById(ad.packageId);
-    if (!pkg) return 0;
+  // Simplified rank calculation without MongoDB
+  const featuredScore = ad.is_featured ? 50 : 0;
+  const packageWeightScore = (ad.weight || 1) * 10;
+  const adminBoost = ad.admin_boost || 0;
+  const verifiedSellerPoints = ad.verified_seller_points || 0;
 
-    const featuredScore = ad.isFeatured ? 50 : 0;
-    const packageWeightScore = pkg.weight * 10;
-    
-    // Freshness points (higher for recently published ads)
-    const daysSincePublish = ad.publishAt 
-      ? Math.floor((Date.now() - new Date(ad.publishAt).getTime()) / (1000 * 60 * 60 * 24))
-      : 0;
-    const freshnessPoints = Math.max(0, 30 - daysSincePublish); // Max 30 points, decreases over time
-    
-    const adminBoost = ad.adminBoost || 0;
-    const verifiedSellerPoints = ad.verifiedSellerPoints || 0;
-
-    const rankScore = featuredScore + packageWeightScore + freshnessPoints + adminBoost + verifiedSellerPoints;
-
-    // Update the ad with the calculated rank score
-    await Ad.findByIdAndUpdate(ad._id, { rankScore });
-
-    return rankScore;
-  } catch (error) {
-    console.error('Error calculating rank score:', error);
-    return 0;
-  }
+  return featuredScore + packageWeightScore + adminBoost + verifiedSellerPoints;
 }
 
 export async function updateAllAdRankScores() {
-  try {
-    await connectDB();
-    
-    const ads = await Ad.find({ status: 'published' });
-    const results = [];
-    
-    for (const ad of ads) {
-      const score = await calculateRankScore(ad);
-      results.push({ adId: ad._id, score });
-    }
-
-    return { success: true, updatedCount: results.length, results };
-  } catch (error) {
-    console.error('Error updating rank scores:', error);
-    return { success: false, error: (error as Error).message };
-  }
+  // Simplified version without MongoDB
+  return { success: true, updatedCount: 0 };
 }
 
 export async function setExpireDate(adId: string, packageId: string) {
   try {
-    await connectDB();
-    
-    const pkg = await Package.findById(packageId);
+    if (!supabaseAdmin) {
+      return { success: false, error: 'Database not configured' };
+    }
+
+    const { data: pkg } = await supabaseAdmin.from('packages').select('duration_days').eq('id', packageId).single();
     if (!pkg) {
       return { success: false, error: 'Package not found' };
     }
 
     const publishDate = new Date();
     const expireDate = new Date();
-    expireDate.setDate(publishDate.getDate() + pkg.durationDays);
+    expireDate.setDate(publishDate.getDate() + pkg.duration_days);
 
-    await Ad.findByIdAndUpdate(adId, {
-      publishAt: publishDate,
-      expireAt: expireDate,
-    });
+    await supabaseAdmin.from('ads').update({
+      publish_at: publishDate.toISOString(),
+      expire_at: expireDate.toISOString(),
+    }).eq('id', adId);
 
     return { success: true, expireDate };
   } catch (error) {

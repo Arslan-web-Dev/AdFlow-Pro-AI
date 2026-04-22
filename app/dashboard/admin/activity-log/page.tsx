@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   Search,
@@ -141,12 +140,10 @@ export default function ActivityLogPage() {
           {filteredLogs.map((log, index) => {
             const TypeIcon = getTypeIcon(log.type);
             return (
-              <motion.div
+              <div
                 key={log.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="p-4 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-slate-600 transition-all"
+                className="p-4 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-slate-600 transition-all animate-in slide-in-from-left-4 duration-300"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex items-start gap-4">
                   <div className={`p-2 rounded-lg ${getTypeColor(log.type)}`}>
@@ -174,7 +171,7 @@ export default function ActivityLogPage() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
         </div>

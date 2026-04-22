@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
-import connectDB from '@/lib/db/mongodb';
-import Payment from '@/lib/models/Payment';
+import { supabaseAdmin } from '@/lib/supabase/client';
 import { hasPermission } from '@/lib/auth/rbac';
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
-
     const token = request.cookies.get('token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -27,12 +24,19 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || 'pending';
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    const payments = await Payment.find({ status })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .populate('adId', 'title status');
+    const { data: payments, error } = await supabaseAdmin
+      .from('payments')
+      .select('*, ads(title, status)')
+      .eq('status', status)
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
-    return NextResponse.json({ payments });
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json({ error: 'Failed to fetch payments' }, { status: 500 });
+    }
+
+    return NextResponse.json({ payments: payments || [] });
   } catch (error) {
     console.error('Get payment queue error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

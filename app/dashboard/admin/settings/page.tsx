@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   Settings,
@@ -113,25 +112,20 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">Settings</h1>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={handleSaveSettings}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 transition-colors hover:scale-105 active:scale-95"
           >
             <Save className="w-4 h-4" />
             {isSaving ? 'Saving...' : 'Save Changes'}
-          </motion.button>
+          </button>
         </div>
 
         {/* Save Status */}
         {saveStatus !== 'idle' && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className={`flex items-center gap-2 p-4 rounded-lg ${
+          <div
+            className={`flex items-center gap-2 p-4 rounded-lg animate-in slide-in-from-top-2 duration-300 ${
               saveStatus === 'success'
                 ? 'bg-green-500/20 border border-green-600 text-green-400'
                 : 'bg-red-500/20 border border-red-600 text-red-400'
@@ -143,19 +137,17 @@ export default function SettingsPage() {
               <AlertCircle className="w-5 h-5" />
             )}
             {saveStatus === 'success' ? 'Settings saved successfully!' : 'Failed to save settings'}
-          </motion.div>
+          </div>
         )}
 
         {/* Settings Sections */}
         {settingsSections.map((section, sectionIndex) => {
           const SectionIcon = section.icon;
           return (
-            <motion.div
+            <div
               key={section.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: sectionIndex * 0.1 }}
-              className="p-6 rounded-lg bg-slate-800/50 border border-slate-700"
+              className="p-6 rounded-lg bg-slate-800/50 border border-slate-700 animate-in slide-in-from-bottom-4 duration-300"
+              style={{ animationDelay: `${sectionIndex * 100}ms` }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 rounded-lg bg-blue-500/20">
@@ -205,7 +197,7 @@ export default function SettingsPage() {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

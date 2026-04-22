@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import User from '@/lib/models/User';
+import { supabaseAdmin } from '@/lib/supabase/client';
 import { hasPermission, UserRole } from '@/lib/auth/rbac';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 
@@ -21,8 +21,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, users });
+    const { data: users, error } = await supabaseAdmin
+      .from('users')
+      .select('id, email, name, role, is_active, is_verified, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Get users error:', error);
+      return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, users: users || [] });
   } catch (error: any) {
     console.error('Get users error:', error);
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
@@ -56,30 +65,54 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const { data: existingUser } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('email', email.toLowerCase())
+      .single();
+
     if (existingUser) {
       return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
     }
 
-    // Create user
-    const newUser = await User.create({
+    // Create user in Supabase Auth first
+    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email.toLowerCase(),
       password,
-      name,
-      role,
-      isActive: true,
-      isVerified: true,
+      email_confirm: true,
     });
+
+    if (authError || !authUser.user) {
+      return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+    }
+
+    // Create user record in users table
+    const { data: newUser, error: dbError } = await supabaseAdmin
+      .from('users')
+      .insert({
+        id: authUser.user.id,
+        email: email.toLowerCase(),
+        name,
+        role,
+        is_active: true,
+        is_verified: true,
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      return NextResponse.json({ error: 'Failed to create user record' }, { status: 500 });
+    }
 
     return NextResponse.json(
       {
         success: true,
         user: {
-          id: newUser._id,
+          id: newUser.id,
           email: newUser.email,
           name: newUser.name,
           role: newUser.role,
-          isActive: newUser.isActive,
+          isActive: newUser.is_active,
         },
       },
       { status: 201 }

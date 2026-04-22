@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
-import connectDB from '@/lib/db/mongodb';
-import Log from '@/lib/models/Log';
+import { supabaseAdmin } from '@/lib/supabase/client';
 
 // PATCH /api/notifications/[id] - Mark notification as read
 export async function PATCH(
@@ -9,7 +8,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await connectDB();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+    }
 
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
@@ -22,22 +23,38 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const notification = await Log.findById(id);
-    if (!notification) {
+
+    // Get the notification first
+    const { data: notification, error: fetchError } = await supabaseAdmin
+      .from('logs')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !notification) {
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
     }
 
     // Check if user owns this notification or is admin
-    if (notification.userId !== payload.userId && payload.role !== 'admin' && payload.role !== 'super_admin') {
+    if (notification.user_id !== payload.userId && payload.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Mark as read (update details to include readAt timestamp)
-    notification.details = notification.details || {};
-    notification.details.readAt = new Date();
-    await notification.save();
+    // Mark as read
+    const { data: updated, error } = await supabaseAdmin
+      .from('logs')
+      .update({
+        details: { ...notification.details, readAt: new Date().toISOString() },
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-    return NextResponse.json({ success: true, notification });
+    if (error || !updated) {
+      return NextResponse.json({ error: 'Failed to update notification' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, notification: updated });
   } catch (error) {
     console.error('Mark notification as read error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -50,7 +67,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await connectDB();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+    }
 
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
@@ -63,17 +82,28 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const notification = await Log.findById(id);
-    if (!notification) {
+
+    // Get the notification first
+    const { data: notification, error: fetchError } = await supabaseAdmin
+      .from('logs')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !notification) {
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
     }
 
     // Check if user owns this notification or is admin
-    if (notification.userId !== payload.userId && payload.role !== 'admin' && payload.role !== 'super_admin') {
+    if (notification.user_id !== payload.userId && payload.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await Log.findByIdAndDelete(id);
+    const { error } = await supabaseAdmin.from('logs').delete().eq('id', id);
+
+    if (error) {
+      return NextResponse.json({ error: 'Failed to delete notification' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, message: 'Notification deleted' });
   } catch (error) {

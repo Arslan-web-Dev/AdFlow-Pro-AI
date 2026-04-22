@@ -1,6 +1,3 @@
-import Analytics from '../models/Analytics';
-import connectDB from '../db/mongodb';
-
 export interface FeatureToggle {
   id: string;
   name: string;
@@ -55,16 +52,8 @@ export const defaultFeatureToggles: FeatureToggle[] = [
 ];
 
 export async function getFeatureToggles(): Promise<FeatureToggle[]> {
-  try {
-    await connectDB();
-    
-    // For now, return default toggles
-    // In production, these would be stored in the database
-    return defaultFeatureToggles;
-  } catch (error) {
-    console.error('Error fetching feature toggles:', error);
-    return defaultFeatureToggles;
-  }
+  // Return default toggles - stored in memory/config only
+  return defaultFeatureToggles;
 }
 
 export async function updateFeatureToggle(
@@ -72,25 +61,11 @@ export async function updateFeatureToggle(
   enabled: boolean
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await connectDB();
-    
-    // Log the toggle change
-    await Analytics.create({
-      date: new Date(),
-      totalUsers: 0,
-      totalAds: 0,
-      activeAds: 0,
-      pendingAds: 0,
-      totalRevenue: 0,
-      dailyRevenue: 0,
-      newUsers: 0,
-      newAds: 0,
-      adsByStatus: {},
-      adsByCategory: {},
-      usersByRole: {},
-      aiGeneratedAds: 0,
-    });
-
+    // Find and update the toggle in memory
+    const toggle = defaultFeatureToggles.find(t => t.id === toggleId);
+    if (toggle) {
+      toggle.enabled = enabled;
+    }
     return { success: true };
   } catch (error) {
     console.error('Error updating feature toggle:', error);

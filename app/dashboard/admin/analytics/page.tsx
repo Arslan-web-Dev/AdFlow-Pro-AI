@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   TrendingUp,
@@ -102,12 +101,10 @@ export default function AnalyticsPage() {
           {analyticsCards.map((card, index) => {
             const Icon = card.icon;
             return (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="p-6 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-slate-600 transition-all"
+                className="p-6 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-slate-600 transition-all animate-in slide-in-from-bottom-4 duration-300"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className={`p-3 rounded-lg bg-gradient-to-br ${card.color}`}>
@@ -126,36 +123,32 @@ export default function AnalyticsPage() {
                 </div>
                 <p className="text-slate-400 text-sm mb-1">{card.title}</p>
                 <p className="text-2xl font-bold text-white">{card.value}</p>
-              </motion.div>
+              </div>
             );
           })}
         </div>
 
         {/* Detailed Analytics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="p-6 rounded-lg bg-slate-800/50 border border-slate-700"
+          <div
+            className="p-6 rounded-lg bg-slate-800/50 border border-slate-700 animate-in slide-in-from-bottom-4 duration-300"
+            style={{ animationDelay: '400ms' }}
           >
             <h2 className="text-lg font-semibold text-white mb-4">Session Duration</h2>
             <p className="text-3xl font-bold text-white">
               {data.averageSessionDuration.toFixed(2)}m
             </p>
             <p className="text-sm text-slate-400 mt-2">Average session duration</p>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="p-6 rounded-lg bg-slate-800/50 border border-slate-700"
+          <div
+            className="p-6 rounded-lg bg-slate-800/50 border border-slate-700 animate-in slide-in-from-bottom-4 duration-300"
+            style={{ animationDelay: '500ms' }}
           >
             <h2 className="text-lg font-semibold text-white mb-4">Bounce Rate</h2>
             <p className="text-3xl font-bold text-white">{data.bounceRate}%</p>
             <p className="text-sm text-slate-400 mt-2">Percentage of bounced sessions</p>
-          </motion.div>
+          </div>
         </div>
       </div>
     </DashboardLayout>

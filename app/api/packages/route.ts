@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/db/mongodb';
-import Package from '@/lib/models/Package';
+import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+    }
 
-    const packages = await Package.find({ isActive: true }).sort({ price: 1 });
+    const { data: packages, error } = await supabaseAdmin
+      .from('packages')
+      .select('*')
+      .eq('is_active', true)
+      .order('price', { ascending: true });
 
-    return NextResponse.json({ packages });
+    if (error) {
+      return NextResponse.json({ error: 'Failed to fetch packages' }, { status: 500 });
+    }
+
+    return NextResponse.json({ packages: packages || [] });
   } catch (error) {
     console.error('Get packages error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
-import connectDB from '@/lib/db/mongodb';
-import Payment from '@/lib/models/Payment';
+import { supabaseAdmin } from '@/lib/supabase/client';
 import { hasPermission, UserRole } from '@/lib/auth/rbac';
 
 export async function GET(
@@ -9,8 +8,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await connectDB();
-
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -22,18 +19,20 @@ export async function GET(
     }
 
     const { id } = await params;
-    const payment = await Payment.findById(id).populate('adId', 'title status');
+    const { data: payment, error } = await supabaseAdmin
+      .from('payments')
+      .select('*, ads(title, status, user_id)')
+      .eq('id', id)
+      .single();
 
-    if (!payment) {
+    if (error || !payment) {
       return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
     }
 
     // Check permission
-    if (payload.role === 'client') {
-      // Clients can only view their own payments
-      const Ad = (await import('@/lib/models/Ad')).default;
-      const ad = await Ad.findById(payment.adId);
-      if (ad?.userId.toString() !== payload.userId) {
+    if (payload.role === 'user') {
+      // Users can only view their own payments
+      if (payment.ads?.user_id !== payload.userId) {
         return NextResponse.json({ error: 'Access denied' }, { status: 403 });
       }
     }
@@ -50,8 +49,6 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await connectDB();
-
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -68,30 +65,51 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { status, rejectionReason } = body;
+    const { status, rejection_reason } = body;
 
     const { id } = await params;
-    const payment = await Payment.findById(id);
-    if (!payment) {
+    
+    // Get payment
+    const { data: payment, error: fetchError } = await supabaseAdmin
+      .from('payments')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (fetchError || !payment) {
       return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
     }
 
-    payment.status = status;
-    if (rejectionReason) {
-      payment.rejectionReason = rejectionReason;
+    // Update payment
+    const updateData: any = {
+      status,
+      verified_by: payload.userId,
+      verified_at: new Date().toISOString(),
+    };
+    if (rejection_reason) {
+      updateData.rejection_reason = rejection_reason;
     }
-    payment.verifiedBy = payload.userId;
-    payment.verifiedAt = new Date();
 
-    await payment.save();
+    const { data: updatedPayment, error } = await supabaseAdmin
+      .from('payments')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
 
-    // If payment is verified, update ad status
+    if (error) {
+      return NextResponse.json({ error: 'Failed to update payment' }, { status: 500 });
+    }
+
+    // If payment is verified, update ad status to paid/pending_review
     if (status === 'verified') {
-      const { verifyPayment } = await import('@/lib/utils/ad-workflow');
-      await verifyPayment(payment.adId, payload.userId, payload.role);
+      await supabaseAdmin
+        .from('ads')
+        .update({ status: 'pending_review' })
+        .eq('id', payment.ad_id);
     }
 
-    return NextResponse.json({ success: true, payment });
+    return NextResponse.json({ success: true, payment: updatedPayment });
   } catch (error) {
     console.error('Update payment error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

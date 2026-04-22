@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { FileText, Shield, Users, DollarSign, Gavel } from 'lucide-react';
 import TopNavbar from '@/components/layout/TopNavbar';
 
@@ -50,14 +49,12 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <TopNavbar />
-      
+
       <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+          <div
+            className="text-center mb-12 animate-in slide-in-from-bottom-4 duration-300"
           >
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--primary-color)] to-purple-600 mb-6">
               <Gavel className="w-8 h-8 text-white" />
@@ -68,29 +65,26 @@ export default function TermsPage() {
             <p className="text-lg text-[var(--muted-foreground)]">
               Last updated: January 2025
             </p>
-          </motion.div>
+          </div>
 
           {/* Last Updated Notice */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8 p-4 rounded-xl bg-[var(--surface)] border border-[var(--border-color)]"
+          <div
+            className="mb-8 p-4 rounded-xl bg-[var(--surface)] border border-[var(--border-color)] animate-in slide-in-from-bottom-4 duration-300"
+            style={{ animationDelay: '100ms' }}
           >
             <p className="text-sm text-[var(--muted-foreground)] text-center">
-              Please read these terms carefully. By using AdFlow Pro, you agree to comply with 
+              Please read these terms carefully. By using AdFlow Pro, you agree to comply with
               all applicable laws and our community guidelines.
             </p>
-          </motion.div>
+          </div>
 
           {/* Sections */}
           <div className="space-y-6">
             {sections.map((section, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + index * 0.1 }}
+                className="animate-in slide-in-from-bottom-4 duration-300"
+                style={{ animationDelay: `${100 + index * 100}ms` }}
               >
                 <div className="glass-card p-6">
                   <div className="flex items-start gap-4">
@@ -107,16 +101,14 @@ export default function TermsPage() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {/* Contact */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="mt-12 text-center"
+          <div
+            className="mt-12 text-center animate-in slide-in-from-bottom-4 duration-300"
+            style={{ animationDelay: '600ms' }}
           >
             <p className="text-[var(--muted-foreground)] mb-4">
               Questions about our Terms?
@@ -127,7 +119,7 @@ export default function TermsPage() {
             >
               Contact Legal Team
             </a>
-          </motion.div>
+          </div>
         </div>
       </main>
     </div>

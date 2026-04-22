@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   Search,
@@ -101,10 +100,8 @@ export default function PaymentsPage() {
 
         {/* Revenue Summary */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-6 rounded-lg bg-slate-800/50 border border-slate-700"
+          <div
+            className="p-6 rounded-lg bg-slate-800/50 border border-slate-700 animate-in slide-in-from-bottom-4 duration-300"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -115,13 +112,11 @@ export default function PaymentsPage() {
                 <DollarSign className="w-6 h-6 text-green-400" />
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="p-6 rounded-lg bg-slate-800/50 border border-slate-700"
+          <div
+            className="p-6 rounded-lg bg-slate-800/50 border border-slate-700 animate-in slide-in-from-bottom-4 duration-300"
+            style={{ animationDelay: '100ms' }}
           >
             <div className="flex items-center justify-between">
               <div>
@@ -132,7 +127,7 @@ export default function PaymentsPage() {
                 <CreditCard className="w-6 h-6 text-blue-400" />
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Controls */}
@@ -160,10 +155,8 @@ export default function PaymentsPage() {
         </div>
 
         {/* Payments Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-lg bg-slate-800/50 border border-slate-700 overflow-hidden"
+        <div
+          className="rounded-lg bg-slate-800/50 border border-slate-700 overflow-hidden animate-in slide-in-from-bottom-4 duration-300"
         >
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -180,12 +173,10 @@ export default function PaymentsPage() {
               </thead>
               <tbody className="divide-y divide-slate-700">
                 {filteredPayments.map((payment, index) => (
-                  <motion.tr
+                  <tr
                     key={payment.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="hover:bg-slate-700/30 transition-colors"
+                    className="hover:bg-slate-700/30 transition-colors animate-in fade-in duration-300"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <td className="px-6 py-4 text-sm font-mono text-slate-300">{payment.transactionId}</td>
                     <td className="px-6 py-4 text-sm text-white">{payment.userName}</td>
@@ -205,12 +196,12 @@ export default function PaymentsPage() {
                         <MoreHorizontal className="w-4 h-4 text-slate-400" />
                       </button>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </motion.div>
+        </div>
 
         {filteredPayments.length === 0 && !isLoading && (
           <div className="text-center py-8">

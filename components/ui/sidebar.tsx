@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   FileText,
@@ -103,17 +102,12 @@ export default function Sidebar({ role, collapsed = false, onCollapse }: Sidebar
   return (
     <>
       {/* Mobile overlay */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsMobileOpen(false)}
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          />
-        )}
-      </AnimatePresence>
+      {isMobileOpen && (
+        <div
+          onClick={() => setIsMobileOpen(false)}
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-in fade-in duration-200"
+        />
+      )}
 
       {/* Mobile menu button */}
       <button
@@ -124,32 +118,27 @@ export default function Sidebar({ role, collapsed = false, onCollapse }: Sidebar
       </button>
 
       {/* Sidebar */}
-      <motion.aside
-        initial={{ x: -300 }}
-        animate={{ x: isMobileOpen ? 0 : -300 }}
-        className="lg:static fixed left-0 top-0 h-full z-50 lg:z-auto lg:block bg-black/80 backdrop-blur-xl border-r border-purple-500/20"
+      <aside
+        className={`lg:static fixed left-0 top-0 h-full z-50 lg:z-auto lg:block bg-black/80 backdrop-blur-xl border-r border-purple-500/20 transition-transform duration-300 ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
         style={{ width: collapsed ? '80px' : '280px' }}
       >
         <div className="h-full flex flex-col">
           {/* Logo */}
           <div className="p-6 border-b border-purple-500/20">
-            <motion.div
-              animate={{ opacity: collapsed ? 0 : 1 }}
-              className="flex items-center gap-3"
+            <div
+              className={`flex items-center gap-3 transition-opacity duration-300 ${collapsed ? 'opacity-0' : 'opacity-100'}`}
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                 <span className="text-white font-bold text-xl">A</span>
               </div>
               {!collapsed && (
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="text-white font-bold text-xl"
-                >
+                <div className="text-white font-bold text-xl animate-in slide-in-from-left-2 duration-200">
                   AdFlow Pro
-                </motion.div>
+                </div>
               )}
-            </motion.div>
+            </div>
           </div>
 
           {/* Navigation */}
@@ -158,32 +147,22 @@ export default function Sidebar({ role, collapsed = false, onCollapse }: Sidebar
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
               return (
                 <Link key={item.href} href={item.href} onClick={() => setIsMobileOpen(false)}>
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] ${
                       isActive
                         ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
                         : 'text-gray-400 hover:bg-white/5 hover:text-white'
                     }`}
                   >
                     {item.icon}
-                    <AnimatePresence>
-                      {!collapsed && (
-                        <motion.span
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -10 }}
-                          className="flex-1"
-                        >
-                          {item.label}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
+                    {!collapsed && (
+                      <span className="flex-1 animate-in slide-in-from-left-2 duration-200">
+                        {item.label}
+                      </span>
+                    )}
                     {isActive && !collapsed && (
                       <ChevronRight className="w-4 h-4" />
                     )}
-                  </motion.div>
+                  </div>
                 </Link>
               );
             })}
@@ -206,21 +185,15 @@ export default function Sidebar({ role, collapsed = false, onCollapse }: Sidebar
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all w-full"
             >
               <LogOut className="w-5 h-5" />
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                  >
-                    Logout
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              {!collapsed && (
+                <span className="animate-in slide-in-from-left-2 duration-200">
+                  Logout
+                </span>
+              )}
             </button>
           </div>
         </div>
-      </motion.aside>
+      </aside>
     </>
   );
 }

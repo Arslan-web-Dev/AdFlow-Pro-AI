@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
-import connectDB from '@/lib/db/mongodb';
-import Log from '@/lib/models/Log';
+import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+    }
 
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
@@ -20,28 +21,30 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '20');
     const page = parseInt(searchParams.get('page') || '1');
-    const unreadOnly = searchParams.get('unreadOnly') === 'true';
 
-    // Build query based on user role
-    const query: any = {};
-    if (payload.role === 'client') {
-      query.userId = payload.userId;
+    let query = supabaseAdmin
+      .from('logs')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range((page - 1) * limit, page * limit - 1);
+
+    if (payload.role === 'user') {
+      query = query.eq('user_id', payload.userId);
     }
 
-    const logs = await Log.find(query)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit);
+    const { data: logs, error, count } = await query;
 
-    const total = await Log.countDocuments(query);
+    if (error) {
+      return NextResponse.json({ error: 'Failed to fetch notifications' }, { status: 500 });
+    }
 
     return NextResponse.json({
-      notifications: logs,
+      notifications: logs || [],
       pagination: {
         page,
         limit,
-        total,
-        pages: Math.ceil(total / limit),
+        total: count || 0,
+        pages: Math.ceil((count || 0) / limit),
       },
     });
   } catch (error) {
@@ -50,10 +53,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/notifications - Create notification (Admin/System only)
+// POST /api/notifications - Create notification (Admin only)
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+    }
 
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
@@ -65,20 +70,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Only admin or system can create notifications
-    if (payload.role !== 'admin' && payload.role !== 'super_admin') {
+    if (payload.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await request.json();
     const { userId, action, level, details } = body;
 
-    const notification = await Log.create({
-      userId,
-      action,
-      level: level || 'info',
-      details,
-    });
+    const { data: notification, error } = await supabaseAdmin
+      .from('logs')
+      .insert({
+        user_id: userId,
+        action,
+        level: level || 'info',
+        details,
+      })
+      .select()
+      .single();
+
+    if (error || !notification) {
+      return NextResponse.json({ error: 'Failed to create notification' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, notification }, { status: 201 });
   } catch (error) {

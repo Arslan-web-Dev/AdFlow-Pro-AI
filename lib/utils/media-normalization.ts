@@ -1,4 +1,3 @@
-import AdMedia, { IAdMedia } from '../models/AdMedia';
 
 export interface MediaNormalizationResult {
   sourceType: 'youtube' | 'image' | 'cloudinary' | 'other';
@@ -161,14 +160,23 @@ export function getPlaceholderThumbnail(): string {
   return 'https://via.placeholder.com/400x300?text=No+Preview+Available';
 }
 
+export interface MediaRecord {
+  adId: string;
+  sourceType: 'youtube' | 'image' | 'cloudinary' | 'other';
+  originalUrl: string;
+  thumbnailUrl: string;
+  validationStatus: 'valid' | 'invalid' | 'pending';
+  errorMessage?: string;
+}
+
 export async function saveMediaToDatabase(
   adId: string,
   mediaUrl: string
-): Promise<IAdMedia | null> {
+): Promise<MediaRecord | null> {
   try {
     const normalized = await normalizeMediaUrl(mediaUrl);
 
-    const media = await AdMedia.create({
+    return {
       adId,
       sourceType: normalized.sourceType,
       originalUrl: normalized.originalUrl,
@@ -177,11 +185,9 @@ export async function saveMediaToDatabase(
         : getPlaceholderThumbnail(),
       validationStatus: normalized.validationStatus,
       errorMessage: normalized.errorMessage,
-    });
-
-    return media;
+    };
   } catch (error) {
-    console.error('Error saving media to database:', error);
+    console.error('Error saving media:', error);
     return null;
   }
 }

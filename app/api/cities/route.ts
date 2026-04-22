@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
-import connectDB from '@/lib/db/mongodb';
-import City from '@/lib/models/City';
+import { supabaseAdmin } from '@/lib/supabase/client';
 import { hasPermission } from '@/lib/auth/rbac';
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+    }
 
-    const cities = await City.find({ isActive: true }).sort({ name: 1 });
+    const { data: cities, error } = await supabaseAdmin
+      .from('cities')
+      .select('*')
+      .eq('is_active', true)
+      .order('name', { ascending: true });
 
-    return NextResponse.json({ cities });
+    if (error) {
+      return NextResponse.json({ error: 'Failed to fetch cities' }, { status: 500 });
+    }
+
+    return NextResponse.json({ cities: cities || [] });
   } catch (error) {
     console.error('Get cities error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -19,7 +28,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+    }
 
     const token = request.cookies.get('token')?.value;
     if (!token) {
@@ -31,7 +42,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Check permission
     if (!hasPermission(payload.role as any, 'canManageSystem')) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
@@ -39,12 +49,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, slug, country } = body;
 
-    const city = await City.create({
-      name,
-      slug,
-      country,
-      isActive: true,
-    });
+    const { data: city, error } = await supabaseAdmin
+      .from('cities')
+      .insert({ name, slug, country, is_active: true })
+      .select()
+      .single();
+
+    if (error || !city) {
+      return NextResponse.json({ error: 'Failed to create city' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, city });
   } catch (error) {

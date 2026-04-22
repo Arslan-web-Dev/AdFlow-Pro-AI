@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   Search,
@@ -113,10 +112,8 @@ export default function UsersPage() {
         </div>
 
         {/* Users Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-lg bg-slate-800/50 border border-slate-700 overflow-hidden"
+        <div
+          className="rounded-lg bg-slate-800/50 border border-slate-700 overflow-hidden animate-in slide-in-from-bottom-4 duration-300"
         >
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -133,12 +130,10 @@ export default function UsersPage() {
               </thead>
               <tbody className="divide-y divide-slate-700">
                 {filteredUsers.map((user, index) => (
-                  <motion.tr
+                  <tr
                     key={user.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="hover:bg-slate-700/30 transition-colors"
+                    className="hover:bg-slate-700/30 transition-colors animate-in fade-in duration-300"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <td className="px-6 py-4 text-sm text-white">{user.name}</td>
                     <td className="px-6 py-4 text-sm text-slate-300">{user.email}</td>
@@ -162,12 +157,12 @@ export default function UsersPage() {
                         <MoreHorizontal className="w-4 h-4 text-slate-400" />
                       </button>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </motion.div>
+        </div>
 
         {filteredUsers.length === 0 && !isLoading && (
           <div className="text-center py-8">

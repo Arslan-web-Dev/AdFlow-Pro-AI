@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
-import connectDB from '@/lib/db/mongodb';
-import Ad from '@/lib/models/Ad';
+import { supabaseAdmin } from '@/lib/supabase/client';
 import { hasPermission, UserRole } from '@/lib/auth/rbac';
-import { setExpireDate } from '@/lib/utils/package-engine';
-import { saveMediaToDatabase } from '@/lib/utils/media-normalization';
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
-
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -27,13 +22,13 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      packageId,
-      categoryId,
-      cityId,
+      package_id,
+      category_id,
+      city_id,
       title,
       description,
       tags,
-      mediaUrls,
+      media_urls,
     } = body;
 
     // Generate slug from title
@@ -43,32 +38,36 @@ export async function POST(request: NextRequest) {
       .replace(/(^-|-$)/g, '');
 
     // Check if slug already exists
-    const existingAd = await Ad.findOne({ slug });
+    const { data: existingAd } = await supabaseAdmin
+      .from('ads')
+      .select('id')
+      .eq('slug', slug)
+      .single();
+    
     if (existingAd) {
       return NextResponse.json({ error: 'Slug already exists' }, { status: 400 });
     }
 
     // Create ad
-    const ad = await Ad.create({
-      userId: payload.userId,
-      packageId,
-      categoryId,
-      cityId,
-      title,
-      slug,
-      description,
-      tags: tags || [],
-      status: 'draft',
-    });
+    const { data: ad, error } = await supabaseAdmin
+      .from('ads')
+      .insert({
+        user_id: payload.userId,
+        package_id,
+        category_id,
+        city_id,
+        title,
+        slug,
+        description,
+        tags: tags || [],
+        status: 'draft',
+      })
+      .select()
+      .single();
 
-    // Set expire date based on package
-    await setExpireDate(ad._id.toString(), packageId);
-
-    // Save media if provided
-    if (mediaUrls && mediaUrls.length > 0) {
-      for (const mediaUrl of mediaUrls) {
-        await saveMediaToDatabase(ad._id.toString(), mediaUrl);
-      }
+    if (error) {
+      console.error('Create ad error:', error);
+      return NextResponse.json({ error: 'Failed to create ad' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, ad });
@@ -80,8 +79,6 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
-
     const token = extractTokenFromHeader(request.headers.get('authorization'));
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -95,18 +92,24 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 
-    const query: any = { userId: payload.userId };
+    let query = supabaseAdmin
+      .from('ads')
+      .select('*, categories(name), cities(name), packages(name, duration_days)')
+      .eq('user_id', payload.userId)
+      .order('created_at', { ascending: false });
+    
     if (status) {
-      query.status = status;
+      query = query.eq('status', status);
     }
 
-    const ads = await Ad.find(query)
-      .sort({ createdAt: -1 })
-      .populate('categoryId', 'name')
-      .populate('cityId', 'name')
-      .populate('packageId', 'name durationDays');
+    const { data: ads, error } = await query;
 
-    return NextResponse.json({ ads });
+    if (error) {
+      console.error('Get client ads error:', error);
+      return NextResponse.json({ error: 'Failed to fetch ads' }, { status: 500 });
+    }
+
+    return NextResponse.json({ ads: ads || [] });
   } catch (error) {
     console.error('Get client ads error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

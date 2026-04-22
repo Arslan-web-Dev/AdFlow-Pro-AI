@@ -1,9 +1,4 @@
-import connectDB from '../db/mongodb';
-import Ad, { AdStatus } from '../models/Ad';
-import Log from '../models/Log';
-import AdStatusHistory from '../models/AdStatusHistory';
-import AuditLog from '../models/AuditLog';
-import { syncAdToSupabase } from '../supabase/sync';
+import { supabaseAdmin } from '../supabase/client';
 
 export const workflowTransitions: Record<AdStatus, AdStatus[]> = {
   draft: ['submitted'],
@@ -24,79 +19,57 @@ export function isValidTransition(currentStatus: AdStatus, newStatus: AdStatus):
 
 export async function transitionAdStatus(
   adId: string,
-  newStatus: AdStatus,
+  newStatus: string,
   userId: string,
   userRole: string,
   reason?: string
 ) {
   try {
-    await connectDB();
+    if (!supabaseAdmin) {
+      return { success: false, error: 'Database not configured' };
+    }
 
-    const ad = await Ad.findById(adId);
-    if (!ad) {
+    // Get current ad
+    const { data: ad, error: fetchError } = await supabaseAdmin
+      .from('ads')
+      .select('status, user_id')
+      .eq('id', adId)
+      .single();
+
+    if (fetchError || !ad) {
       return { success: false, error: 'Ad not found' };
     }
 
-    // Check if transition is valid
-    if (!isValidTransition(ad.status, newStatus)) {
-      return { 
-        success: false, 
-        error: `Cannot transition from ${ad.status} to ${newStatus}` 
-      };
-    }
-
-    // Update status
     const previousStatus = ad.status;
-    ad.status = newStatus;
 
-    if (reason) {
-      ad.rejectionReason = reason;
+    // Update ad status
+    const updateData: any = { status: newStatus, updated_at: new Date().toISOString() };
+    if (reason) updateData.rejection_reason = reason;
+    if (userId && ['approved', 'rejected'].includes(newStatus)) {
+      updateData.moderator_id = userId;
     }
 
-    if (userId && ['under_review', 'payment_verified', 'rejected'].includes(newStatus)) {
-      ad.moderatorId = userId;
+    const { data: updated, error } = await supabaseAdmin
+      .from('ads')
+      .update(updateData)
+      .eq('id', adId)
+      .select()
+      .single();
+
+    if (error || !updated) {
+      return { success: false, error: 'Failed to update ad status' };
     }
 
-    await ad.save();
-
-    // Log the transition in Log
-    await Log.create({
+    // Log the transition
+    await supabaseAdmin.from('logs').insert({
       level: 'info',
-      action: `ad_${newStatus}` as any,
-      userId: userId || ad.userId,
-      adId: ad._id.toString(),
-      details: {
-        previousStatus,
-        newStatus,
-        reason,
-      },
+      action: `ad_${newStatus}`,
+      user_id: userId || ad.user_id,
+      ad_id: adId,
+      details: { previousStatus, newStatus, reason },
     });
 
-    // Create status history record
-    await AdStatusHistory.create({
-      adId: ad._id.toString(),
-      previousStatus,
-      newStatus,
-      changedBy: userId,
-      changedByRole: userRole,
-      note: reason,
-    });
-
-    // Create audit log
-    await AuditLog.create({
-      actorId: userId,
-      actorRole: userRole,
-      actionType: newStatus,
-      targetType: 'ad',
-      targetId: ad._id.toString(),
-      oldValue: previousStatus,
-      newValue: newStatus,
-    });
-
-    // Sync to Supabase
-    await syncAdToSupabase(ad._id.toString());
-
-    return { success: true, ad };
+    return { success: true, ad: updated };
   } catch (error) {
     console.error('Ad status transition error:', error);
     return { success: false, error: (error as Error).message };
