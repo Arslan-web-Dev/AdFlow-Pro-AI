@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Bell,
@@ -109,15 +108,8 @@ export default function TopNavbar({ onMenuClick, showSearch = true }: TopNavbarP
               <ChevronDown className={`w-4 h-4 text-[var(--text-muted)] transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
             </button>
 
-            <AnimatePresence>
-              {showProfileMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 mt-2 w-56 py-2 rounded-xl bg-[var(--background-elevated)] border border-[var(--border)] shadow-xl"
-                >
+            {showProfileMenu && (
+              <div className="absolute right-0 mt-2 w-56 py-2 rounded-xl bg-[var(--background-elevated)] border border-[var(--border)] shadow-xl">
                   <div className="px-4 py-3 border-b border-[var(--border)]">
                     <p className="font-semibold text-[var(--text-primary)]">{user?.name}</p>
                     <p className="text-sm text-[var(--text-secondary)]">{user?.email}</p>
@@ -151,9 +143,8 @@ export default function TopNavbar({ onMenuClick, showSearch = true }: TopNavbarP
                       Sign out
                     </button>
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
           </div>
         </div>
       </div>

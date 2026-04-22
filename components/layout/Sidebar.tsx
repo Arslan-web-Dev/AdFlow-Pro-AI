@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
   Megaphone,
@@ -140,12 +139,9 @@ export default function Sidebar({ className = '' }: SidebarProps) {
       {/* Logo */}
       <div className="p-6">
         <Link href="/" className="flex items-center gap-3">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="w-10 h-10 rounded-xl bg-[var(--primary-gradient)] flex items-center justify-center shadow-lg shadow-[var(--primary-color)]/20"
-          >
+          <div className="w-10 h-10 rounded-xl bg-[var(--primary-gradient)] flex items-center justify-center shadow-lg shadow-[var(--primary-color)]/20">
             <span className="text-lg font-bold text-white">A</span>
-          </motion.div>
+          </div>
           {!isCollapsed && (
             <span className="text-xl font-bold gradient-text">AdFlow</span>
           )}
@@ -156,11 +152,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
       <div className={`px-4 mb-6 ${isCollapsed ? 'px-2' : ''}`}>
         <div className={`glass-card p-4 ${isCollapsed ? 'p-2' : ''}`}>
           <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ y: [0, -4, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              className="w-10 h-10 rounded-full bg-[var(--primary-gradient)] flex items-center justify-center flex-shrink-0"
-            >
+            <div className="w-10 h-10 rounded-full bg-[var(--primary-gradient)] flex items-center justify-center flex-shrink-0">
               {user.avatar ? (
                 <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
               ) : (
@@ -168,7 +160,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                   {user.name.charAt(0).toUpperCase()}
                 </span>
               )}
-            </motion.div>
+            </div>
             {!isCollapsed && (
               <div className="min-w-0">
                 <p className="font-semibold text-[var(--text-primary)] truncate">{user.name}</p>
