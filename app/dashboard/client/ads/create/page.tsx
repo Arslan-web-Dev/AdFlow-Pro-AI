@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -20,9 +19,6 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import GlareCard from '@/components/animations/GlareCard';
-import ClickSpark from '@/components/animations/ClickSpark';
-import MagnetButton from '@/components/animations/MagnetButton';
 
 interface AIResponse {
   title: string;
@@ -199,26 +195,16 @@ export default function CreateAdPage() {
         </div>
 
         {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-3"
-          >
+          <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-400" />
             <span className="text-red-400">{error}</span>
-          </motion.div>
+          </div>
         )}
 
         {/* Step 1: Basic Info */}
-        <AnimatePresence mode="wait">
-          {currentStep === 0 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              <GlareCard className="glass-card p-6">
+        {currentStep === 0 && (
+          <div>
+              <div className="glass-card p-6">
                 <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Basic Information</h2>
                 
                 <div className="space-y-5">
@@ -298,19 +284,14 @@ export default function CreateAdPage() {
                     />
                   </div>
                 </div>
-              </GlareCard>
-            </motion.div>
+              </div>
+            </div>
           )}
 
           {/* Step 2: Media */}
           {currentStep === 1 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              <GlareCard className="glass-card p-6">
+            <div>
+              <div className="glass-card p-6">
                 <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Add Photos</h2>
                 
                 <div className="border-2 border-dashed border-[var(--border)] rounded-xl p-12 text-center hover:border-[var(--primary-color)] transition-colors cursor-pointer">
@@ -333,19 +314,14 @@ export default function CreateAdPage() {
                     ))}
                   </div>
                 )}
-              </GlareCard>
-            </motion.div>
+              </div>
+            </div>
           )}
 
           {/* Step 3: AI Generate */}
           {currentStep === 2 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              <GlareCard className="glass-card p-6">
+            <div>
+              <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-semibold text-[var(--text-primary)]">AI Enhancement</h2>
                   <span className="text-xs text-[var(--text-muted)]">Optional</span>
@@ -355,34 +331,26 @@ export default function CreateAdPage() {
                   Let AI help you improve your ad with better titles, descriptions, tags, and pricing suggestions.
                 </p>
 
-                <ClickSpark>
-                  <MagnetButton strength={0.15}>
-                    <button
-                      onClick={handleGenerateWithAI}
-                      disabled={isGenerating}
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-5 h-5" />
-                          Generate with AI
-                        </>
-                      )}
-                    </button>
-                  </MagnetButton>
-                </ClickSpark>
+                <button
+                  onClick={handleGenerateWithAI}
+                  disabled={isGenerating}
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      Generate with AI
+                    </>
+                  )}
+                </button>
 
                 {aiResponse && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-6 p-4 rounded-lg bg-[var(--surface)]"
-                  >
+                  <div className="mt-6 p-4 rounded-lg bg-[var(--surface)]">
                     <div className="flex items-center gap-2 mb-3">
                       <Check className="w-5 h-5 text-[var(--accent-success)]" />
                       <span className="text-[var(--accent-success)] font-medium">AI Generated Content</span>
@@ -390,7 +358,7 @@ export default function CreateAdPage() {
                     <p className="text-sm text-[var(--text-secondary)]">
                       AI has suggested improvements that have been applied to your ad.
                     </p>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* Tags */}
@@ -434,19 +402,14 @@ export default function CreateAdPage() {
                     ))}
                   </div>
                 </div>
-              </GlareCard>
-            </motion.div>
+              </div>
+            </div>
           )}
 
           {/* Step 4: Review */}
           {currentStep === 3 && (
-            <motion.div
-              key="step4"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              <GlareCard className="glass-card p-6">
+            <div>
+              <div className="glass-card p-6">
                 <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Review & Submit</h2>
                 
                 <div className="space-y-4">
@@ -484,31 +447,26 @@ export default function CreateAdPage() {
                   </div>
                 </div>
 
-                <ClickSpark>
-                  <MagnetButton strength={0.15}>
-                    <button
-                      onClick={handleSubmit}
-                      disabled={isSubmitting}
-                      className="w-full mt-6 py-4 rounded-xl bg-[var(--primary-gradient)] text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-5 h-5" />
-                          Submit for Review
-                        </>
-                      )}
-                    </button>
-                  </MagnetButton>
-                </ClickSpark>
-              </GlareCard>
-            </motion.div>
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="w-full mt-6 py-4 rounded-xl bg-[var(--primary-gradient)] text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5" />
+                      Submit for Review
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           )}
-        </AnimatePresence>
 
         {/* Navigation Buttons */}
         <div className="flex items-center justify-between mt-6">

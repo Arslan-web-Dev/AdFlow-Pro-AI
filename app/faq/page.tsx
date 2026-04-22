@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, HelpCircle } from 'lucide-react';
 import TopNavbar from '@/components/layout/TopNavbar';
-import GlareCard from '@/components/animations/GlareCard';
 
 const faqs = [
   {
@@ -113,19 +112,17 @@ export default function FAQPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <GlareCard>
-              <div className="p-6 sm:p-8">
-                {faqs.map((faq, index) => (
-                  <FAQItem
-                    key={index}
-                    question={faq.question}
-                    answer={faq.answer}
-                    isOpen={openIndex === index}
-                    onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                  />
-                ))}
-              </div>
-            </GlareCard>
+            <div className="glass-card p-6 sm:p-8">
+              {faqs.map((faq, index) => (
+                <FAQItem
+                  key={index}
+                  question={faq.question}
+                  answer={faq.answer}
+                  isOpen={openIndex === index}
+                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                />
+              ))}
+            </div>
           </motion.div>
 
           {/* Contact CTA */}

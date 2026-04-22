@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -20,7 +19,6 @@ import {
   Clock
 } from 'lucide-react';
 import Button from '@/components/ui/button';
-import GlareCard from '@/components/animations/GlareCard';
 import TopNavbar from '@/components/layout/TopNavbar';
 
 interface Ad {
@@ -110,11 +108,7 @@ export default function AdDetailPage() {
       
       <main className="pt-20 pb-16 px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
+        <div className="mb-6">
           <Link 
             href="/marketplace"
             className="flex items-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
@@ -122,14 +116,14 @@ export default function AdDetailPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Marketplace
           </Link>
-        </motion.div>
+        </div>
 
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Left Column - Images & Details */}
             <div className="lg:col-span-2 space-y-6">
               {/* Main Image */}
-              <GlareCard>
+              <div className="glass-card rounded-2xl p-0 overflow-hidden">
                 <div className="relative aspect-video bg-[var(--surface)] rounded-2xl overflow-hidden">
                   {ad.media[selectedImage] ? (
                     <Image
@@ -149,7 +143,7 @@ export default function AdDetailPage() {
                     </div>
                   )}
                 </div>
-              </GlareCard>
+              </div>
 
               {/* Thumbnail Gallery */}
               {ad.media.length > 1 && (
@@ -176,12 +170,7 @@ export default function AdDetailPage() {
               )}
 
               {/* Ad Details */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="glass-card rounded-2xl p-6"
-              >
+              <div className="glass-card rounded-2xl p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <span className="text-[var(--primary-color)] text-sm font-medium uppercase tracking-wider">
@@ -255,18 +244,13 @@ export default function AdDetailPage() {
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </div>
             </div>
 
             {/* Right Column - Contact & Actions */}
             <div className="space-y-6">
               {/* Contact Card */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="glass-card rounded-2xl p-6 sticky top-24"
-              >
+              <div className="glass-card rounded-2xl p-6 sticky top-24">
                 <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4">
                   Contact Seller
                 </h3>
@@ -301,15 +285,10 @@ export default function AdDetailPage() {
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Send Message
                 </Button>
-              </motion.div>
+              </div>
 
               {/* Safety Tips */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="glass-card rounded-2xl p-6"
-              >
+              <div className="glass-card rounded-2xl p-6">
                 <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">
                   Safety Tips
                 </h3>
@@ -327,7 +306,7 @@ export default function AdDetailPage() {
                     Never share financial information
                   </li>
                 </ul>
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -16,9 +15,6 @@ import {
   Heart,
   ChevronDown,
 } from 'lucide-react';
-import GlareCard from '@/components/animations/GlareCard';
-import MagnetButton from '@/components/animations/MagnetButton';
-import ClickSpark from '@/components/animations/ClickSpark';
 
 // ThemeSwitcher removed temporarily for build fix
 // const ThemeSwitcher = dynamic(() => import('@/components/theme/ThemeSwitcher'), { ssr: false });
@@ -241,11 +237,7 @@ export default function MarketplacePage() {
 
         {/* Error State */}
         {!loading && error && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-20"
-          >
+          <div className="text-center py-20">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
               <Search className="w-10 h-10 text-red-500" />
             </div>
@@ -262,16 +254,12 @@ export default function MarketplacePage() {
             >
               Try Again
             </button>
-          </motion.div>
+          </div>
         )}
 
         {/* Empty State */}
         {!loading && !error && filteredAds.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-20"
-          >
+          <div className="text-center py-20">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[var(--surface)] flex items-center justify-center">
               <Search className="w-10 h-10 text-[var(--text-muted)]" />
             </div>
@@ -289,21 +277,16 @@ export default function MarketplacePage() {
             >
               Clear Filters
             </button>
-          </motion.div>
+          </div>
         )}
 
         {/* Ads Grid */}
         {!loading && !error && filteredAds.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredAds.map((ad, index) => (
-              <motion.div
-                key={ad._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
+            {filteredAds.map((ad) => (
+              <div key={ad._id}>
                 <Link href={`/ads/${ad.slug}`}>
-                  <GlareCard className="glass-card overflow-hidden group cursor-pointer h-full flex flex-col">
+                  <div className="glass-card overflow-hidden group cursor-pointer h-full flex flex-col">
                     {/* Image */}
                     <div className="relative h-48 overflow-hidden">
                       {ad.media && ad.media.length > 0 ? (
@@ -366,9 +349,9 @@ export default function MarketplacePage() {
                         </div>
                       )}
                     </div>
-                  </GlareCard>
+                  </div>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

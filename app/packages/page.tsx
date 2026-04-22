@@ -1,16 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import AntigravityBackground from '@/components/animations/antigravity-bg';
-import BlobCursor from '@/components/animations/blob-cursor';
-import GlassCard from '@/components/ui/glass-card';
-import Button from '@/components/ui/button';
-import FadeOnScroll from '@/components/animations/fade-on-scroll';
-import MagnetButton from '@/components/animations/magnet-button';
-import GlareHover from '@/components/animations/glare-hover';
-import { Sparkles, Clock, Star, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Sparkles, Clock, Star, CheckCircle } from 'lucide-react';
 
 interface Package {
   _id: string;
@@ -72,9 +64,6 @@ export default function PackagesPage() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden">
-      <BlobCursor />
-      <AntigravityBackground />
-      
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -82,11 +71,11 @@ export default function PackagesPage() {
             AdFlow Pro
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Login</Button>
+            <Link href="/login" className="px-4 py-2 rounded-lg hover:bg-white/10 transition-colors">
+              Login
             </Link>
-            <Link href="/register">
-              <Button variant="primary">Get Started</Button>
+            <Link href="/register" className="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 transition-colors">
+              Get Started
             </Link>
           </div>
         </div>
@@ -94,16 +83,11 @@ export default function PackagesPage() {
 
       <div className="pt-24 pb-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <FadeOnScroll>
-            <div className="text-center mb-12">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/20 border border-purple-500/30 mb-6"
-              >
-                <Sparkles className="w-4 h-4 text-purple-400" />
-                <span className="text-purple-300 text-sm font-medium">Pricing Packages</span>
-              </motion.div>
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/20 border border-purple-500/30 mb-6">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              <span className="text-purple-300 text-sm font-medium">Pricing Packages</span>
+            </div>
               
               <h1 className="text-5xl md:text-6xl font-bold mb-4">
                 Choose Your
@@ -115,14 +99,12 @@ export default function PackagesPage() {
                 Select the perfect package to maximize your ad visibility and reach
               </p>
             </div>
-          </FadeOnScroll>
 
           {/* Packages Grid */}
           <div className="grid md:grid-cols-3 gap-6">
-            {packages.map((pkg, index) => (
-              <FadeOnScroll key={pkg._id} delay={index * 0.1}>
-                <GlareHover>
-                  <GlassCard className={`p-6 h-full ${pkg.isFeatured ? 'border-2 border-yellow-500/50' : ''}`}>
+            {packages.map((pkg) => (
+              <div key={pkg._id}>
+                <div className={`p-6 h-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl ${pkg.isFeatured ? 'border-2 border-yellow-500/50' : ''}`}>
                     {pkg.isFeatured && (
                       <div className="absolute top-4 right-4">
                         <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />
@@ -171,14 +153,15 @@ export default function PackagesPage() {
                       </ul>
                     </div>
                     
-                    <MagnetButton>
-                      <Button variant={pkg.isFeatured ? 'primary' : 'secondary'} className="w-full">
-                        Select Package
-                      </Button>
-                    </MagnetButton>
-                  </GlassCard>
-                </GlareHover>
-              </FadeOnScroll>
+                    <button className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                      pkg.isFeatured 
+                        ? 'bg-yellow-500 hover:bg-yellow-600 text-black' 
+                        : 'bg-white/10 hover:bg-white/20 text-white'
+                    }`}>
+                      Select Package
+                    </button>
+                  </div>
+              </div>
             ))}
           </div>
         </div>

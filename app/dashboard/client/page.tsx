@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
   Megaphone,
@@ -16,8 +15,6 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import GlareCard from '@/components/animations/GlareCard';
-import ElectricBorder from '@/components/animations/ElectricBorder';
 
 interface Stats {
   totalAds: number;
@@ -105,14 +102,9 @@ export default function ClientDashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {statCards.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <GlareCard className="glass-card p-6 h-full">
+          {statCards.map((stat) => (
+            <div key={stat.label}>
+              <div className="glass-card p-6 h-full">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-[var(--text-secondary)]">{stat.label}</p>
@@ -124,20 +116,15 @@ export default function ClientDashboard() {
                     <stat.icon className={`w-5 h-5 ${stat.color}`} />
                   </div>
                 </div>
-              </GlareCard>
-            </motion.div>
+              </div>
+            </div>
           ))}
         </div>
 
         {/* Performance Chart Placeholder */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="lg:col-span-2"
-          >
-            <ElectricBorder className="glass-card p-6 rounded-2xl">
+          <div className="lg:col-span-2">
+            <div className="glass-card p-6 rounded-2xl">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-[var(--text-primary)]">Performance Overview</h2>
                 <select className="bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm text-[var(--text-primary)]">
@@ -150,12 +137,10 @@ export default function ClientDashboard() {
               {/* Simple bar chart visualization */}
               <div className="h-64 flex items-end justify-between gap-2 px-4">
                 {[40, 65, 45, 80, 55, 70, 60].map((height, i) => (
-                  <motion.div
+                  <div
                     key={i}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${height}%` }}
-                    transition={{ delay: 0.5 + i * 0.1, duration: 0.5 }}
                     className="flex-1 bg-[var(--primary-gradient)] rounded-t-lg opacity-60 hover:opacity-100 transition-opacity"
+                    style={{ height: `${height}%` }}
                   />
                 ))}
               </div>
@@ -168,16 +153,12 @@ export default function ClientDashboard() {
                 <span>Sat</span>
                 <span>Sun</span>
               </div>
-            </ElectricBorder>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <GlareCard className="glass-card p-6 h-full">
+          <div>
+            <div className="glass-card p-6 h-full">
               <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Quick Actions</h2>
               <div className="space-y-3">
                 <Link
@@ -213,16 +194,12 @@ export default function ClientDashboard() {
                   <ArrowRight className="w-4 h-4 text-[var(--text-muted)] ml-auto" />
                 </Link>
               </div>
-            </GlareCard>
-          </motion.div>
+            </div>
+          </div>
         </div>
 
         {/* Recent Ads */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
+        <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">Recent Ads</h2>
             <Link
@@ -296,7 +273,7 @@ export default function ClientDashboard() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
     </DashboardLayout>
   );

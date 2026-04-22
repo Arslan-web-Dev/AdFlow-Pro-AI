@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion';
 import { FileText, Shield, Users, DollarSign, Gavel } from 'lucide-react';
 import TopNavbar from '@/components/layout/TopNavbar';
-import GlareCard from '@/components/animations/GlareCard';
 
 const sections = [
   {
@@ -93,7 +92,7 @@ export default function TermsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + index * 0.1 }}
               >
-                <GlareCard className="p-6">
+                <div className="glass-card p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-xl bg-[var(--surface)] flex items-center justify-center flex-shrink-0">
                       <section.icon className="w-6 h-6 text-[var(--primary-color)]" />
@@ -107,7 +106,7 @@ export default function TermsPage() {
                       </p>
                     </div>
                   </div>
-                </GlareCard>
+                </div>
               </motion.div>
             ))}
           </div>

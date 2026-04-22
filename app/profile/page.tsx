@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
-import GlareCard from '@/components/animations/GlareCard';
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
@@ -75,7 +74,7 @@ export default function ProfilePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Avatar Card */}
-          <GlareCard className="glass-card p-6">
+          <div className="glass-card p-6">
             <div className="text-center">
               <div className="relative inline-block">
                 <div className="w-24 h-24 rounded-full bg-[var(--primary-gradient)] flex items-center justify-center mx-auto">
@@ -98,11 +97,11 @@ export default function ProfilePage() {
               <h3 className="mt-4 font-semibold text-[var(--text-primary)]">{user?.name}</h3>
               <p className="text-sm text-[var(--text-secondary)] capitalize">{user?.role}</p>
             </div>
-          </GlareCard>
+          </div>
 
           {/* Profile Form */}
           <div className="md:col-span-2">
-            <GlareCard className="glass-card p-6">
+            <div className="glass-card p-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -184,7 +183,7 @@ export default function ProfilePage() {
                   </button>
                 </div>
               </form>
-            </GlareCard>
+            </div>
           </div>
         </div>
       </div>

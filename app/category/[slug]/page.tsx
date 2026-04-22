@@ -2,14 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import AntigravityBackground from '@/components/animations/antigravity-bg';
-import BlobCursor from '@/components/animations/blob-cursor';
 import GlassCard from '@/components/ui/glass-card';
 import Button from '@/components/ui/button';
 import StatusBadge from '@/components/ui/status-badge';
-import FadeOnScroll from '@/components/animations/fade-on-scroll';
-import MagnetButton from '@/components/animations/magnet-button';
-import GlareHover from '@/components/animations/glare-hover';
 import { MapPin, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -68,10 +63,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
-      <BlobCursor />
-      <AntigravityBackground />
-      
+    <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -91,31 +83,30 @@ export default function CategoryPage() {
 
       <div className="pt-24 pb-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <FadeOnScroll>
+          <div>
             <Link href="/explore" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6">
               <ArrowLeft className="w-4 h-4" />
               Back to Explore
             </Link>
-          </FadeOnScroll>
+          </div>
 
-          <FadeOnScroll delay={0.1}>
+          <div>
             <h1 className="text-4xl font-bold mb-2">{categoryName}</h1>
             <p className="text-gray-400 mb-8">Browse ads in this category</p>
-          </FadeOnScroll>
+          </div>
 
           {ads.length === 0 ? (
-            <FadeOnScroll delay={0.2}>
+            <div className="p-12 text-center">
               <GlassCard className="p-12 text-center">
                 <h3 className="text-2xl font-semibold mb-2">No ads found</h3>
                 <p className="text-gray-400">Check back later for new listings</p>
               </GlassCard>
-            </FadeOnScroll>
+            </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {ads.map((ad, index) => (
-                <FadeOnScroll key={ad._id} delay={0.2 + index * 0.05}>
-                  <GlareHover>
-                    <GlassCard className="p-6 h-full flex flex-col">
+                <div key={ad._id}>
+                  <GlassCard className="p-6 h-full flex flex-col">
                       {ad.media && ad.media.length > 0 && ad.media[0].thumbnailUrl && (
                         <div className="w-full h-48 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 mb-4 overflow-hidden">
                           <img
@@ -140,17 +131,14 @@ export default function CategoryPage() {
                       </div>
                       
                       <div className="mt-auto">
-                        <MagnetButton>
-                          <Link href={`/ads/${ad.slug}`}>
-                            <Button variant="primary" className="w-full">
-                              View Details
-                            </Button>
-                          </Link>
-                        </MagnetButton>
+                        <Link href={`/ads/${ad.slug}`}>
+                          <Button variant="primary" className="w-full">
+                            View Details
+                          </Button>
+                        </Link>
                       </div>
                     </GlassCard>
-                  </GlareHover>
-                </FadeOnScroll>
+                </div>
               ))}
             </div>
           )}

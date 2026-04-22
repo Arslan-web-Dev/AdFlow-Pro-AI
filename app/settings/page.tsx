@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
-import GlareCard from '@/components/animations/GlareCard';
 
 // Dynamic import for useTheme to avoid SSR issues
 import dynamic from 'next/dynamic';

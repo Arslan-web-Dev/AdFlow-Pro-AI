@@ -1,12 +1,9 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Check, X, User, Mail, Lock, ArrowRight } from 'lucide-react';
-import ClickSpark from '@/components/animations/ClickSpark';
-import MagnetButton from '@/components/animations/MagnetButton';
 
 interface ValidationState {
   minLength: boolean;
@@ -125,45 +122,72 @@ export default function RegisterPage() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[var(--secondary-color)] rounded-full filter blur-[120px] opacity-20" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-        className="w-full max-w-md relative z-10"
-      >
+      <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--primary-gradient)] mb-4 shadow-lg shadow-[var(--primary-color)]/30"
-          >
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--primary-gradient)] mb-4 shadow-lg shadow-[var(--primary-color)]/30">
             <span className="text-2xl font-bold text-white">A</span>
-          </motion.div>
+          </div>
           <h1 className="text-3xl font-bold gradient-text mb-2">Create Account</h1>
           <p className="text-[var(--text-secondary)]">Join the AI-powered ads marketplace</p>
         </div>
 
-        {/* Form Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="glass-card p-8"
-        >
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm"
-              >
-                {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* Form */}
+        <div className="space-y-6">
+          {error && (
+            <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Role Selection Cards */}
+          <div className="grid grid-cols-1 gap-4 mb-6">
+            <button
+              onClick={() => {
+                setFormData({ name: 'Test Client', email: 'client@adflow.com', password: 'Client123', confirmPassword: 'Client123' });
+              }}
+              className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 transition-all text-left"
+            >
+              <p className="font-semibold text-blue-400">Client</p>
+              <p className="text-xs text-blue-300">client@adflow.com / Client123</p>
+            </button>
+            <button
+              onClick={() => {
+                setFormData({ name: 'Test Admin', email: 'admin@adflow.com', password: 'Admin123', confirmPassword: 'Admin123' });
+              }}
+              className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-all text-left"
+            >
+              <p className="font-semibold text-red-400">Admin</p>
+              <p className="text-xs text-red-300">admin@adflow.com / Admin123</p>
+            </button>
+            <button
+              onClick={() => {
+                setFormData({ name: 'Test Moderator', email: 'moderator@adflow.com', password: 'Moderator123', confirmPassword: 'Moderator123' });
+              }}
+              className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all text-left"
+            >
+              <p className="font-semibold text-yellow-400">Moderator</p>
+              <p className="text-xs text-yellow-300">moderator@adflow.com / Moderator123</p>
+            </button>
+            <button
+              onClick={() => {
+                setFormData({ name: 'Test Super Admin', email: 'superadmin@adflow.com', password: 'SuperAdmin123', confirmPassword: 'SuperAdmin123' });
+              }}
+              className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 transition-all text-left"
+            >
+              <p className="font-semibold text-purple-400">Super Admin</p>
+              <p className="text-xs text-purple-300">superadmin@adflow.com / SuperAdmin123</p>
+            </button>
+            <button
+              onClick={() => {
+                setFormData({ name: 'Demo User', email: 'demo@adflow.com', password: 'Cui@59191', confirmPassword: 'Cui@59191' });
+              }}
+              className="p-4 rounded-lg bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 transition-all text-left"
+            >
+              <p className="font-semibold text-green-400">Demo Account</p>
+              <p className="text-xs text-green-300">demo@adflow.com / Cui@59191</p>
+            </button>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name */}
@@ -225,11 +249,7 @@ export default function RegisterPage() {
 
               {/* Password Strength Bar */}
               {formData.password.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="space-y-2"
-                >
+                <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-[var(--text-secondary)]">Password Strength</span>
                     <span className={`font-medium ${strengthInfo.color.replace('bg-', 'text-')}`}>
@@ -237,59 +257,40 @@ export default function RegisterPage() {
                     </span>
                   </div>
                   <div className="h-1.5 bg-[var(--surface)] rounded-full overflow-hidden">
-                    <motion.div
+                    <div
                       className={`h-full ${strengthInfo.color} transition-all duration-500`}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${strength}%` }}
+                      style={{ width: `${strength}%` }}
                     />
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* Validation Checklist */}
-              <AnimatePresence>
-                {formData.password.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2 pt-2"
-                  >
-                    {validationItems.map((item, index) => {
-                      const isValid = validations[item.key];
-                      return (
-                        <motion.div
-                          key={item.key}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="flex items-center gap-2 text-sm"
+              {formData.password.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  {validationItems.map((item) => {
+                    const isValid = validations[item.key];
+                    return (
+                      <div key={item.key} className="flex items-center gap-2 text-sm">
+                        <div
+                          className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                            isValid ? 'bg-[var(--accent-success)]' : 'bg-[var(--surface)] border border-[var(--border)]'
+                          }`}
                         >
-                          <motion.div
-                            initial={false}
-                            animate={{
-                              scale: isValid ? 1 : 0.8,
-                              backgroundColor: isValid ? 'var(--accent-success)' : 'var(--surface)',
-                            }}
-                            className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                              isValid ? '' : 'border border-[var(--border)]'
-                            }`}
-                          >
-                            {isValid ? (
-                              <Check className="w-3 h-3 text-white" />
-                            ) : (
-                              <X className="w-3 h-3 text-[var(--text-muted)]" />
-                            )}
-                          </motion.div>
-                          <span className={isValid ? 'text-[var(--accent-success)]' : 'text-[var(--text-secondary)]'}>
-                            {item.label}
-                          </span>
-                        </motion.div>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                          {isValid ? (
+                            <Check className="w-3 h-3 text-white" />
+                          ) : (
+                            <X className="w-3 h-3 text-[var(--text-muted)]" />
+                          )}
+                        </div>
+                        <span className={isValid ? 'text-[var(--accent-success)]' : 'text-[var(--text-secondary)]'}>
+                          {item.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Confirm Password */}
@@ -317,36 +318,27 @@ export default function RegisterPage() {
                 </button>
               </div>
               {formData.confirmPassword && !passwordsMatch && (
-                <motion.p
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-400"
-                >
+                <p className="text-xs text-red-400">
                   Passwords do not match
-                </motion.p>
+                </p>
               )}
             </div>
 
             {/* Submit Button */}
-            <ClickSpark>
-              <MagnetButton
-                className="w-full btn-primary flex items-center justify-center gap-2"
-                strength={0.2}
-              >
-                {isLoading ? (
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                  />
-                ) : (
-                  <>
-                    Create Account
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </MagnetButton>
-            </ClickSpark>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full btn-primary flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
           </form>
 
           {/* Login Link */}
@@ -359,8 +351,8 @@ export default function RegisterPage() {
               Sign in
             </Link>
           </p>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 }

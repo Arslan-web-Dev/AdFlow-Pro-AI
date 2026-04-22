@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Clock, Send, MessageSquare } from 'lucide-react';
 import TopNavbar from '@/components/layout/TopNavbar';
-import GlareCard from '@/components/animations/GlareCard';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
 
@@ -58,11 +56,7 @@ export default function ContactPage() {
       <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
-          >
+          <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-[var(--foreground)] mb-4">
               Get in Touch
             </h1>
@@ -70,19 +64,14 @@ export default function ContactPage() {
               Have questions about AdFlow Pro? We are here to help. Reach out to our team 
               for support, partnerships, or general inquiries.
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Contact Info Cards */}
             <div className="lg:col-span-1 space-y-4">
               {contactInfo.map((info, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <GlareCard className="p-5">
+                <div>
+                  <div className="glass-card p-5">
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary-color)] to-purple-600 flex items-center justify-center flex-shrink-0">
                         <info.icon className="w-5 h-5 text-white" />
@@ -99,19 +88,14 @@ export default function ContactPage() {
                         </p>
                       </div>
                     </div>
-                  </GlareCard>
-                </motion.div>
+                  </div>
+                </div>
               ))}
             </div>
 
             {/* Contact Form */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="lg:col-span-2"
-            >
-              <GlareCard className="p-6 sm:p-8">
+            <div className="lg:col-span-2">
+              <div className="glass-card p-6 sm:p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <MessageSquare className="w-6 h-6 text-[var(--primary-color)]" />
                   <h2 className="text-xl font-semibold text-[var(--foreground)]">
@@ -120,11 +104,7 @@ export default function ContactPage() {
                 </div>
 
                 {submitted ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-12"
-                  >
+                  <div className="text-center py-12">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
                       <Send className="w-8 h-8 text-green-500" />
                     </div>
@@ -134,7 +114,7 @@ export default function ContactPage() {
                     <p className="text-[var(--muted-foreground)]">
                       We will get back to you within 24 hours.
                     </p>
-                  </motion.div>
+                  </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid sm:grid-cols-2 gap-4">
@@ -200,8 +180,8 @@ export default function ContactPage() {
                     </Button>
                   </form>
                 )}
-              </GlareCard>
-            </motion.div>
+              </div>
+            </div>
           </div>
         </div>
       </main>

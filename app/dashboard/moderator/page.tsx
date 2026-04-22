@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
   CheckSquare,
@@ -15,7 +14,6 @@ import {
   Search,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import GlareCard from '@/components/animations/GlareCard';
 
 interface PendingAd {
   _id: string;
@@ -135,14 +133,9 @@ export default function ModeratorDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {statCards.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <GlareCard className="glass-card p-6">
+          {statCards.map((stat) => (
+            <div key={stat.label}>
+              <div className="glass-card p-6">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-[var(--text-secondary)]">{stat.label}</p>
@@ -154,17 +147,13 @@ export default function ModeratorDashboard() {
                     <stat.icon className={`w-5 h-5 ${stat.color}`} />
                   </div>
                 </div>
-              </GlareCard>
-            </motion.div>
+              </div>
+            </div>
           ))}
         </div>
 
         {/* Pending Ads */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
+        <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">
               Pending Ads ({pendingAds.length})
@@ -250,7 +239,7 @@ export default function ModeratorDashboard() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion';
 import { Lock, Eye, Database, Share2, Cookie, UserCheck } from 'lucide-react';
 import TopNavbar from '@/components/layout/TopNavbar';
-import GlareCard from '@/components/animations/GlareCard';
 
 const sections = [
   {
@@ -100,7 +99,7 @@ export default function PrivacyPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + index * 0.1 }}
               >
-                <GlareCard className="p-6">
+                <div className="glass-card p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-xl bg-[var(--surface)] flex items-center justify-center flex-shrink-0">
                       <section.icon className="w-6 h-6 text-[var(--primary-color)]" />
@@ -114,7 +113,7 @@ export default function PrivacyPage() {
                       </p>
                     </div>
                   </div>
-                </GlareCard>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -126,7 +125,7 @@ export default function PrivacyPage() {
             transition={{ delay: 0.7 }}
             className="mt-8"
           >
-            <GlareCard className="p-6">
+            <div className="glass-card p-6">
               <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4">
                 Data Retention
               </h2>
@@ -148,7 +147,7 @@ export default function PrivacyPage() {
                   Usage logs: Retained for 90 days
                 </li>
               </ul>
-            </GlareCard>
+            </div>
           </motion.div>
 
           {/* Contact */}
