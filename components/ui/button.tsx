@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 
@@ -41,12 +40,10 @@ export default function Button({
   fullWidth = false,
 }: ButtonProps) {
   return (
-    <motion.button
+    <button
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      whileHover={!disabled && !loading ? { scale: 1.05 } : {}}
-      whileTap={!disabled && !loading ? { scale: 0.95 } : {}}
       className={`
         relative overflow-hidden
         font-medium rounded-xl
@@ -59,15 +56,11 @@ export default function Button({
       `}
     >
       {loading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute inset-0 flex items-center justify-center bg-black/20"
-        >
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
           <Loader2 className="w-5 h-5 animate-spin" />
-        </motion.div>
+        </div>
       )}
       <span className={loading ? 'opacity-0' : ''}>{children}</span>
-    </motion.button>
+    </button>
   );
 }
