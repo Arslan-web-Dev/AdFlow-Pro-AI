@@ -151,7 +151,7 @@ export default function CreateAdPage() {
   };
 
   return (
-    <DashboardLayout allowedRoles={['client']}>
+    <DashboardLayout allowedRoles={['user']}>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">

@@ -1,4 +1,4 @@
-export type UserRole = 'client' | 'moderator' | 'admin';
+export type UserRole = 'user' | 'admin';
 
 export interface RolePermissions {
   canCreateAds: boolean;
@@ -21,7 +21,7 @@ export interface RolePermissions {
 }
 
 export const rolePermissions: Record<UserRole, RolePermissions> = {
-  client: {
+  user: {
     canCreateAds: true,
     canEditOwnAds: true,
     canDeleteOwnAds: true,
@@ -37,25 +37,6 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canReviewAds: false,
     canVerifyPayments: false,
     canPublishAds: false,
-    canScheduleAds: false,
-    canFeatureAds: false,
-  },
-  moderator: {
-    canCreateAds: true,
-    canEditOwnAds: true,
-    canDeleteOwnAds: true,
-    canViewAllAds: true,
-    canApproveAds: true,
-    canRejectAds: true,
-    canManageUsers: false,
-    canViewAnalytics: true,
-    canManageSystem: false,
-    canViewLogs: true,
-    canSyncDatabase: false,
-    canManageFeatures: false,
-    canReviewAds: true,
-    canVerifyPayments: true,
-    canPublishAds: true,
     canScheduleAds: false,
     canFeatureAds: false,
   },
@@ -86,11 +67,9 @@ export function hasPermission(role: UserRole, permission: keyof RolePermissions)
 
 export function canAccessRoute(role: UserRole, route: string): boolean {
   const routeAccess: Record<string, UserRole[]> = {
-    '/dashboard/client': ['client', 'moderator', 'admin'],
-    '/dashboard/moderator': ['moderator', 'admin'],
+    '/dashboard/client': ['user', 'admin'],
     '/dashboard/admin': ['admin'],
-    '/client': ['client', 'moderator', 'admin'],
-    '/moderator': ['moderator', 'admin'],
+    '/client': ['user', 'admin'],
     '/admin': ['admin'],
   };
 
@@ -105,8 +84,7 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
 
 export function getDashboardRoute(role: UserRole): string {
   const dashboardRoutes: Record<UserRole, string> = {
-    client: '/dashboard/client',
-    moderator: '/dashboard/moderator',
+    user: '/dashboard/client',
     admin: '/dashboard/admin',
   };
 
@@ -114,7 +92,7 @@ export function getDashboardRoute(role: UserRole): string {
 }
 
 export function canEditAd(userRole: UserRole, adUserId: string, currentUserId: string): boolean {
-  if (userRole === 'admin' || userRole === 'moderator') {
+  if (userRole === 'admin') {
     return true;
   }
   

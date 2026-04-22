@@ -1,331 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/db/mongodb';
-import User from '@/lib/models/User';
 import { generateToken } from '@/lib/auth/jwt';
-import Log from '@/lib/models/Log';
 import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('[LOGIN] Starting login process...');
-    
-    const body = await request.json();
-    const { email, password } = body;
-    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
-    console.log('[LOGIN] Received request for email:', normalizedEmail);
+    const { email, password } = await request.json();
+    const normalizedEmail = email?.trim().toLowerCase();
 
-    // Validation
     if (!normalizedEmail || !password) {
-      console.log('[LOGIN] Validation failed - missing email or password');
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
     }
 
-    // Try MongoDB first (for local development)
-    console.log('[LOGIN] Connecting to database...');
-    let db;
-    try {
-      db = await connectDB();
-      console.log('[LOGIN] Database connection result:', db ? 'connected' : 'null (using Supabase)');
-    } catch (dbError) {
-      console.error('[LOGIN] Database connection error:', dbError);
-      db = null;
-    }
-    
-    let user;
-
-    if (db) {
-      console.log('[LOGIN] Using MongoDB for authentication');
-      // Use MongoDB
-      try {
-        user = await User.findOne({ email: normalizedEmail });
-        console.log('[LOGIN] MongoDB user lookup result:', user ? 'user found' : 'user not found');
-      } catch (userLookupError) {
-        console.error('[LOGIN] Error looking up user in MongoDB:', userLookupError);
-        user = null;
-      }
-      
-      if (user) {
-        console.log('[LOGIN] User found in MongoDB, checking if active...');
-        // Check if user is active
-        if (!user.isActive) {
-          console.log('[LOGIN] User account is deactivated');
-          return NextResponse.json(
-            { error: 'Account is deactivated' },
-            { status: 403 }
-          );
-        }
-
-        console.log('[LOGIN] Verifying password...');
-        // Verify password
-        let isPasswordValid;
-        try {
-          isPasswordValid = await (user as any).comparePassword(password);
-          console.log('[LOGIN] Password verification result:', isPasswordValid);
-        } catch (pwError) {
-          console.error('[LOGIN] Password verification error:', pwError);
-          return NextResponse.json(
-            { error: 'Error verifying password' },
-            { status: 500 }
-          );
-        }
-        
-        if (!isPasswordValid) {
-          console.log('[LOGIN] Invalid password');
-          return NextResponse.json(
-            { error: 'Invalid credentials' },
-            { status: 401 }
-          );
-        }
-
-        console.log('[LOGIN] Generating JWT token...');
-        // Generate JWT token
-        let token;
-        try {
-          token = generateToken({
-            userId: user._id.toString(),
-            email: user.email,
-            role: user.role,
-          });
-          console.log('[LOGIN] Token generated successfully');
-        } catch (tokenError) {
-          console.error('[LOGIN] Token generation error:', tokenError);
-          return NextResponse.json(
-            { error: 'Error generating token' },
-            { status: 500 }
-          );
-        }
-
-        // Log the login (optional - don't fail if MongoDB is not available)
-        try {
-          await Log.create({
-            level: 'info',
-            action: 'login',
-            userId: user._id.toString(),
-            details: { email: user.email },
-            ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-            userAgent: request.headers.get('user-agent') || 'unknown',
-          });
-        } catch (logError) {
-          // Log error but don't fail the login
-          console.error('[LOGIN] Failed to create log entry:', logError);
-        }
-
-        console.log('[LOGIN] Login successful via MongoDB');
-        // Return token in response body
-        const response = NextResponse.json(
-          {
-            success: true,
-            message: 'Login successful',
-            token,
-            user: {
-              id: user._id,
-              email: user.email,
-              name: user.name,
-              role: user.role,
-              avatar: user.avatar,
-            },
-          },
-          { status: 200 }
-        );
-
-        response.cookies.set('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 7,
-        });
-
-        return response;
-      }
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
     }
 
-    // Fallback to Supabase (for production/Vercel)
-    console.log('[LOGIN] User not found in MongoDB, trying Supabase...');
-    if (!user) {
-      if (!supabaseAdmin) {
-        console.log('[LOGIN] Supabase admin client is null - database not configured');
-        return NextResponse.json(
-          { error: 'Database not configured. Please contact administrator.' },
-          { status: 500 }
-        );
-      }
+    const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
 
-      console.log('[LOGIN] Attempting Supabase authentication...');
-      try {
-        const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
-          email: normalizedEmail,
-          password,
-        });
-
-        if (authError) {
-          console.log('[LOGIN] Supabase auth error:', authError.message);
-          return NextResponse.json(
-            { error: 'Invalid credentials' },
-            { status: 401 }
-          );
-        }
-
-        if (!authData.user) {
-          console.log('[LOGIN] No user returned from Supabase auth');
-          return NextResponse.json(
-            { error: 'Invalid credentials' },
-            { status: 401 }
-          );
-        }
-
-        console.log('[LOGIN] Supabase auth successful, checking user profile...');
-
-        const authUser = authData.user;
-        const authEmail = authUser.email ? authUser.email.toString().trim().toLowerCase() : normalizedEmail;
-        const metadata = authUser.user_metadata || {};
-
-        // Check if profile exists
-        const { data: existingProfile, error: profileLookupError } = await supabaseAdmin
-          .from('profiles')
-          .select('*')
-          .eq('id', authUser.id)
-          .maybeSingle();
-
-        if (profileLookupError) {
-          console.warn('[LOGIN] Profile lookup error:', profileLookupError);
-        }
-
-        let userData = existingProfile;
-
-        if (!userData) {
-          console.log('[LOGIN] Profile not found, creating new profile...');
-          const profilePayload = {
-            id: authUser.id,
-            email: authEmail,
-            full_name: metadata.full_name || metadata.name || authEmail.split('@')[0] || 'User',
-            role: metadata.role || 'client',
-            is_active: true,
-            is_verified: true,
-          };
-
-          console.log('[LOGIN] Creating profile:', profilePayload);
-
-          const { data: newProfile, error: createError } = await supabaseAdmin
-            .from('profiles')
-            .insert(profilePayload)
-            .select()
-            .maybeSingle();
-
-          if (createError) {
-            console.error('[LOGIN] Profile creation error:', createError);
-            console.error('[LOGIN] Create error code:', createError.code);
-            console.error('[LOGIN] Create error message:', createError.message);
-            console.error('[LOGIN] Create error details:', JSON.stringify(createError, null, 2));
-
-            // Try to recover existing profile by email
-            const { data: recoveryProfile, error: recoveryError } = await supabaseAdmin
-              .from('profiles')
-              .select('*')
-              .ilike('email', authEmail)
-              .limit(1);
-
-            if (recoveryError) {
-              console.warn('[LOGIN] Recovery lookup error:', recoveryError);
-            }
-
-            if (Array.isArray(recoveryProfile) && recoveryProfile.length > 0) {
-              userData = recoveryProfile[0];
-              console.log('[LOGIN] Recovered existing profile by email');
-            } else {
-              return NextResponse.json(
-                {
-                  error: 'Failed to create user profile',
-                  code: createError.code,
-                  message: createError.message,
-                  details: createError.details
-                },
-                { status: 500 }
-              );
-            }
-          } else if (newProfile) {
-            userData = newProfile;
-            console.log('[LOGIN] Profile created successfully');
-          } else {
-            console.error('[LOGIN] Profile creation returned null');
-            return NextResponse.json(
-              { error: 'Failed to create user profile' },
-              { status: 500 }
-            );
-          }
-        } else {
-          console.log('[LOGIN] Existing profile found');
-        }
-
-        console.log('[LOGIN] Generating token from Supabase user data...');
-        // Generate JWT token
-        let token;
-        try {
-          token = generateToken({
-            userId: userData.id,
-            email: userData.email,
-            role: userData.role,
-          });
-        } catch (tokenError) {
-          console.error('[LOGIN] Token generation error:', tokenError);
-          return NextResponse.json(
-            { error: 'Error generating authentication token' },
-            { status: 500 }
-          );
-        }
-
-        console.log('[LOGIN] Login successful via Supabase');
-        const response = NextResponse.json(
-          {
-            success: true,
-            message: 'Login successful',
-            token,
-            user: {
-              id: userData.id,
-              email: userData.email,
-              name: userData.full_name,
-              role: userData.role,
-            },
-          },
-          { status: 200 }
-        );
-
-        response.cookies.set('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 7,
-        });
-
-        return response;
-      } catch (supabaseError: any) {
-        console.error('[LOGIN] Supabase login error:', supabaseError);
-        console.error('[LOGIN] Supabase error details:', supabaseError?.message || supabaseError);
-        return NextResponse.json(
-          { error: 'Login failed. Please try again.', details: supabaseError?.message },
-          { status: 500 }
-        );
-      }
+    if (error || !data.user) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    return NextResponse.json(
-      { error: 'Invalid credentials' },
-      { status: 401 }
-    );
-  } catch (error: any) {
-    console.error('[LOGIN] CRITICAL ERROR in login route:', error);
-    console.error('[LOGIN] Error message:', error?.message);
-    console.error('[LOGIN] Error stack:', error?.stack);
-    console.error('[LOGIN] Error details:', JSON.stringify(error, null, 2));
-    return NextResponse.json(
-      { 
-        error: 'Internal server error', 
-        details: error?.message || String(error),
-        stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined 
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
+
+    const token = generateToken({
+      userId: data.user.id,
+      email: normalizedEmail,
+      role: profile.role,
+    });
+
+    const res = NextResponse.json({
+      success: true,
+      token,
+      user: {
+        id: data.user.id,
+        email: normalizedEmail,
+        name: profile.full_name,
+        role: profile.role,
+        avatar: profile.avatar,
       },
-      { status: 500 }
-    );
+    });
+
+    res.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 604800,
+    });
+
+    return res;
+  } catch {
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

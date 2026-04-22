@@ -290,10 +290,12 @@ export default function MarketplacePage() {
                     {/* Image */}
                     <div className="relative h-48 overflow-hidden">
                       {ad.media && ad.media.length > 0 ? (
-                        <img
+                        <Image
                           src={ad.media[0].url}
                           alt={ad.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         />
                       ) : (
                         <div className="w-full h-full bg-[var(--surface)] flex items-center justify-center">

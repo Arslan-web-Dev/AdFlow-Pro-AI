@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Plus, Edit, Trash2, Eye, Search, Filter } from 'lucide-react';
 import Button from '@/components/ui/button';
 import StatusBadge from '@/components/ui/status-badge';
@@ -83,7 +84,7 @@ export default function AdsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout allowedRoles={['client']}>
+      <DashboardLayout allowedRoles={['user']}>
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-[var(--surface)] rounded w-1/2" />
           <div className="h-64 bg-[var(--surface)] rounded" />
@@ -94,7 +95,7 @@ export default function AdsPage() {
 
   if (error) {
     return (
-      <DashboardLayout allowedRoles={['client']}>
+      <DashboardLayout allowedRoles={['user']}>
         <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400">
           {error}
         </div>
@@ -103,7 +104,7 @@ export default function AdsPage() {
   }
 
   return (
-    <DashboardLayout allowedRoles={['client']}>
+    <DashboardLayout allowedRoles={['user']}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -171,11 +172,13 @@ export default function AdsPage() {
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* Thumbnail */}
                   {ad.media && ad.media.length > 0 && ad.media[0].url && (
-                    <div className="lg:w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--surface)]">
-                      <img
+                    <div className="lg:w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--surface)] relative">
+                      <Image
                         src={ad.media[0].url}
                         alt={ad.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="192px"
                       />
                     </div>
                   )}

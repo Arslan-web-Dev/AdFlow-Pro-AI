@@ -13,7 +13,7 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <DashboardLayout allowedRoles={['client']}>
+    <DashboardLayout allowedRoles={['user']}>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-[var(--text-primary)]">Analytics</h1>

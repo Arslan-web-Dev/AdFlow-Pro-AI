@@ -36,7 +36,7 @@ export default function PaymentsPage() {
   };
 
   return (
-    <DashboardLayout allowedRoles={['client']}>
+    <DashboardLayout allowedRoles={['user']}>
       <div className="space-y-8 max-w-4xl mx-auto">
         {/* Header */}
         <div>

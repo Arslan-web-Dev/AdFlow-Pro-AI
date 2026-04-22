@@ -144,12 +144,12 @@ export default function RegisterPage() {
           <div className="grid grid-cols-1 gap-4 mb-6">
             <button
               onClick={() => {
-                setFormData({ name: 'Test Client', email: 'client@adflow.com', password: 'Client123', confirmPassword: 'Client123' });
+                setFormData({ name: 'Test User', email: 'user@adflow.com', password: 'User123', confirmPassword: 'User123' });
               }}
               className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 transition-all text-left"
             >
-              <p className="font-semibold text-blue-400">Client</p>
-              <p className="text-xs text-blue-300">client@adflow.com / Client123</p>
+              <p className="font-semibold text-blue-400">User</p>
+              <p className="text-xs text-blue-300">user@adflow.com / User123</p>
             </button>
             <button
               onClick={() => {
@@ -159,33 +159,6 @@ export default function RegisterPage() {
             >
               <p className="font-semibold text-red-400">Admin</p>
               <p className="text-xs text-red-300">admin@adflow.com / Admin123</p>
-            </button>
-            <button
-              onClick={() => {
-                setFormData({ name: 'Test Moderator', email: 'moderator@adflow.com', password: 'Moderator123', confirmPassword: 'Moderator123' });
-              }}
-              className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all text-left"
-            >
-              <p className="font-semibold text-yellow-400">Moderator</p>
-              <p className="text-xs text-yellow-300">moderator@adflow.com / Moderator123</p>
-            </button>
-            <button
-              onClick={() => {
-                setFormData({ name: 'Test Super Admin', email: 'superadmin@adflow.com', password: 'SuperAdmin123', confirmPassword: 'SuperAdmin123' });
-              }}
-              className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 transition-all text-left"
-            >
-              <p className="font-semibold text-purple-400">Super Admin</p>
-              <p className="text-xs text-purple-300">superadmin@adflow.com / SuperAdmin123</p>
-            </button>
-            <button
-              onClick={() => {
-                setFormData({ name: 'Demo User', email: 'demo@adflow.com', password: 'Cui@59191', confirmPassword: 'Cui@59191' });
-              }}
-              className="p-4 rounded-lg bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 transition-all text-left"
-            >
-              <p className="font-semibold text-green-400">Demo Account</p>
-              <p className="text-xs text-green-300">demo@adflow.com / Cui@59191</p>
             </button>
           </div>
 

@@ -35,7 +35,7 @@ type NavSection = {
 };
 
 const navigation: Record<string, NavSection[]> = {
-  client: [
+  user: [
     {
       title: 'Overview',
       items: [
@@ -55,22 +55,6 @@ const navigation: Record<string, NavSection[]> = {
       title: 'Analytics',
       items: [
         { label: 'Performance', href: '/dashboard/client/analytics', icon: <BarChart3 className="w-5 h-5" /> },
-      ],
-    },
-  ],
-  moderator: [
-    {
-      title: 'Moderation',
-      items: [
-        { label: 'Dashboard', href: '/dashboard/moderator', icon: <LayoutDashboard className="w-5 h-5" /> },
-        { label: 'Pending Ads', href: '/dashboard/moderator/pending', icon: <CheckSquare className="w-5 h-5" />, badge: 0 },
-        { label: 'All Ads', href: '/dashboard/moderator/ads', icon: <Megaphone className="w-5 h-5" /> },
-      ],
-    },
-    {
-      title: 'Management',
-      items: [
-        { label: 'Activity Log', href: '/dashboard/moderator/activity', icon: <BarChart3 className="w-5 h-5" /> },
       ],
     },
   ],

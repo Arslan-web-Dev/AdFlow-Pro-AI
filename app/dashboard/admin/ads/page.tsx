@@ -102,23 +102,37 @@ export default function AllAdsPage() {
     }
   };
 
-  const handleStatusChange = async (adId: string, newStatus: string) => {
+  const handleApprove = async (adId: string) => {
     try {
-      const response = await fetch(`/api/admin/ads/${adId}`, {
+      const response = await fetch(`/api/admin/ads/${adId}/approve`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update status');
+        throw new Error('Failed to approve ad');
       }
 
-      // Refresh ads list
       fetchAds();
     } catch (error) {
-      console.error('Status update error:', error);
-      alert('Failed to update status');
+      console.error('Approve error:', error);
+      alert('Failed to approve ad');
+    }
+  };
+
+  const handleReject = async (adId: string) => {
+    try {
+      const response = await fetch(`/api/admin/ads/${adId}/reject`, {
+        method: 'PUT',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reject ad');
+      }
+
+      fetchAds();
+    } catch (error) {
+      console.error('Reject error:', error);
+      alert('Failed to reject ad');
     }
   };
 
@@ -133,6 +147,28 @@ export default function AllAdsPage() {
       <div className="space-y-6">
         <h1 className="text-3xl font-bold text-white">All Ads</h1>
 
+        {/* Status Tabs */}
+        <div className="flex flex-wrap gap-2">
+          {['all', 'pending', 'approved', 'rejected'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setFilterStatus(status)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filterStatus === status
+                  ? 'bg-[var(--primary-color)] text-white'
+                  : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
+              }`}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {status !== 'all' && (
+                <span className="ml-2 px-2 py-0.5 text-xs bg-[var(--surface)] rounded-full">
+                  {ads.filter(ad => ad.status === status).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
         {/* Controls */}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
@@ -145,17 +181,6 @@ export default function AllAdsPage() {
               className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
             />
           </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 rounded-lg bg-slate-800/50 border border-slate-700 text-white focus:border-blue-500 focus:outline-none"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-            <option value="draft">Draft</option>
-          </select>
         </div>
 
         {/* Ads Table */}
@@ -195,10 +220,25 @@ export default function AllAdsPage() {
                         <button className="p-1 hover:bg-slate-700/50 rounded transition-colors">
                           <Eye className="w-4 h-4 text-slate-400" />
                         </button>
-                        <button className="p-1 hover:bg-slate-700/50 rounded transition-colors">
-                          <Edit className="w-4 h-4 text-slate-400" />
-                        </button>
-                        <button 
+                        {ad.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleApprove(ad.id)}
+                              className="p-1 hover:bg-green-500/20 rounded transition-colors"
+                              title="Approve"
+                            >
+                              <CheckCircle className="w-4 h-4 text-green-400" />
+                            </button>
+                            <button
+                              onClick={() => handleReject(ad.id)}
+                              className="p-1 hover:bg-red-500/20 rounded transition-colors"
+                              title="Reject"
+                            >
+                              <AlertCircle className="w-4 h-4 text-red-400" />
+                            </button>
+                          </>
+                        )}
+                        <button
                           onClick={() => handleDelete(ad.id)}
                           className="p-1 hover:bg-slate-700/50 rounded transition-colors"
                         >

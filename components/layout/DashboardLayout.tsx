@@ -7,7 +7,7 @@ import { useRequireAuth } from '@/hooks/useAuth';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  allowedRoles?: ('client' | 'moderator' | 'admin')[];
+  allowedRoles?: ('user' | 'admin')[];
 }
 
 export default function DashboardLayout({ 

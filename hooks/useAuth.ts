@@ -7,7 +7,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'client' | 'moderator' | 'admin';
+  role: 'user' | 'admin';
   avatar?: string;
 }
 
@@ -80,16 +80,14 @@ export function useAuth() {
   };
 
   const isAuthenticated = !!user;
-  const isClient = user?.role === 'client';
-  const isModerator = user?.role === 'moderator';
+  const isUser = user?.role === 'user';
   const isAdmin = user?.role === 'admin';
 
   return {
     user,
     isLoading,
     isAuthenticated,
-    isClient,
-    isModerator,
+    isUser,
     isAdmin,
     login,
     logout,
@@ -97,13 +95,12 @@ export function useAuth() {
   };
 }
 
-export function useRequireAuth(allowedRoles?: ('client' | 'moderator' | 'admin')[]) {
+export function useRequireAuth(allowedRoles?: ('user' | 'admin')[]) {
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const redirectedRef = useRef(false);
 
   useEffect(() => {
-    // Only run once after loading is complete
     if (isLoading || redirectedRef.current) {
       return;
     }
@@ -118,8 +115,7 @@ export function useRequireAuth(allowedRoles?: ('client' | 'moderator' | 'admin')
       if (!allowedRoles.includes(user.role)) {
         // Redirect to their appropriate dashboard
         const dashboardRoutes: Record<string, string> = {
-          client: '/dashboard/client',
-          moderator: '/dashboard/moderator',
+          user: '/dashboard/client',
           admin: '/dashboard/admin',
         };
         redirectedRef.current = true;
@@ -183,19 +179,16 @@ export function useOptionalAuth() {
   };
 
   const isAuthenticated = !!user;
-  const isClient = user?.role === 'client';
-  const isModerator = user?.role === 'moderator';
+  const isUser = user?.role === 'user';
   const isAdmin = user?.role === 'admin';
 
   return {
     user,
     isLoading,
     isAuthenticated,
-    isClient,
-    isModerator,
+    isUser,
     isAdmin,
     logout,
     refresh: checkAuth,
   };
 }
-

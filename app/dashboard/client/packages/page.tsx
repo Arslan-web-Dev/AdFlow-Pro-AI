@@ -34,7 +34,7 @@ const packages = [
 
 export default function PackagesPage() {
   return (
-    <DashboardLayout allowedRoles={['client']}>
+    <DashboardLayout allowedRoles={['user']}>
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto">
