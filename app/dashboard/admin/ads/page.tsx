@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   Search,
@@ -17,13 +16,15 @@ import {
 
 interface Ad {
   id: string;
+  _id: string;
   title: string;
   category: string;
-  status: 'active' | 'pending' | 'rejected' | 'draft';
+  status: 'active' | 'pending' | 'rejected' | 'draft' | 'published';
   views: number;
   clicks: number;
   createdAt: string;
   createdBy: string;
+  userId: string;
 }
 
 export default function AllAdsPage() {
@@ -41,7 +42,7 @@ export default function AllAdsPage() {
       const response = await fetch('/api/admin/ads');
       if (response.ok) {
         const result = await response.json();
-        setAds(result);
+        setAds(result.ads || []);
       }
     } catch (error) {
       console.error('Failed to fetch ads:', error);
@@ -53,6 +54,7 @@ export default function AllAdsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
+      case 'published':
         return 'bg-green-500/20 text-green-400';
       case 'pending':
         return 'bg-yellow-500/20 text-yellow-400';
@@ -75,6 +77,48 @@ export default function AllAdsPage() {
         return <AlertCircle className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
+    }
+  };
+
+  const handleDelete = async (adId: string) => {
+    if (!confirm('Are you sure you want to delete this ad?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/ads/${adId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete ad');
+      }
+
+      // Refresh ads list
+      fetchAds();
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete ad');
+    }
+  };
+
+  const handleStatusChange = async (adId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/admin/ads/${adId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      // Refresh ads list
+      fetchAds();
+    } catch (error) {
+      console.error('Status update error:', error);
+      alert('Failed to update status');
     }
   };
 
@@ -115,11 +159,7 @@ export default function AllAdsPage() {
         </div>
 
         {/* Ads Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-lg bg-slate-800/50 border border-slate-700 overflow-hidden"
-        >
+        <div className="rounded-lg bg-slate-800/50 border border-slate-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-700/50 border-b border-slate-600">
@@ -134,12 +174,9 @@ export default function AllAdsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
-                {filteredAds.map((ad, index) => (
-                  <motion.tr
+                {filteredAds.map((ad) => (
+                  <tr
                     key={ad.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.05 }}
                     className="hover:bg-slate-700/30 transition-colors"
                   >
                     <td className="px-6 py-4 text-sm text-white">{ad.title}</td>
@@ -161,17 +198,20 @@ export default function AllAdsPage() {
                         <button className="p-1 hover:bg-slate-700/50 rounded transition-colors">
                           <Edit className="w-4 h-4 text-slate-400" />
                         </button>
-                        <button className="p-1 hover:bg-slate-700/50 rounded transition-colors">
+                        <button 
+                          onClick={() => handleDelete(ad.id)}
+                          className="p-1 hover:bg-slate-700/50 rounded transition-colors"
+                        >
                           <Trash2 className="w-4 h-4 text-red-400" />
                         </button>
                       </div>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </motion.div>
+        </div>
 
         {filteredAds.length === 0 && !isLoading && (
           <div className="text-center py-8">
