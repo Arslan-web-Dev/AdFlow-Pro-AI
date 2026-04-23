@@ -1,44 +1,34 @@
-import connectDB from '../db/mongodb';
-import Ad from '../models/Ad';
-import User from '../models/User';
-import Log from '../models/Log';
+import { supabaseAdmin } from '../supabase/client';
 import { generateAdContent, generateMultipleAds, GeneratedAd } from './openai';
-import { syncAdToSupabase } from '../supabase/sync';
 
 export async function createAIGeneratedAd(userId: string, topic: string) {
   try {
-    await connectDB();
-
     // Generate ad content using AI
     const generatedAd = await generateAdContent(topic);
 
     // Generate slug from title
     const slug = generatedAd.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
 
-    // Create the ad in database with required fields
-    const ad = await Ad.create({
-      title: generatedAd.title,
-      description: generatedAd.description,
-      slug,
-      userId,
-      packageId: 'default', // Will need to be updated by user
-      categoryId: 'default', // Will need to be updated by user
-      cityId: 'default', // Will need to be updated by user
-      status: 'draft',
-      tags: generatedAd.tags || [],
-    });
+    // Create the ad in Supabase
+    const { data: ad, error } = await supabaseAdmin
+      .from('ads')
+      .insert({
+        title: generatedAd.title,
+        description: generatedAd.description,
+        slug,
+        user_id: userId,
+        package_id: 'default',
+        category_id: 'default',
+        city_id: 'default',
+        status: 'draft',
+        tags: generatedAd.tags || [],
+      })
+      .select()
+      .single();
 
-    // Log the AI generation
-    await Log.create({
-      level: 'info',
-      action: 'ai_ad_generated',
-      userId,
-      adId: ad._id.toString(),
-      details: { topic },
-    });
-
-    // Sync to Supabase
-    await syncAdToSupabase(ad._id.toString());
+    if (error) {
+      throw error;
+    }
 
     return { success: true, ad };
   } catch (error) {
@@ -49,18 +39,19 @@ export async function createAIGeneratedAd(userId: string, topic: string) {
 
 export async function generateDailyAdsForUser(userId: string, topics: string[] = []) {
   try {
-    await connectDB();
-
     // If no topics provided, generate suggestions based on user's previous ads
     if (topics.length === 0) {
-      const userAds = await Ad.find({ userId }).limit(5);
-      const categories = [...new Set(userAds.map(ad => ad.categoryId))];
+      const { data: userAds } = await supabaseAdmin
+        .from('ads')
+        .select('category_id')
+        .eq('user_id', userId)
+        .limit(5);
+      
+      const categories = [...new Set(userAds?.map(ad => ad.category_id) || [])];
       
       if (categories.length > 0) {
-        // Generate topics based on most common category
         topics.push(categories[0]);
       } else {
-        // Default topics for new users
         topics = ['Technology', 'Health & Wellness', 'Business Services'];
       }
     }
@@ -80,30 +71,24 @@ export async function generateDailyAdsForUser(userId: string, topics: string[] =
 
 export async function generateAdsForAllClients(topics: string[] = []) {
   try {
-    await connectDB();
-
     // Get all client users
-    const clients = await User.find({ role: 'client', isActive: true });
+    const { data: clients, error } = await supabaseAdmin
+      .from('users')
+      .select('id, email')
+      .eq('role', 'user')
+      .eq('is_active', true);
+
+    if (error) throw error;
     
     const results = [];
-    for (const client of clients) {
-      const result = await generateDailyAdsForUser(client._id.toString(), topics);
+    for (const client of clients || []) {
+      const result = await generateDailyAdsForUser(client.id, topics);
       results.push({
-        userId: client._id.toString(),
+        userId: client.id,
         email: client.email,
         ...result,
       });
     }
-
-    // Log the batch generation
-    await Log.create({
-      level: 'info',
-      action: 'ai_ad_generated',
-      details: { 
-        totalClients: clients.length,
-        results: results.map(r => ({ userId: r.userId, success: r.success })),
-      },
-    });
 
     return { success: true, results };
   } catch (error) {

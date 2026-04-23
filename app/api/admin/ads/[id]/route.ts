@@ -5,9 +5,10 @@ import { supabaseAdmin } from '@/lib/supabase/client';
 // PUT update ad (admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = request.cookies.get('token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -19,7 +20,7 @@ export async function PUT(
     }
 
     if (!supabaseAdmin) {
-      return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
     }
 
     const body = await request.json();
@@ -49,7 +50,7 @@ export async function PUT(
         media,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -68,9 +69,10 @@ export async function PUT(
 // DELETE ad (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = request.cookies.get('token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -82,13 +84,13 @@ export async function DELETE(
     }
 
     if (!supabaseAdmin) {
-      return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
     }
 
     const { error } = await supabaseAdmin
       .from('ads')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (error) {
       console.error('Supabase delete error:', error);

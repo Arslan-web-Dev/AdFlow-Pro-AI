@@ -183,7 +183,7 @@ export default function SettingsPage() {
                     ) : (
                       <input
                         type={field.type}
-                        value={settings[field.key as keyof SettingsData]}
+                        value={String(settings[field.key as keyof SettingsData] ?? '')}
                         onChange={(e) =>
                           setSettings({
                             ...settings,

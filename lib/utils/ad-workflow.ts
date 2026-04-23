@@ -1,5 +1,17 @@
 import { supabaseAdmin } from '../supabase/client';
 
+export type AdStatus = 
+  | 'draft'
+  | 'submitted'
+  | 'under_review'
+  | 'payment_pending'
+  | 'payment_submitted'
+  | 'payment_verified'
+  | 'scheduled'
+  | 'published'
+  | 'expired'
+  | 'rejected';
+
 export const workflowTransitions: Record<AdStatus, AdStatus[]> = {
   draft: ['submitted'],
   submitted: ['under_review', 'draft'],
@@ -66,7 +78,7 @@ export async function transitionAdStatus(
       action: `ad_${newStatus}`,
       user_id: userId || ad.user_id,
       ad_id: adId,
-      details: { previousStatus, newStatus, reason },
+      details: { previous_status: previousStatus, new_status: newStatus, reason },
     });
 
     return { success: true, ad: updated };
@@ -94,15 +106,14 @@ export async function verifyPayment(adId: string, adminId: string, adminRole: st
 
 export async function scheduleAd(adId: string, adminId: string, adminRole: string, publishDate: Date) {
   try {
-    await connectDB();
-    
-    const ad = await Ad.findById(adId);
-    if (!ad) {
-      return { success: false, error: 'Ad not found' };
-    }
+    const { error } = await supabaseAdmin
+      .from('ads')
+      .update({ publish_at: publishDate.toISOString() })
+      .eq('id', adId);
 
-    ad.publishAt = publishDate;
-    await ad.save();
+    if (error) {
+      return { success: false, error: 'Failed to schedule ad' };
+    }
 
     return transitionAdStatus(adId, 'scheduled', adminId, adminRole);
   } catch (error) {
@@ -125,12 +136,16 @@ export async function expireAd(adId: string) {
 
 export async function getAdsByStatus(status: AdStatus, limit = 50) {
   try {
-    await connectDB();
-    const ads = await Ad.find({ status })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .populate('userId', 'name email')
-      .populate('moderatorId', 'name email');
+    const { data: ads, error } = await supabaseAdmin
+      .from('ads')
+      .select('*, users(name, email), moderator:users!moderator_id(name, email)')
+      .eq('status', status)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
     
     return { success: true, ads };
   } catch (error) {
@@ -153,20 +168,25 @@ export async function getAdsPaymentPending(limit = 50) {
 
 export async function autoExpireAds() {
   try {
-    await connectDB();
+    const now = new Date().toISOString();
     
-    const expiredAds = await Ad.find({
-      status: 'published',
-      expireAt: { $lt: new Date() },
-    });
+    const { data: expiredAds, error } = await supabaseAdmin
+      .from('ads')
+      .select('id')
+      .eq('status', 'published')
+      .lt('expires_at', now);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
 
     const results = [];
-    for (const ad of expiredAds) {
-      const result = await expireAd(ad._id.toString());
+    for (const ad of expiredAds || []) {
+      const result = await expireAd(ad.id);
       results.push(result);
     }
 
-    return { success: true, expiredCount: expiredAds.length, results };
+    return { success: true, expiredCount: expiredAds?.length || 0, results };
   } catch (error) {
     console.error('Auto expire ads error:', error);
     return { success: false, error: (error as Error).message };

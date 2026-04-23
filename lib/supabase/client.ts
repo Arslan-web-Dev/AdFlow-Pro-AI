@@ -18,13 +18,22 @@ export const supabase = supabaseUrl && supabaseAnonKey
   : null;
 
 // Admin client with service role key for server-side operations
-export const supabaseAdmin = supabaseUrl && supabaseServiceKey
-  ? createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
-  : null;
+// Throws if env vars are missing to ensure type safety
+if (!supabaseUrl || !supabaseServiceKey) {
+  if (typeof window === 'undefined') {
+    console.error('Missing Supabase environment variables');
+  }
+}
+
+export const supabaseAdmin = createClient(
+  supabaseUrl || '',
+  supabaseServiceKey || '',
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 export default supabase;

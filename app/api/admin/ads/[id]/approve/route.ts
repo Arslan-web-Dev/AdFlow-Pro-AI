@@ -4,8 +4,9 @@ import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const token = request.cookies.get('token')?.value;
     if (!token) {
@@ -24,7 +25,7 @@ export async function PUT(
     const { data: ad, error } = await supabaseAdmin
       .from('ads')
       .update({ status: 'approved', updated_at: new Date().toISOString() })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
