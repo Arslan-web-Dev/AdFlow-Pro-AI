@@ -64,10 +64,10 @@ export default function AdminDashboard() {
   };
 
   const statCards = [
-    { label: 'Total Users', value: stats.totalUsers, change: `+${stats.newUsersToday} today`, icon: Users, color: 'text-blue-400', bgColor: 'bg-blue-500/10' },
-    { label: 'Total Ads', value: stats.totalAds, change: `${stats.pendingAds} pending`, icon: Megaphone, color: 'text-purple-400', bgColor: 'bg-purple-500/10' },
-    { label: 'Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, change: `+${stats.monthlyGrowth}% this month`, icon: DollarSign, color: 'text-green-400', bgColor: 'bg-green-500/10' },
-    { label: 'Growth', value: `+${stats.monthlyGrowth}%`, change: 'vs last month', icon: TrendingUp, color: 'text-orange-400', bgColor: 'bg-orange-500/10' },
+    { label: 'Total Users', value: stats.totalUsers || 0, change: `+${stats.newUsersToday || 0} today`, icon: Users, color: 'text-blue-400', bgColor: 'bg-blue-500/10' },
+    { label: 'Total Ads', value: stats.totalAds || 0, change: `${stats.pendingAds || 0} pending`, icon: Megaphone, color: 'text-purple-400', bgColor: 'bg-purple-500/10' },
+    { label: 'Revenue', value: `$${(stats.totalRevenue || 0).toLocaleString()}`, change: `+${stats.monthlyGrowth || 0}% this month`, icon: DollarSign, color: 'text-green-400', bgColor: 'bg-green-500/10' },
+    { label: 'Growth', value: `+${stats.monthlyGrowth || 0}%`, change: 'vs last month', icon: TrendingUp, color: 'text-orange-400', bgColor: 'bg-orange-500/10' },
   ];
 
   const getActivityIcon = (type: string) => {

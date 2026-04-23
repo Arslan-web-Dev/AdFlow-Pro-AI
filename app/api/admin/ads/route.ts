@@ -28,13 +28,7 @@ export async function GET(request: NextRequest) {
     // Build query for Supabase
     let query = supabaseAdmin
       .from('ads')
-      .select(`
-        *,
-        profiles:profiles!ads_user_id_fkey (
-          name,
-          email
-        )
-      `);
+      .select('*');
 
     // Apply filters
     if (status) {
@@ -79,7 +73,7 @@ export async function GET(request: NextRequest) {
       views: ad.views || 0,
       clicks: ad.clicks || 0,
       createdAt: ad.created_at,
-      createdBy: ad.users?.name || 'Unknown',
+      createdBy: 'Unknown',
       userId: ad.user_id,
       media: ad.media || [],
     })) || [];

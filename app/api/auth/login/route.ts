@@ -24,14 +24,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    const { data: profile } = await supabaseAdmin
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('id', data.user.id)
       .single();
 
-    if (!profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    if (profileError || !profile) {
+      console.error('Profile query error:', profileError);
+      console.error('User ID:', data.user.id);
+      return NextResponse.json({ 
+        error: 'Profile not found',
+        details: profileError?.message || 'No profile found for user'
+      }, { status: 404 });
     }
 
     const token = generateToken({
