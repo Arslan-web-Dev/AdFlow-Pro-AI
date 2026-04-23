@@ -39,7 +39,7 @@ function LoginForm() {
 
       // Redirect based on role
       const dashboardRoutes: Record<string, string> = {
-        user: '/dashboard/client',
+        user: '/dashboard/user',
         admin: '/dashboard/admin',
       };
 
