@@ -67,9 +67,9 @@ export function hasPermission(role: UserRole, permission: keyof RolePermissions)
 
 export function canAccessRoute(role: UserRole, route: string): boolean {
   const routeAccess: Record<string, UserRole[]> = {
-    '/dashboard/client': ['user', 'admin'],
+    '/dashboard/user': ['user', 'admin'],
     '/dashboard/admin': ['admin'],
-    '/client': ['user', 'admin'],
+    '/user': ['user', 'admin'],
     '/admin': ['admin'],
   };
 
@@ -84,7 +84,7 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
 
 export function getDashboardRoute(role: UserRole): string {
   const dashboardRoutes: Record<UserRole, string> = {
-    user: '/dashboard/client',
+    user: '/dashboard/user',
     admin: '/dashboard/admin',
   };
 

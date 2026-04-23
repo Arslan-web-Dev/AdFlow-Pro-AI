@@ -104,7 +104,7 @@ export default function CreateAdPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/ads', {
+      const response = await fetch('/api/user/ads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

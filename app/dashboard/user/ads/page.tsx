@@ -39,7 +39,7 @@ export default function AdsPage() {
 
   const fetchAds = async () => {
     try {
-      const response = await fetch('/api/client/ads');
+      const response = await fetch('/api/user/ads');
       const data = await response.json();
       
       if (!response.ok) {

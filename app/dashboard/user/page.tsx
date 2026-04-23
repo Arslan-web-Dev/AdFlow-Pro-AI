@@ -52,7 +52,7 @@ export default function ClientDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch('/api/client/dashboard');
+      const response = await fetch('/api/user/dashboard');
       if (response.ok) {
         const data = await response.json();
         setStats(data.stats);
@@ -92,7 +92,7 @@ export default function ClientDashboard() {
             <p className="text-[var(--text-secondary)] mt-1">Welcome back! Here&apos;s your overview.</p>
           </div>
           <Link
-            href="/dashboard/client/ads/create"
+            href="/dashboard/user/ads/create"
             className="btn-primary inline-flex items-center gap-2 self-start"
           >
             <Plus className="w-4 h-4" />
@@ -162,7 +162,7 @@ export default function ClientDashboard() {
               <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Quick Actions</h2>
               <div className="space-y-3">
                 <Link
-                  href="/dashboard/client/ads/create"
+                  href="/dashboard/user/ads/create"
                   className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors group"
                 >
                   <div className="p-2 rounded-lg bg-[var(--primary-color)]/10 group-hover:bg-[var(--primary-color)]/20 transition-colors">
@@ -173,7 +173,7 @@ export default function ClientDashboard() {
                 </Link>
                 
                 <Link
-                  href="/dashboard/client/packages"
+                  href="/dashboard/user/packages"
                   className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors group"
                 >
                   <div className="p-2 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
@@ -184,7 +184,7 @@ export default function ClientDashboard() {
                 </Link>
 
                 <Link
-                  href="/dashboard/client/analytics"
+                  href="/dashboard/user/analytics"
                   className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors group"
                 >
                   <div className="p-2 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
@@ -203,7 +203,7 @@ export default function ClientDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">Recent Ads</h2>
             <Link
-              href="/dashboard/client/ads"
+              href="/dashboard/user/ads"
               className="text-sm text-[var(--primary-color)] hover:text-[var(--primary-light)] flex items-center gap-1"
             >
               View all
@@ -229,7 +229,7 @@ export default function ClientDashboard() {
                 {recentAds.map((ad) => (
                   <Link
                     key={ad._id}
-                    href={`/dashboard/client/ads/${ad._id}`}
+                    href={`/dashboard/user/ads/${ad._id}`}
                     className="flex items-center gap-4 p-4 hover:bg-[var(--surface)]/50 transition-colors"
                   >
                     <div className="w-16 h-16 rounded-lg bg-[var(--surface)] flex items-center justify-center flex-shrink-0">
@@ -264,7 +264,7 @@ export default function ClientDashboard() {
                 <Megaphone className="w-12 h-12 text-[var(--text-muted)] mx-auto mb-4" />
                 <p className="text-[var(--text-secondary)]">No ads yet</p>
                 <Link
-                  href="/dashboard/client/ads/create"
+                  href="/dashboard/user/ads/create"
                   className="btn-primary inline-flex items-center gap-2 mt-4"
                 >
                   <Plus className="w-4 h-4" />
