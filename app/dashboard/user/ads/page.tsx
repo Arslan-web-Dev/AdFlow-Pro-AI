@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Edit, Trash2, Eye, Search, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Search, Filter, X } from 'lucide-react';
 import Button from '@/components/ui/button';
 import StatusBadge from '@/components/ui/status-badge';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -32,6 +32,17 @@ export default function AdsPage() {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [updateFormData, setUpdateFormData] = useState({
+    title: '',
+    description: '',
+    price: 0,
+    category: '',
+    city: '',
+    status: '',
+  });
 
   useEffect(() => {
     fetchAds();
@@ -60,7 +71,7 @@ export default function AdsPage() {
     }
 
     try {
-      const response = await fetch(`/api/client/ads/${adId}`, {
+      const response = await fetch(`/api/user/ads/${adId}`, {
         method: 'DELETE',
       });
 
@@ -70,8 +81,50 @@ export default function AdsPage() {
 
       // Refresh ads list
       fetchAds();
+      alert('Ad deleted successfully');
     } catch (err: any) {
       alert(err.message);
+    }
+  };
+
+  const handleView = (ad: Ad) => {
+    setSelectedAd(ad);
+    setViewModalOpen(true);
+  };
+
+  const handleUpdate = (ad: Ad) => {
+    setSelectedAd(ad);
+    setUpdateFormData({
+      title: ad.title,
+      description: ad.description,
+      price: ad.price,
+      category: ad.category,
+      city: ad.city,
+      status: ad.status,
+    });
+    setUpdateModalOpen(true);
+  };
+
+  const handleUpdateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAd) return;
+
+    try {
+      const response = await fetch(`/api/user/ads/${selectedAd._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateFormData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update ad');
+      }
+
+      setUpdateModalOpen(false);
+      fetchAds();
+      alert('Ad updated successfully');
+    } catch (error) {
+      alert('Failed to update ad');
     }
   };
 
@@ -158,7 +211,7 @@ export default function AdsPage() {
                 : 'You haven\'t created any ads yet'}
             </p>
             {!searchQuery && filterStatus === 'all' && (
-              <Link href="/dashboard/client/ads/create">
+              <Link href="/dashboard/user/ads/create">
                 <Button className="btn-primary">
                   Create Your First Ad
                 </Button>
@@ -218,18 +271,20 @@ export default function AdsPage() {
 
                     {/* Actions */}
                     <div className="flex flex-wrap gap-2">
-                      <Link href={`/ads/${ad.slug}`}>
-                        <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                          <Eye className="w-4 h-4" />
-                          View
-                        </Button>
-                      </Link>
-                      <Link href={`/dashboard/client/ads/create?edit=${ad._id}`}>
-                        <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                          <Edit className="w-4 h-4" />
-                          Edit
-                        </Button>
-                      </Link>
+                      <button
+                        onClick={() => handleView(ad)}
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"
+                      >
+                        <Eye className="w-4 h-4" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleUpdate(ad)}
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Update
+                      </button>
                       <button
                         onClick={() => handleDelete(ad._id)}
                         className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
@@ -242,6 +297,177 @@ export default function AdsPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* View Modal */}
+        {viewModalOpen && selectedAd && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-[var(--surface)] rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-[var(--text-primary)]">Ad Details</h2>
+                <button
+                  onClick={() => setViewModalOpen(false)}
+                  className="p-1 hover:bg-[var(--border)] rounded transition-colors"
+                >
+                  <X className="w-5 h-5 text-[var(--text-muted)]" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-[var(--text-muted)]">Title</label>
+                  <p className="text-[var(--text-primary)] font-medium">{selectedAd.title}</p>
+                </div>
+                <div>
+                  <label className="text-sm text-[var(--text-muted)]">Description</label>
+                  <p className="text-[var(--text-primary)]">{selectedAd.description}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)]">Category</label>
+                    <p className="text-[var(--text-primary)]">{selectedAd.category}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)]">City</label>
+                    <p className="text-[var(--text-primary)]">{selectedAd.city}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)]">Price</label>
+                    <p className="text-[var(--text-primary)]">{selectedAd.currency} {selectedAd.price.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)]">Status</label>
+                    <p className="text-[var(--text-primary)]">{selectedAd.status}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)]">Views</label>
+                    <p className="text-[var(--text-primary)]">{selectedAd.views}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)]">Clicks</label>
+                    <p className="text-[var(--text-primary)]">{selectedAd.clicks}</p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-[var(--text-muted)]">Created At</label>
+                  <p className="text-[var(--text-primary)]">{new Date(selectedAd.createdAt).toLocaleDateString()}</p>
+                </div>
+                {selectedAd.tags && selectedAd.tags.length > 0 && (
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)]">Tags</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {selectedAd.tags.map((tag, index) => (
+                        <span key={index} className="px-2 py-1 bg-[var(--border)] rounded text-sm text-[var(--text-primary)]">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Update Modal */}
+        {updateModalOpen && selectedAd && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-[var(--surface)] rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-[var(--text-primary)]">Update Ad</h2>
+                <button
+                  onClick={() => setUpdateModalOpen(false)}
+                  className="p-1 hover:bg-[var(--border)] rounded transition-colors"
+                >
+                  <X className="w-5 h-5 text-[var(--text-muted)]" />
+                </button>
+              </div>
+              <form onSubmit={handleUpdateSubmit} className="space-y-4">
+                <div>
+                  <label className="text-sm text-[var(--text-muted)] block mb-1">Title</label>
+                  <input
+                    type="text"
+                    value={updateFormData.title}
+                    onChange={(e) => setUpdateFormData({ ...updateFormData, title: e.target.value })}
+                    className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[var(--text-muted)] block mb-1">Description</label>
+                  <textarea
+                    value={updateFormData.description}
+                    onChange={(e) => setUpdateFormData({ ...updateFormData, description: e.target.value })}
+                    className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)]"
+                    rows={4}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)] block mb-1">Price</label>
+                    <input
+                      type="number"
+                      value={updateFormData.price}
+                      onChange={(e) => setUpdateFormData({ ...updateFormData, price: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)] block mb-1">Category</label>
+                    <input
+                      type="text"
+                      value={updateFormData.category}
+                      onChange={(e) => setUpdateFormData({ ...updateFormData, category: e.target.value })}
+                      className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)] block mb-1">City</label>
+                    <input
+                      type="text"
+                      value={updateFormData.city}
+                      onChange={(e) => setUpdateFormData({ ...updateFormData, city: e.target.value })}
+                      className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-[var(--text-muted)] block mb-1">Status</label>
+                    <select
+                      value={updateFormData.status}
+                      onChange={(e) => setUpdateFormData({ ...updateFormData, status: e.target.value })}
+                      className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-primary)]"
+                      required
+                    >
+                      <option value="published">Published</option>
+                      <option value="pending">Pending</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="draft">Draft</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                  >
+                    Update Ad
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUpdateModalOpen(false)}
+                    className="px-4 py-2 bg-[var(--border)] hover:bg-[var(--surface)] text-[var(--text-primary)] rounded transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>

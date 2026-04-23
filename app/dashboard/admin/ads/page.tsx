@@ -12,19 +12,27 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  X,
 } from 'lucide-react';
 
 interface Ad {
   id: string;
   _id: string;
   title: string;
+  slug: string;
+  description: string;
   category: string;
+  city: string;
   status: 'active' | 'pending' | 'rejected' | 'draft' | 'published';
+  price: number;
+  currency: string;
   views: number;
   clicks: number;
   createdAt: string;
   createdBy: string;
   userId: string;
+  media: string[];
+  tags: string[];
 }
 
 export default function AllAdsPage() {
@@ -32,6 +40,17 @@ export default function AllAdsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [updateFormData, setUpdateFormData] = useState({
+    title: '',
+    description: '',
+    price: 0,
+    category: '',
+    city: '',
+    status: '',
+  });
 
   useEffect(() => {
     fetchAds();
@@ -96,9 +115,52 @@ export default function AllAdsPage() {
 
       // Refresh ads list
       fetchAds();
+      alert('Ad deleted successfully');
     } catch (error) {
       console.error('Delete error:', error);
       alert('Failed to delete ad');
+    }
+  };
+
+  const handleView = (ad: Ad) => {
+    setSelectedAd(ad);
+    setViewModalOpen(true);
+  };
+
+  const handleUpdate = (ad: Ad) => {
+    setSelectedAd(ad);
+    setUpdateFormData({
+      title: ad.title,
+      description: ad.description,
+      price: ad.price,
+      category: ad.category,
+      city: ad.city,
+      status: ad.status,
+    });
+    setUpdateModalOpen(true);
+  };
+
+  const handleUpdateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAd) return;
+
+    try {
+      const response = await fetch(`/api/admin/ads/${selectedAd.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateFormData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update ad');
+      }
+
+      setUpdateModalOpen(false);
+      fetchAds();
+      alert('Ad updated successfully');
+    } catch (error) {
+      console.error('Update error:', error);
+      alert('Failed to update ad');
     }
   };
 
@@ -217,8 +279,19 @@ export default function AllAdsPage() {
                     <td className="px-6 py-4 text-sm text-slate-300">{ad.createdBy}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <button className="p-1 hover:bg-slate-700/50 rounded transition-colors">
-                          <Eye className="w-4 h-4 text-slate-400" />
+                        <button
+                          onClick={() => handleView(ad)}
+                          className="p-1 hover:bg-blue-500/20 rounded transition-colors"
+                          title="View"
+                        >
+                          <Eye className="w-4 h-4 text-blue-400" />
+                        </button>
+                        <button
+                          onClick={() => handleUpdate(ad)}
+                          className="p-1 hover:bg-yellow-500/20 rounded transition-colors"
+                          title="Update"
+                        >
+                          <Edit className="w-4 h-4 text-yellow-400" />
                         </button>
                         {ad.status === 'pending' && (
                           <>
@@ -240,7 +313,8 @@ export default function AllAdsPage() {
                         )}
                         <button
                           onClick={() => handleDelete(ad.id)}
-                          className="p-1 hover:bg-slate-700/50 rounded transition-colors"
+                          className="p-1 hover:bg-red-500/20 rounded transition-colors"
+                          title="Delete"
                         >
                           <Trash2 className="w-4 h-4 text-red-400" />
                         </button>
@@ -256,6 +330,177 @@ export default function AllAdsPage() {
         {filteredAds.length === 0 && !isLoading && (
           <div className="text-center py-8">
             <p className="text-slate-400">No ads found</p>
+          </div>
+        )}
+
+        {/* View Modal */}
+        {viewModalOpen && selectedAd && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-slate-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">Ad Details</h2>
+                <button
+                  onClick={() => setViewModalOpen(false)}
+                  className="p-1 hover:bg-slate-700 rounded transition-colors"
+                >
+                  <X className="w-5 h-5 text-slate-400" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-slate-400">Title</label>
+                  <p className="text-white font-medium">{selectedAd.title}</p>
+                </div>
+                <div>
+                  <label className="text-sm text-slate-400">Description</label>
+                  <p className="text-white">{selectedAd.description}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-slate-400">Category</label>
+                    <p className="text-white">{selectedAd.category}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-400">City</label>
+                    <p className="text-white">{selectedAd.city}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-400">Price</label>
+                    <p className="text-white">${selectedAd.price} {selectedAd.currency}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-400">Status</label>
+                    <p className="text-white">{selectedAd.status}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-slate-400">Views</label>
+                    <p className="text-white">{selectedAd.views}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-400">Clicks</label>
+                    <p className="text-white">{selectedAd.clicks}</p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-slate-400">Created At</label>
+                  <p className="text-white">{new Date(selectedAd.createdAt).toLocaleDateString()}</p>
+                </div>
+                {selectedAd.tags && selectedAd.tags.length > 0 && (
+                  <div>
+                    <label className="text-sm text-slate-400">Tags</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {selectedAd.tags.map((tag, index) => (
+                        <span key={index} className="px-2 py-1 bg-slate-700 rounded text-sm text-white">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Update Modal */}
+        {updateModalOpen && selectedAd && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-slate-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">Update Ad</h2>
+                <button
+                  onClick={() => setUpdateModalOpen(false)}
+                  className="p-1 hover:bg-slate-700 rounded transition-colors"
+                >
+                  <X className="w-5 h-5 text-slate-400" />
+                </button>
+              </div>
+              <form onSubmit={handleUpdateSubmit} className="space-y-4">
+                <div>
+                  <label className="text-sm text-slate-400 block mb-1">Title</label>
+                  <input
+                    type="text"
+                    value={updateFormData.title}
+                    onChange={(e) => setUpdateFormData({ ...updateFormData, title: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-400 block mb-1">Description</label>
+                  <textarea
+                    value={updateFormData.description}
+                    onChange={(e) => setUpdateFormData({ ...updateFormData, description: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-white"
+                    rows={4}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-slate-400 block mb-1">Price</label>
+                    <input
+                      type="number"
+                      value={updateFormData.price}
+                      onChange={(e) => setUpdateFormData({ ...updateFormData, price: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-400 block mb-1">Category</label>
+                    <input
+                      type="text"
+                      value={updateFormData.category}
+                      onChange={(e) => setUpdateFormData({ ...updateFormData, category: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-400 block mb-1">City</label>
+                    <input
+                      type="text"
+                      value={updateFormData.city}
+                      onChange={(e) => setUpdateFormData({ ...updateFormData, city: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-400 block mb-1">Status</label>
+                    <select
+                      value={updateFormData.status}
+                      onChange={(e) => setUpdateFormData({ ...updateFormData, status: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-white"
+                      required
+                    >
+                      <option value="published">Published</option>
+                      <option value="pending">Pending</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="draft">Draft</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                  >
+                    Update Ad
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUpdateModalOpen(false)}
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>

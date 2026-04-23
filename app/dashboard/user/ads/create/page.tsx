@@ -17,6 +17,9 @@ import {
   FileText,
   Send,
   AlertCircle,
+  Eye,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
@@ -432,6 +435,29 @@ export default function CreateAdPage() {
                         ))}
                       </div>
                     )}
+                    <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[var(--border)]">
+                      <button
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-blue-500/10 text-blue-400 opacity-50 cursor-not-allowed"
+                        title="View (Available after submission)"
+                      >
+                        <Eye className="w-4 h-4" />
+                        View
+                      </button>
+                      <button
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-yellow-500/10 text-yellow-400 opacity-50 cursor-not-allowed"
+                        title="Update (Available after submission)"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Update
+                      </button>
+                      <button
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-400 opacity-50 cursor-not-allowed"
+                        title="Delete (Available after submission)"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </button>
+                    </div>
                   </div>
 
                   <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
