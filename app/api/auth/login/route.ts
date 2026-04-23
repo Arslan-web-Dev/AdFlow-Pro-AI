@@ -60,7 +60,11 @@ export async function POST(request: NextRequest) {
     });
 
     return res;
-  } catch {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Login server error:', error);
+    return NextResponse.json({ 
+      error: 'Server error',
+      details: error?.message || 'Unknown error'
+    }, { status: 500 });
   }
 }

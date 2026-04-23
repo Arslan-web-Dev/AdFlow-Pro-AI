@@ -34,7 +34,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (authError || !authData.user) {
-      return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+      console.error('Auth user creation failed:', authError);
+      return NextResponse.json({ 
+        error: 'Failed to create user',
+        details: authError?.message || 'Unknown error'
+      }, { status: 500 });
     }
 
     // Create profile with default role 'user'
@@ -51,7 +55,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json({ error: 'Failed to create profile' }, { status: 500 });
+      console.error('Profile creation failed:', profileError);
+      return NextResponse.json({ 
+        error: 'Failed to create profile',
+        details: profileError?.message || 'Unknown error'
+      }, { status: 500 });
     }
 
     const token = generateToken({
@@ -70,7 +78,11 @@ export async function POST(request: NextRequest) {
         role: 'user',
       },
     }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    return NextResponse.json({ 
+      error: 'Server error',
+      details: error?.message || 'Unknown error'
+    }, { status: 500 });
   }
 }

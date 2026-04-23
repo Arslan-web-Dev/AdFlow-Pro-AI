@@ -94,7 +94,8 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
+        const errorMessage = data.details ? `${data.error}: ${data.details}` : (data.error || 'Registration failed');
+        throw new Error(errorMessage);
       }
 
       // Redirect to login
@@ -144,21 +145,21 @@ export default function RegisterPage() {
           <div className="grid grid-cols-1 gap-4 mb-6">
             <button
               onClick={() => {
-                setFormData({ name: 'Test User', email: 'user@adflow.com', password: 'User123', confirmPassword: 'User123' });
+                setFormData({ name: 'Test User', email: 'user@adflow.com', password: 'User123@', confirmPassword: 'User123@' });
               }}
               className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 transition-all text-left"
             >
               <p className="font-semibold text-blue-400">User</p>
-              <p className="text-xs text-blue-300">user@adflow.com / User123</p>
+              <p className="text-xs text-blue-300">user@adflow.com / User123@</p>
             </button>
             <button
               onClick={() => {
-                setFormData({ name: 'Test Admin', email: 'admin@adflow.com', password: 'Admin123', confirmPassword: 'Admin123' });
+                setFormData({ name: 'Test Admin', email: 'admin@adflow.com', password: 'Admin123@', confirmPassword: 'Admin123@' });
               }}
               className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-all text-left"
             >
               <p className="font-semibold text-red-400">Admin</p>
-              <p className="text-xs text-red-300">admin@adflow.com / Admin123</p>
+              <p className="text-xs text-red-300">admin@adflow.com / Admin123@</p>
             </button>
           </div>
 

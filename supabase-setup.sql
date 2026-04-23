@@ -23,6 +23,10 @@ FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Allow update own profile" ON profiles
 FOR UPDATE USING (auth.uid() = id);
 
+-- Allow service role to bypass RLS for admin operations
+CREATE POLICY "Allow service role full access" ON profiles
+FOR ALL USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
+
 -- For admin operations (optional, if you have admin roles)
 CREATE POLICY "Allow admins to manage all profiles" ON profiles
 FOR ALL USING (

@@ -101,7 +101,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (dbError) {
-      return NextResponse.json({ error: 'Failed to create user record' }, { status: 500 });
+      console.error('User record creation failed:', dbError);
+      return NextResponse.json({ 
+        error: 'Failed to create user record',
+        details: dbError?.message || 'Unknown error'
+      }, { status: 500 });
     }
 
     return NextResponse.json(
@@ -119,6 +123,9 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     console.error('Create user error:', error);
-    return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to create user',
+      details: error?.message || 'Unknown error'
+    }, { status: 500 });
   }
 }

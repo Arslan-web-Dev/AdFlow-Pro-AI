@@ -33,7 +33,8 @@ function LoginForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        const errorMessage = data.details ? `${data.error}: ${data.details}` : (data.error || 'Login failed');
+        throw new Error(errorMessage);
       }
 
       // Redirect based on role
@@ -97,21 +98,21 @@ function LoginForm() {
           <div className="grid grid-cols-1 gap-4 mb-6">
             <button
               onClick={() => {
-                setFormData({ email: 'user@adflow.com', password: 'User123' });
+                setFormData({ email: 'user@adflow.com', password: 'User123@' });
               }}
               className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 transition-all text-left"
             >
               <p className="font-semibold text-blue-400">User</p>
-              <p className="text-xs text-blue-300">user@adflow.com / User123</p>
+              <p className="text-xs text-blue-300">user@adflow.com / User123@</p>
             </button>
             <button
               onClick={() => {
-                setFormData({ email: 'admin@adflow.com', password: 'Admin123' });
+                setFormData({ email: 'admin@adflow.com', password: 'Admin123@' });
               }}
               className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-all text-left"
             >
               <p className="font-semibold text-red-400">Admin</p>
-              <p className="text-xs text-red-300">admin@adflow.com / Admin123</p>
+              <p className="text-xs text-red-300">admin@adflow.com / Admin123@</p>
             </button>
           </div>
 
