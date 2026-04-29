@@ -81,7 +81,7 @@ npx tsx scripts/seed-ads.ts
 | **📱 Android APK** | [⬇️ Download v1.0.0](https://raw.githubusercontent.com/Arslan-web-Dev/AdFlow-Pro-AI/main/apk/ad-flow-pro-ai.apk) |
 | **Source code** | [https://github.com/Arslan-web-Dev/AdFlow-Pro-AI](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI) |
 | **Deploy guide** | [docs/DEPLOY.md](docs/DEPLOY.md) |
-| **Screenshots** | [Screenshots/](Screenshots/) (portfolio images in-repo) |
+| **Screenshots** | [screenshots/](screenshots/) (portfolio images in-repo) |
 
 ---
 
@@ -163,48 +163,59 @@ See [`VERCEL_FIX_CHECKLIST.md`](VERCEL_FIX_CHECKLIST.md) for detailed troublesho
 
 ## Screenshots
 
-Images below live in [`Screenshots/`](Screenshots/) (same folder name as on [GitHub](https://github.com/Arslan-web-Dev/AdFlow-Pro-AI/tree/main/Screenshots)). Filenames with spaces use URL-encoded paths so they render correctly on GitHub.
+Images below live in the [`screenshots/`](screenshots/) directory. Filenames with spaces use URL-encoded paths so they render correctly on GitHub.
 
 | File | What it shows |
 |------|----------------|
 | `lendingpage1.png` | Landing — hero & primary CTA |
 | `lendingpage2.png` | Landing — featured / content section |
-| `lendingpage3.png` | Landing — lower section (e.g. pricing teaser or footer) |
-| `add page.png` | Seller flow — create or edit listing |
-| `add details.png` | Listing detail — media, seller, metadata |
+| `lendngpage3.png` | Landing — lower section |
+| `market place.png` | Marketplace — Browse & discovery |
+| `ads_details.png` | Listing detail — media, seller, metadata |
 | `plans.png` | Pricing & packages |
-| `loginpage.png` | Sign-in screen (`/auth/login`) |
-| `Email_.png` | Email-related UI (signup / capture strip) |
+| `admain_dashboard.png` | Admin / User dashboard |
+| `analytics page.png` | Analytics dashboard |
+| `my ads.png` | User's posted ads |
+| `update ads.png` | Edit and update ad listing |
+| `settingspage.png` | User or Admin settings |
 
 **Monorepo deploy:** If this app is not at the Git repo root on Vercel, set **Root Directory** to the folder that contains `package.json` — illustrated in [`docs/screenshots/vercel-root-directory.png`](docs/screenshots/vercel-root-directory.png).
 
-### Landing
+### Landing Page
 
-![Landing — section 1](Screenshots/lendingpage1.png)
+![Landing — section 1](screenshots/lendingpage1.png)
 
-![Landing — section 2](Screenshots/lendingpage2.png)
+![Landing — section 2](screenshots/lendingpage2.png)
 
-![Landing — section 3](Screenshots/lendingpage3.png)
+![Landing — section 3](screenshots/lendngpage3.png)
 
-### Create listing
+### Marketplace
 
-![Create listing](Screenshots/add%20page.png)
+![Marketplace](screenshots/market%20place.png)
 
-### Listing detail
+### Listing Detail
 
-![Listing detail](Screenshots/add%20details.png)
+![Listing detail](screenshots/ads_details.png)
 
 ### Pricing
 
-![Pricing plans](Screenshots/plans.png)
+![Pricing plans](screenshots/plans.png)
 
-### Sign in
+### Dashboards & Analytics
 
-![Sign in](Screenshots/loginpage.png)
+![Admin Dashboard](screenshots/admain_dashboard.png)
 
-### Email
+![Analytics Page](screenshots/analytics%20page.png)
 
-![Email UI](Screenshots/Email_.png)
+### Ad Management
+
+![My Ads](screenshots/my%20ads.png)
+
+![Update Ads](screenshots/update%20ads.png)
+
+### Settings
+
+![Settings Page](screenshots/settingspage.png)
 
 ### Vercel: Root Directory (folder pick)
 
